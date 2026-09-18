@@ -18,4 +18,4 @@ Once this is pushed to GitHub:
 
 ## Status
 
-MVP specification complete. Next: assemble core team, apply for OTA/PMS API access (Airbnb, Vrbo, Booking.com, Guesty, Hostaway), begin Phase 1 development.
+MVP specification complete. Next: assemble core team, apply for OTA API access (Airbnb, Vrbo, Booking.com), begin Phase 1 development.
