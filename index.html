@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CleanCal — Platform Specification</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #14231F;
+    --paper: #F6F3EC;
+    --paper-2: #EFEADC;
+    --teal: #1F6F63;
+    --teal-deep: #143F38;
+    --coral: #D9683B;
+    --line: #D9D2BF;
+    --muted: #5B6560;
+    --white: #FFFFFF;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #EDE8DA;
+      --paper: #10201B;
+      --paper-2: #16281F;
+      --teal: #4FAF9C;
+      --teal-deep: #B7E2D6;
+      --coral: #E8895E;
+      --line: #2C3D33;
+      --muted: #9CAAA1;
+      --white: #16281F;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #EDE8DA;
+    --paper: #10201B;
+    --paper-2: #16281F;
+    --teal: #4FAF9C;
+    --teal-deep: #B7E2D6;
+    --coral: #E8895E;
+    --line: #2C3D33;
+    --muted: #9CAAA1;
+    --white: #16281F;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  h1, h2, h3, .display {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+
+  a { color: var(--teal); }
+
+  .shell {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+
+  /* ---- Sidebar ---- */
+  nav.toc {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 40px 24px 40px 32px;
+    border-right: 1px solid var(--line);
+  }
+  .toc-brand {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .toc-brand span { color: var(--teal); }
+  .toc-sub {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 32px;
+  }
+  .toc-list { list-style: none; padding: 0; margin: 0; }
+  .toc-list li { margin-bottom: 2px; }
+  .toc-list a {
+    display: block;
+    padding: 7px 10px;
+    border-radius: 6px;
+    text-decoration: none;
+    color: var(--muted);
+    font-size: 14px;
+    transition: background 0.15s, color 0.15s;
+    border-left: 2px solid transparent;
+  }
+  .toc-list a:hover { color: var(--ink); background: var(--paper-2); }
+  .toc-list a.active {
+    color: var(--teal-deep);
+    background: var(--paper-2);
+    border-left: 2px solid var(--teal);
+    font-weight: 500;
+  }
+
+  /* ---- Main content ---- */
+  main { padding: 0 56px 120px; min-width: 0; }
+
+  .hero {
+    padding: 88px 0 56px;
+    border-bottom: 1px solid var(--line);
+  }
+  .hero .kicker {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--coral);
+    margin-bottom: 18px;
+  }
+  .hero h1 {
+    font-size: clamp(40px, 5.5vw, 64px);
+    line-height: 1.05;
+    margin: 0 0 20px;
+    max-width: 14ch;
+  }
+  .hero p.lede {
+    max-width: 60ch;
+    font-size: 19px;
+    color: var(--muted);
+    margin: 0 0 36px;
+  }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .stat {
+    background: var(--white);
+    padding: 20px 18px;
+  }
+  .stat .num {
+    font-family: 'Fraunces', serif;
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--teal-deep);
+  }
+  .stat .lbl {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  section { padding: 64px 0; border-bottom: 1px solid var(--line); }
+  section:last-of-type { border-bottom: none; }
+
+  .eyebrow-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--teal);
+    margin-bottom: 10px;
+  }
+  h2.section-title {
+    font-size: 32px;
+    margin: 0 0 14px;
+  }
+  .section-intro {
+    color: var(--muted);
+    max-width: 62ch;
+    font-size: 16px;
+    margin-bottom: 36px;
+  }
+
+  h3.sub {
+    font-size: 19px;
+    margin: 36px 0 14px;
+  }
+  h3.sub:first-child { margin-top: 0; }
+
+  p { max-width: 68ch; }
+  ul.feature-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 8px;
+    max-width: 68ch;
+  }
+  ul.feature-list li {
+    position: relative;
+    padding-left: 20px;
+    margin-bottom: 10px;
+  }
+  ul.feature-list li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 9px;
+    width: 6px;
+    height: 6px;
+    background: var(--coral);
+    border-radius: 50%;
+  }
+  ul.feature-list b { color: var(--ink); font-weight: 600; }
+
+  /* Role cards */
+  .role-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin-top: 8px;
+  }
+  .role-card {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 20px 22px;
+    background: var(--white);
+  }
+  .role-card .role-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--coral);
+  }
+  .role-card h4 {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    margin: 6px 0 10px;
+    font-weight: 600;
+  }
+  .role-card ul {
+    margin: 0;
+    padding-left: 18px;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .role-card ul li { margin-bottom: 5px; }
+
+  /* Task workflow */
+  .workflow {
+    display: flex;
+    gap: 14px;
+    margin: 12px 0 36px;
+    flex-wrap: wrap;
+  }
+  .workflow .step {
+    flex: 1;
+    min-width: 200px;
+    border-radius: 10px;
+    padding: 18px 20px;
+    color: var(--white);
+  }
+  .workflow .step:nth-child(1) { background: #B4763F; }
+  .workflow .step:nth-child(2) { background: #2E6E9E; }
+  .workflow .step:nth-child(3) { background: var(--teal-deep); }
+  .workflow .step .name { font-weight: 600; font-size: 16px; margin-bottom: 6px;}
+  .workflow .step .desc { font-size: 13.5px; opacity: 0.9; }
+
+  /* Integration badges */
+  .badge-row { display: flex; flex-wrap: wrap; gap: 10px; margin: 8px 0 30px; }
+  .badge {
+    border: 1px solid var(--line);
+    background: var(--white);
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  /* Pricing table */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 8px;
+  }
+  .price-card {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 26px 24px;
+    background: var(--white);
+  }
+  .price-card.mid { border-color: var(--teal); border-width: 2px; }
+  .price-card .tier { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .price-card .amount {
+    font-family: 'Fraunces', serif;
+    font-size: 34px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .price-card .amount span { font-size: 14px; color: var(--muted); font-family: 'IBM Plex Sans', sans-serif; }
+  .price-card .seg { font-size: 13px; color: var(--muted); margin-bottom: 18px; }
+  .price-card ul { padding-left: 18px; margin: 0; font-size: 14px; }
+  .price-card ul li { margin-bottom: 7px; }
+
+  /* Roadmap */
+  .roadmap { margin-top: 8px; }
+  .phase {
+    display: grid;
+    grid-template-columns: 90px 140px 1fr;
+    gap: 24px;
+    padding: 22px 0;
+    border-top: 1px solid var(--line);
+  }
+  .phase:last-child { border-bottom: 1px solid var(--line); }
+  .phase .p-num {
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+    color: var(--line);
+    font-weight: 600;
+  }
+  .phase .p-time {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--teal);
+    padding-top: 4px;
+  }
+  .phase .p-title { font-weight: 600; margin-bottom: 8px; }
+  .phase .p-body { font-size: 14px; color: var(--muted); }
+
+  /* KPI table */
+  table.kpi {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+    font-size: 14.5px;
+  }
+  table.kpi th, table.kpi td {
+    text-align: left;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  table.kpi th {
+    color: var(--muted);
+    font-weight: 500;
+    font-size: 13px;
+  }
+  table.kpi td:first-child { font-weight: 500; }
+  table.kpi td:not(:first-child), table.kpi th:not(:first-child) {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13.5px;
+  }
+
+  /* Region / currency chips */
+  .chip-row { display: flex; flex-wrap: wrap; gap: 10px; }
+  .chip {
+    background: var(--paper-2);
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  footer {
+    padding: 48px 0 20px;
+    color: var(--muted);
+    font-size: 13.5px;
+  }
+
+  /* responsive */
+  @media (max-width: 880px) {
+    .shell { grid-template-columns: 1fr; }
+    nav.toc {
+      position: relative;
+      height: auto;
+      border-right: none;
+      border-bottom: 1px solid var(--line);
+      padding: 24px 24px 12px;
+    }
+    main { padding: 0 24px 80px; }
+    .stat-row { grid-template-columns: repeat(2, 1fr); }
+    .pricing-grid { grid-template-columns: 1fr; }
+    .phase { grid-template-columns: 1fr; gap: 6px; }
+    .phase .p-num { display: none; }
+  }
+  ::-webkit-scrollbar { width: 10px; }
+  ::-webkit-scrollbar-thumb { background: var(--line); border-radius: 10px; }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <nav class="toc">
+    <div class="toc-brand">Clean<span>Cal</span></div>
+    <div class="toc-sub">Platform specification · v1.0</div>
+    <ul class="toc-list" id="toc-list">
+      <li><a href="#positioning">Market positioning</a></li>
+      <li><a href="#architecture">Architecture</a></li>
+      <li><a href="#roles">User roles</a></li>
+      <li><a href="#calendar">Calendar system</a></li>
+      <li><a href="#tasks">Task management</a></li>
+      <li><a href="#integrations">API integrations</a></li>
+      <li><a href="#marketplace">Cleaner marketplace</a></li>
+      <li><a href="#payments">Payments</a></li>
+      <li><a href="#ai">AI differentiators</a></li>
+      <li><a href="#mobile">Mobile apps</a></li>
+      <li><a href="#roadmap">MVP roadmap</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#metrics">Success metrics</a></li>
+      <li><a href="#gtm">Go-to-market</a></li>
+    </ul>
+  </nav>
+
+  <main>
+
+    <div class="hero">
+      <div class="kicker">Product spec · Built from Breezeway + Turno</div>
+      <h1>Every turnover, tracked, cleaned, and paid — in one calendar.</h1>
+      <p class="lede">CleanCal merges Breezeway's operations rigor with Turno's marketplace model, then adds AI quality checks, dynamic pay, and gamified crews — at roughly half the cost of running both tools.</p>
+
+      <div class="stat-row">
+        <div class="stat"><div class="num">50+</div><div class="lbl">unit portfolios, primary segment</div></div>
+        <div class="stat"><div class="num">5</div><div class="lbl">OTA / PMS integrations at launch</div></div>
+        <div class="stat"><div class="num">7</div><div class="lbl">distinct access roles</div></div>
+        <div class="stat"><div class="num">26 wks</div><div class="lbl">to MVP + beta</div></div>
+      </div>
+    </div>
+
+    <section id="positioning">
+      <div class="eyebrow-num">01</div>
+      <h2 class="section-title">Market positioning</h2>
+      <p class="section-intro">Existing tools force a choice: run your own cleaning team (Breezeway) or tap a marketplace of gig cleaners (Turno). CleanCal treats that as a false choice — most managers of 50+ properties need both, depending on the week.</p>
+
+      <ul class="feature-list">
+        <li><b>Hybrid model</b> — internal team management and an on-demand cleaner marketplace, side by side.</li>
+        <li><b>AI quality prediction</b> — computer vision reads the photo evidence before a manager has to.</li>
+        <li><b>Dynamic pricing</b> — cleaner pay flexes with urgency, occupancy, and season automatically.</li>
+        <li><b>Gamification</b> — points, badges, and leaderboards to keep crews engaged.</li>
+        <li><b>Budget pricing</b> — enterprise features at 40–60% below the cost of running Breezeway + Turno together.</li>
+        <li><b>Everything connected on day one</b> — Airbnb, Vrbo, Booking.com, Guesty, and Hostaway, not "coming soon."</li>
+      </ul>
+    </section>
+
+    <section id="architecture">
+      <div class="eyebrow-num">02</div>
+      <h2 class="section-title">Core architecture</h2>
+      <p class="section-intro">A conventional, boring-on-purpose stack — the differentiation lives in the product, not the plumbing.</p>
+      <ul class="feature-list">
+        <li><b>Web</b> — React 18 + TypeScript, Tailwind, shadcn/ui.</li>
+        <li><b>Mobile</b> — React Native + Expo, one codebase for iOS and Android.</li>
+        <li><b>Backend</b> — Node.js (NestJS), GraphQL.</li>
+        <li><b>Data</b> — PostgreSQL, Redis for real-time state, S3 for photo evidence.</li>
+        <li><b>AI</b> — AWS Rekognition or TensorFlow.js for photo analysis, OpenAI for written quality summaries.</li>
+        <li><b>Payments</b> — Stripe Connect for multi-currency payouts.</li>
+        <li><b>Hosting</b> — AWS, or Vercel + Supabase to move faster pre-launch.</li>
+      </ul>
+    </section>
+
+    <section id="roles">
+      <div class="eyebrow-num">03</div>
+      <h2 class="section-title">User roles &amp; access</h2>
+      <p class="section-intro">Seven roles, scoped so each person sees exactly what their job requires — nothing more.</p>
+
+      <div class="role-grid">
+        <div class="role-card">
+          <div class="role-num">Role 1</div>
+          <h4>Property Owner / Host</h4>
+          <ul>
+            <li>Full control: properties, billing, integrations</li>
+            <li>Hires from marketplace or builds internal team</li>
+            <li>Sees all analytics and quality scores</li>
+          </ul>
+        </div>
+        <div class="role-card">
+          <div class="role-num">Role 2</div>
+          <h4>Property Manager</h4>
+          <ul>
+            <li>Operational oversight, no billing access</li>
+            <li>Assigns jobs, approves photo submissions</li>
+            <li>Views task completion dashboards</li>
+          </ul>
+        </div>
+        <div class="role-card">
+          <div class="role-num">Role 3</div>
+          <h4>Cleaning Team Lead</h4>
+          <ul>
+            <li>Assigns jobs within their own team</li>
+            <li>Sees team performance and rankings</li>
+            <li>No access to other properties or finances</li>
+          </ul>
+        </div>
+        <div class="role-card">
+          <div class="role-num">Role 4</div>
+          <h4>Individual Cleaner</h4>
+          <ul>
+            <li>Mobile-first: tasks, checklists, photos</li>
+            <li>Moves jobs through the 3-stage workflow</li>
+            <li>Tracks own earnings, points, badge progress</li>
+          </ul>
+        </div>
+        <div class="role-card">
+          <div class="role-num">Role 5</div>
+          <h4>Maintenance / Handyman</h4>
+          <ul>
+            <li>Receives issues flagged by cleaners</li>
+            <li>Updates repair status with photo proof</li>
+            <li>No visibility into cleaning schedules</li>
+          </ul>
+        </div>
+        <div class="role-card">
+          <div class="role-num">Role 6</div>
+          <h4>Guest Services / Front Desk</h4>
+          <ul>
+            <li>View-only: is the unit clean and ready?</li>
+            <li>No scheduling or assignment rights</li>
+          </ul>
+        </div>
+        <div class="role-card">
+          <div class="role-num">Role 7</div>
+          <h4>Accountant / Bookkeeper</h4>
+          <ul>
+            <li>View-only financial reports</li>
+            <li>Exports to QuickBooks / Xero</li>
+            <li>Cannot touch schedules or operations</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="calendar">
+      <div class="eyebrow-num">04</div>
+      <h2 class="section-title">Unified calendar</h2>
+      <p class="section-intro">The surface everyone lives in. Bookings from every connected channel land here automatically, with cleaning blocks generated the moment a reservation confirms.</p>
+
+      <h3 class="sub">Views</h3>
+      <ul class="feature-list">
+        <li><b>Week</b> — seven days, color-coded by cleaning status.</li>
+        <li><b>Month</b> — full property grid: occupancy layered against cleaning state.</li>
+        <li><b>Year</b> — seasonal load and planning at a glance.</li>
+        <li><b>Agenda</b> — a flat list of what's next, sorted by urgency.</li>
+      </ul>
+
+      <h3 class="sub">Auto-scheduling</h3>
+      <ul class="feature-list">
+        <li>Creates the cleaning task the moment a booking confirms via API.</li>
+        <li>Suggests windows from checkout/check-in times.</li>
+        <li>Flags same-day turnovers as priority automatically.</li>
+        <li>Accounts for a cleaner's existing load and travel time.</li>
+      </ul>
+    </section>
+
+    <section id="tasks">
+      <div class="eyebrow-num">05</div>
+      <h2 class="section-title">Cleaning task management</h2>
+      <p class="section-intro">Every job moves through the same three stages, visible to owner, manager, and cleaner alike.</p>
+
+      <div class="workflow">
+        <div class="step">
+          <div class="name">To Clean</div>
+          <div class="desc">Property details and instructions unlock; cleaner starts the timer on arrival.</div>
+        </div>
+        <div class="step">
+          <div class="name">In Progress</div>
+          <div class="desc">Photos, checklist, and notes are captured as the job happens.</div>
+        </div>
+        <div class="step">
+          <div class="name">Complete</div>
+          <div class="desc">Final photos submitted, AI quality check runs, payment releases.</div>
+        </div>
+      </div>
+
+      <h3 class="sub">Photo requirements</h3>
+      <ul class="feature-list">
+        <li>Mandatory before/after shots, room by room.</li>
+        <li>Inventory verification — linens, toiletries, coffee pods.</li>
+        <li>GPS and timestamp embedded automatically.</li>
+        <li>Computer vision flags likely misses before a human reviews.</li>
+      </ul>
+
+      <h3 class="sub">Checklists &amp; notes</h3>
+      <ul class="feature-list">
+        <li>Custom templates per property or property type.</li>
+        <li>Disposable-inventory counts baked into the flow.</li>
+        <li>Damage or maintenance issues route automatically to the right person.</li>
+        <li>Optional voice-to-text for hands-free notes.</li>
+      </ul>
+    </section>
+
+    <section id="integrations">
+      <div class="eyebrow-num">06</div>
+      <h2 class="section-title">API integrations</h2>
+      <p class="section-intro">Real-time, bidirectional — not a nightly iCal sync. All five ship in v1.0.</p>
+
+      <div class="badge-row">
+        <div class="badge">Airbnb</div>
+        <div class="badge">Vrbo</div>
+        <div class="badge">Booking.com</div>
+        <div class="badge">Guesty</div>
+        <div class="badge">Hostaway</div>
+      </div>
+
+      <ul class="feature-list">
+        <li>One-click OAuth connection for each channel.</li>
+        <li>Existing portfolio auto-imports on first sync.</li>
+        <li>Webhooks push updates instantly, both directions.</li>
+        <li>"Clean and ready" status writes back to the PMS.</li>
+        <li>Handles modifications, cancellations, and same-day bookings without manual cleanup.</li>
+      </ul>
+    </section>
+
+    <section id="marketplace">
+      <div class="eyebrow-num">07</div>
+      <h2 class="section-title">Cleaner marketplace</h2>
+      <p class="section-intro">A two-sided market sitting alongside internal team tools — use either, or both, per property.</p>
+
+      <h3 class="sub">For managers</h3>
+      <ul class="feature-list">
+        <li>Browse by location, availability, rating, and price.</li>
+        <li>Post urgent jobs at premium pay to pull fast responders.</li>
+        <li>Save preferred cleaners for recurring bookings.</li>
+      </ul>
+
+      <h3 class="sub">For cleaners</h3>
+      <ul class="feature-list">
+        <li>Professional profile: photo, bio, certifications.</li>
+        <li>Accept or decline jobs instantly from the app.</li>
+        <li>Build reputation and climb toward higher-paying work.</li>
+      </ul>
+
+      <h3 class="sub">Trust &amp; safety</h3>
+      <ul class="feature-list">
+        <li>Background checks via Checkr.</li>
+        <li>Government ID + selfie identity verification.</li>
+        <li>Two-way ratings — cleaners rate properties too.</li>
+        <li>Admin-arbitrated dispute resolution.</li>
+      </ul>
+    </section>
+
+    <section id="payments">
+      <div class="eyebrow-num">08</div>
+      <h2 class="section-title">Payments</h2>
+      <p class="section-intro">Stripe Connect handles the money end to end, in the currency the cleaner actually wants.</p>
+
+      <div class="chip-row" style="margin-bottom: 28px;">
+        <div class="chip">USD</div>
+        <div class="chip">CAD</div>
+        <div class="chip">EUR</div>
+        <div class="chip">GBP</div>
+        <div class="chip">AUD</div>
+        <div class="chip">NZD</div>
+      </div>
+
+      <ul class="feature-list">
+        <li>Cleaners are paid automatically on job completion.</li>
+        <li>Payout cadence configurable: instant, daily, weekly, or biweekly.</li>
+        <li>Internal teams: flat subscription, no transaction fee.</li>
+        <li>Marketplace jobs: 12% platform fee or $4/job, whichever is greater.</li>
+        <li>Automated 1099s and exportable payment history for accounting.</li>
+      </ul>
+    </section>
+
+    <section id="ai">
+      <div class="eyebrow-num">09</div>
+      <h2 class="section-title">AI differentiators</h2>
+      <p class="section-intro">The three things Breezeway and Turno don't do — together, or at all.</p>
+
+      <h3 class="sub">Quality prediction</h3>
+      <p style="color: var(--muted); max-width: 68ch;">Computer vision scores every uploaded photo (0–100) for missed spots, clutter, and staging, then flags a re-clean before a guest ever sees it. The model improves as managers confirm or override its calls.</p>
+
+      <h3 class="sub">Dynamic pricing</h3>
+      <p style="color: var(--muted); max-width: 68ch; margin-bottom: 16px;">Cleaner pay adjusts automatically for same-day urgency (+25–50%), property size, top-rated cleaner premiums, seasonal demand, and travel distance — inside an owner-set cap.</p>
+
+      <h3 class="sub">Gamification</h3>
+      <ul class="feature-list">
+        <li>Points for completions, five-star ratings, and perfect checklists.</li>
+        <li>Badges — "Speed Demon," "Perfectionist," "Photo Pro," and similar milestones.</li>
+        <li>Regional and global leaderboards, reset monthly.</li>
+        <li>Top performers get featured placement in the marketplace.</li>
+      </ul>
+    </section>
+
+    <section id="mobile">
+      <div class="eyebrow-num">10</div>
+      <h2 class="section-title">Mobile apps</h2>
+      <p class="section-intro">iOS and Android from one React Native codebase, built around the cleaner's day in the field.</p>
+
+      <h3 class="sub">Must be on mobile</h3>
+      <ul class="feature-list">
+        <li>Week / Month / Year calendar with swipe navigation.</li>
+        <li>Task status updates: To Clean → In Progress → Complete.</li>
+        <li>In-app camera with GPS tagging, offline-capable.</li>
+        <li>Digital checklists and inventory counts.</li>
+        <li>Voice-to-text notes, push notifications, one-tap navigation to the property.</li>
+      </ul>
+
+      <h3 class="sub">Fine on web only</h3>
+      <ul class="feature-list">
+        <li>Portfolio management and bulk operations.</li>
+        <li>Analytics dashboards and integration setup.</li>
+        <li>Billing, roles, and marketplace vetting.</li>
+      </ul>
+    </section>
+
+    <section id="roadmap">
+      <div class="eyebrow-num">11</div>
+      <h2 class="section-title">MVP roadmap — 26 weeks</h2>
+      <p class="section-intro">Six phases from foundation to a beta cohort ready for public launch.</p>
+
+      <div class="roadmap">
+        <div class="phase">
+          <div class="p-num">1</div>
+          <div class="p-time">Wks 1–6</div>
+          <div>
+            <div class="p-title">Foundation</div>
+            <div class="p-body">Backend, auth, database schema, calendar UI (Week/Month/Year).</div>
+          </div>
+        </div>
+        <div class="phase">
+          <div class="p-num">2</div>
+          <div class="p-time">Wks 7–10</div>
+          <div>
+            <div class="p-title">API integrations</div>
+            <div class="p-body">Airbnb, Vrbo, Booking.com, Guesty, Hostaway; webhooks; auto-scheduling.</div>
+          </div>
+        </div>
+        <div class="phase">
+          <div class="p-num">3</div>
+          <div class="p-time">Wks 11–14</div>
+          <div>
+            <div class="p-title">Mobile &amp; task management</div>
+            <div class="p-body">iOS/Android apps, task workflow, photo upload, checklists, issue reporting.</div>
+          </div>
+        </div>
+        <div class="phase">
+          <div class="p-num">4</div>
+          <div class="p-time">Wks 15–18</div>
+          <div>
+            <div class="p-title">AI &amp; payments</div>
+            <div class="p-body">Stripe Connect payouts, multi-currency, photo analysis, quality scoring, basic dynamic pricing.</div>
+          </div>
+        </div>
+        <div class="phase">
+          <div class="p-num">5</div>
+          <div class="p-time">Wks 19–22</div>
+          <div>
+            <div class="p-title">Marketplace &amp; gamification</div>
+            <div class="p-body">Cleaner profiles, job browsing, ratings, points/badges/leaderboards, Checkr background checks.</div>
+          </div>
+        </div>
+        <div class="phase">
+          <div class="p-num">6</div>
+          <div class="p-time">Wks 23–26</div>
+          <div>
+            <div class="p-title">Beta &amp; launch prep</div>
+            <div class="p-body">10–20 beta properties, bug fixes, onboarding docs, app store submissions, marketing site.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="pricing">
+      <div class="eyebrow-num">12</div>
+      <h2 class="section-title">Pricing</h2>
+      <p class="section-intro">Budget-tier subscription, sized to portfolio; marketplace jobs carry a small transaction fee on top.</p>
+
+      <div class="pricing-grid">
+        <div class="price-card">
+          <div class="tier">Starter</div>
+          <div class="amount">$8<span>/property/mo</span></div>
+          <div class="seg">1–5 properties</div>
+          <ul>
+            <li>Basic calendar</li>
+            <li>Task management</li>
+            <li>Mobile apps</li>
+            <li>2 API integrations</li>
+          </ul>
+        </div>
+        <div class="price-card mid">
+          <div class="tier">Professional</div>
+          <div class="amount">$12<span>/property/mo</span></div>
+          <div class="seg">6–50 properties</div>
+          <ul>
+            <li>Everything in Starter</li>
+            <li>AI quality prediction</li>
+            <li>Marketplace access</li>
+            <li>All 5 integrations</li>
+            <li>Gamification</li>
+          </ul>
+        </div>
+        <div class="price-card">
+          <div class="tier">Enterprise</div>
+          <div class="amount">$18<span>/property/mo</span></div>
+          <div class="seg">50+ properties</div>
+          <ul>
+            <li>Everything in Professional</li>
+            <li>Dynamic pricing</li>
+            <li>Priority support</li>
+            <li>Custom reporting</li>
+            <li>Dedicated account manager</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="metrics">
+      <div class="eyebrow-num">13</div>
+      <h2 class="section-title">Success metrics</h2>
+      <p class="section-intro">What "the MVP worked" looks like at month 6 and month 12.</p>
+
+      <table class="kpi">
+        <tr><th>Metric</th><th>Month 6</th><th>Month 12</th></tr>
+        <tr><td>Active properties</td><td>500</td><td>5,000</td></tr>
+        <tr><td>Monthly active cleaners</td><td>100</td><td>1,000</td></tr>
+        <tr><td>Cleaning jobs completed</td><td>10,000</td><td>150,000</td></tr>
+        <tr><td>Monthly recurring revenue</td><td>$6,000</td><td>$60,000</td></tr>
+        <tr><td>Customer churn</td><td>&lt; 5%</td><td>&lt; 3%</td></tr>
+        <tr><td>Avg. AI quality score</td><td>85+</td><td>90+</td></tr>
+      </table>
+    </section>
+
+    <section id="gtm">
+      <div class="eyebrow-num">14</div>
+      <h2 class="section-title">Go-to-market</h2>
+
+      <h3 class="sub">Beta — month 6</h3>
+      <ul class="feature-list">
+        <li>10–20 managers with 50+ properties each, six months free for feedback.</li>
+        <li>Focus markets: Los Angeles, Miami, Austin, Denver, Vancouver.</li>
+      </ul>
+
+      <h3 class="sub">Public launch — months 8–9</h3>
+      <ul class="feature-list">
+        <li>US, Canada, Australia, New Zealand first; EU follows 3–6 months later pending GDPR review.</li>
+        <li>Trade shows, rental-association partnerships, referral program (one month free per referral).</li>
+      </ul>
+
+      <h3 class="sub">Positioning lines</h3>
+      <ul class="feature-list">
+        <li><b>vs. Breezeway</b> — "Breezeway, plus a marketplace and AI, at half the price."</li>
+        <li><b>vs. Turno</b> — "One platform — no separate PMS required."</li>
+      </ul>
+    </section>
+
+    <footer>
+      CleanCal · Platform Specification v1.0 · Built from research on Breezeway and Turno
+    </footer>
+
+  </main>
+</div>
+
+<script>
+  const links = document.querySelectorAll('.toc-list a');
+  const sections = Array.from(links).map(l => document.querySelector(l.getAttribute('href')));
+
+  function onScroll() {
+    let idx = 0;
+    const y = window.scrollY + 120;
+    sections.forEach((sec, i) => {
+      if (sec && sec.offsetTop <= y) idx = i;
+    });
+    links.forEach(l => l.classList.remove('active'));
+    if (links[idx]) links[idx].classList.add('active');
+  }
+  document.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+</script>
+
+</body>
+</html>
