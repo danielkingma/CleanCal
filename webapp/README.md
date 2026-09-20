@@ -115,8 +115,8 @@ tier is enough to start).
 
 In the Supabase dashboard, open **SQL Editor** and run, in order:
 `0001_init.sql`, `0002_photos_and_cleaner_scope.sql`,
-`0003_ical_sync_and_access_instructions.sql`, then
-`0004_booking_platform_label.sql` (all under `supabase/migrations/`).
+`0003_ical_sync_and_access_instructions.sql`, `0004_booking_platform_label.sql`,
+then `0005_booking_guests.sql` (all under `supabase/migrations/`).
 Optionally also run `supabase/seed.sql` to seed the same demo properties
 the prototype used.
 
@@ -193,6 +193,7 @@ supabase/
     0002_photos_and_cleaner_scope.sql          storage bucket + cleaner-scoped RLS
     0003_ical_sync_and_access_instructions.sql  ical_feeds table + access_instructions
     0004_booking_platform_label.sql             source badge data (Airbnb/Vrbo/etc.)
+    0005_booking_guests.sql                     guest name(s) field
   seed.sql                                     optional demo properties
 vercel.json                                    Cron schedule for auto-sync
 ```

@@ -51,6 +51,7 @@ export interface Booking {
   nights: number;
   status: BookingStatus;
   notes: string;
+  guests: string;
   checklist: Checklist;
   assigned_cleaner_id: string | null;
   source?: BookingSource;

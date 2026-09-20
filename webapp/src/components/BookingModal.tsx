@@ -68,6 +68,7 @@ export default function BookingModal({
     isoDate(addDays(fromISO(booking?.checkin_date ?? presetDate ?? isoDate(new Date())), booking?.nights ?? 2)),
   );
   const [notes, setNotes] = useState(booking?.notes ?? "");
+  const [guests, setGuests] = useState(booking?.guests ?? "");
   const [status, setStatus] = useState<BookingStatus>(booking?.status ?? "to-clean");
   const [checklist, setChecklist] = useState<Checklist>(
     () => booking?.checklist ?? { oven: { checked: false, outcome: null } },
@@ -197,6 +198,7 @@ export default function BookingModal({
           nights,
           status,
           notes,
+          guests,
           checklist,
           assigned_cleaner_id: assignedCleanerId,
         };
@@ -270,6 +272,18 @@ export default function BookingModal({
               </option>
             ))}
           </select>
+        </div>
+
+        <div className="field">
+          <label htmlFor="fGuests">Guest/s</label>
+          <input
+            id="fGuests"
+            type="text"
+            value={guests}
+            disabled={!canEditCore}
+            placeholder="Guest name(s)"
+            onChange={(e) => setGuests(e.target.value)}
+          />
         </div>
 
         {selectedProperty?.access_instructions ? (
