@@ -8,6 +8,15 @@ import { syncOneFeed } from "@/lib/ical-sync";
 // `ical_feeds_admin_all`) to actually enforce admin-only -- a non-admin
 // calling these just gets a permission error back from Supabase.
 
+export async function createProperty(name: string) {
+  if (!name.trim()) throw new Error("Give the property a name.");
+  const supabase = await createClient();
+  const { error } = await supabase.from("properties").insert({ name: name.trim() });
+  if (error) throw new Error(error.message);
+  revalidatePath("/properties");
+  revalidatePath("/calendar");
+}
+
 export async function updateAccessInstructions(propertyId: string, text: string) {
   const supabase = await createClient();
   const { error } = await supabase

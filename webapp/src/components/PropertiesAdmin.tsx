@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import {
   addIcalFeed,
+  createProperty,
   deleteIcalFeed,
   syncAllFeeds,
   syncIcalFeed,
@@ -19,6 +20,23 @@ interface PropertiesAdminProps {
 export default function PropertiesAdmin({ properties, feeds }: PropertiesAdminProps) {
   const [syncingAll, setSyncingAll] = useState(false);
   const [syncAllMessage, setSyncAllMessage] = useState<string | null>(null);
+
+  const [newPropertyName, setNewPropertyName] = useState("");
+  const [addingProperty, setAddingProperty] = useState(false);
+  const [addPropertyError, setAddPropertyError] = useState<string | null>(null);
+
+  async function handleAddProperty() {
+    setAddPropertyError(null);
+    setAddingProperty(true);
+    try {
+      await createProperty(newPropertyName);
+      setNewPropertyName("");
+    } catch (e) {
+      setAddPropertyError(e instanceof Error ? e.message : "Couldn't add property.");
+    } finally {
+      setAddingProperty(false);
+    }
+  }
 
   async function handleSyncAll() {
     setSyncingAll(true);
@@ -58,6 +76,40 @@ export default function PropertiesAdmin({ properties, feeds }: PropertiesAdminPr
       </div>
 
       <main>
+        <div className="property-card">
+          <label htmlFor="newPropertyName" style={{ fontSize: 13, fontWeight: 600, color: "var(--muted)" }}>
+            Add a property
+          </label>
+          <div className="add-feed-row" style={{ marginTop: 8 }}>
+            <input
+              id="newPropertyName"
+              type="text"
+              placeholder="Property name"
+              value={newPropertyName}
+              onChange={(e) => setNewPropertyName(e.target.value)}
+            />
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={handleAddProperty}
+              disabled={addingProperty}
+            >
+              {addingProperty ? "Adding…" : "Add property"}
+            </button>
+          </div>
+          {addPropertyError ? (
+            <div className="error-banner" style={{ marginTop: 10 }}>
+              {addPropertyError}
+            </div>
+          ) : null}
+        </div>
+
+        {properties.length === 0 ? (
+          <p className="photo-note" style={{ maxWidth: 760 }}>
+            No properties yet — add one above to start building your calendar.
+          </p>
+        ) : null}
+
         {properties.map((property) => (
           <PropertyCard
             key={property.id}
