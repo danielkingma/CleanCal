@@ -28,7 +28,7 @@ export default async function CalendarPage() {
 
   const { data: allProperties } = await supabase
     .from("properties")
-    .select("id, name")
+    .select("id, name, access_instructions")
     .order("name");
 
   // Admins see every booking; cleaners are scoped to their own assignments
@@ -39,7 +39,7 @@ export default async function CalendarPage() {
   let bookingsQuery = supabase
     .from("bookings")
     .select(
-      "id, property_id, checkin_date, nights, status, notes, checklist, assigned_cleaner_id",
+      "id, property_id, checkin_date, nights, status, notes, checklist, assigned_cleaner_id, source, external_uid, ical_missing_since",
     )
     .order("checkin_date");
   if (currentProfile.role !== "admin") {

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import Timeline from "./Timeline";
 import YearView from "./YearView";
@@ -167,6 +168,11 @@ export default function CalendarApp({
             </button>
           </form>
         </div>
+        {isAdmin ? (
+          <Link href="/properties" className="today-btn">
+            Properties
+          </Link>
+        ) : null}
         {isAdmin ? (
           <button
             className="new-btn"

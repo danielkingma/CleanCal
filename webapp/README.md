@@ -1,12 +1,12 @@
-# CleanCal — web app (Phases 1 & 2)
+# CleanCal — web app (Phases 1-3)
 
 Real, hosted, multi-user rebuild of the CleanCal prototype: Next.js (App
 Router) + Supabase (Postgres, Auth, and Storage), deployed to Vercel.
 
-This covers Phases 1 and 2 of the build brief: project scaffold, database
+This covers Phases 1-3 of the build brief: project scaffold, database
 schema, real auth with server-enforced roles, the Month/Week/Year calendar
-UI ported from `cleancal-app.html`, real photo uploads, and cleaner-scoped
-visibility.
+UI ported from `cleancal-app.html`, real photo uploads, cleaner-scoped
+visibility, calendar-feed sync, and per-property access instructions.
 
 ## What's here
 
@@ -46,10 +46,53 @@ visibility.
 - The coral "!" attention badge reads `checklist.oven.outcome === "attention"`
   and lights up as soon as a cleaner (or admin) flags the oven that way.
 
-## Not yet built (Phase 3, per the build brief)
+## Phase 3: calendar sync + access instructions
 
-- Airbnb / Vrbo / Booking.com API integration to auto-create bookings.
-- Property access instructions (door codes, parking) visible to cleaners.
+**A note on "the Airbnb/Vrbo/Booking.com API":** none of the three offer
+self-serve developer signup for the calendar-sync API the build brief has
+in mind — that requires applying as an approved PMS partner, a business
+process, not something this session can complete for you. What all three
+*do* offer today, and what every direct-booking site and booking plugin
+also offers, is an **iCal calendar export URL**. So Phase 3 is built on
+that: paste in any calendar's iCal link — an OTA's, or a client's own
+booking site's — and CleanCal pulls it in on a schedule (or on demand) and
+auto-creates bookings from it. It's the real, working version of "auto-create
+bookings instead of manual entry," and it treats a personal booking site
+exactly the same as an OTA: just another URL.
+
+- **Where to find a property's iCal URL**: Airbnb (Calendar tab →
+  Availability settings → Export calendar), Vrbo (Calendar → Import/Export
+  calendar → Export), Booking.com (Extranet → Calendar → Sync calendars),
+  or whatever the client's own direct-booking site/plugin calls "export"
+  or "subscribe" to its calendar.
+- **Where it's configured**: the new `/properties` page (admin only, linked
+  from the calendar topbar). Each property has a free-text label + URL for
+  as many feeds as it has (Airbnb, Vrbo, Booking.com, "My website" —
+  anything), a "Sync now" per feed and a "Sync all feeds" button, and an
+  access-instructions text box.
+- **How sync works** (`src/lib/ical-sync.ts`, used by both the manual
+  button and the optional cron job below): fetches the URL, parses each
+  VEVENT's UID/dates, and upserts bookings keyed on `(property_id,
+  external_uid)` — so re-syncing updates a reservation's dates instead of
+  duplicating it, and never touches its cleaning status, checklist, or
+  assigned cleaner once set. If a UID that was previously imported stops
+  appearing in the feed (the guest may have cancelled), the booking is
+  flagged (`ical_missing_since`, shown as a banner in the booking modal and
+  a dashed outline on its calendar bar) rather than silently deleted —
+  deleting it is left to an admin to confirm.
+- **Automatic sync (optional)**: `vercel.json` defines a Cron Job hitting
+  `/api/cron/sync-ical` every 6 hours. This route has no user session to
+  authenticate with, so it uses a Supabase **service-role key** (bypasses
+  RLS entirely) gated behind a `CRON_SECRET` you set yourself — see
+  `.env.local.example`. Skip both env vars entirely if you'd rather just
+  click "Sync now"/"Sync all feeds" — everything else works the same.
+- **Access instructions**: door codes, parking, wifi — set per property on
+  `/properties`, shown read-only inside the booking modal to whoever opens
+  a booking at that property (including the assigned cleaner).
+
+Still not built: nothing else from the brief remains — OTA integration and
+access instructions were the only two Phase 3 items, and both are covered
+above (OTA integration via the iCal mechanism rather than partner APIs).
 
 ## Setup
 
@@ -60,11 +103,11 @@ tier is enough to start).
 
 ### 2. Run the schema migrations
 
-In the Supabase dashboard, open **SQL Editor** and run
-`supabase/migrations/0001_init.sql`, then
-`supabase/migrations/0002_photos_and_cleaner_scope.sql`, in that order.
-Optionally also run `supabase/seed.sql` to seed the same demo properties
-the prototype used.
+In the Supabase dashboard, open **SQL Editor** and run, in order:
+`0001_init.sql`, `0002_photos_and_cleaner_scope.sql`, then
+`0003_ical_sync_and_access_instructions.sql` (all under
+`supabase/migrations/`). Optionally also run `supabase/seed.sql` to seed
+the same demo properties the prototype used.
 
 (If you use the [Supabase CLI](https://supabase.com/docs/guides/cli)
 instead: `supabase link --project-ref <your-ref>` then
@@ -113,23 +156,30 @@ flow works in production.
 ```
 src/
   app/
-    login/            magic-link sign-in page + server action
-    auth/callback/     exchanges the magic-link code for a session
-    logout/            POST route that signs the user out
-    calendar/          the protected calendar page + booking server actions
+    login/              magic-link sign-in page + server action
+    auth/callback/       exchanges the magic-link code for a session
+    logout/               POST route that signs the user out
+    calendar/            the protected calendar page + booking server actions
+    properties/          admin-only iCal feeds + access instructions page
+    api/cron/sync-ical/   optional Vercel Cron target (service-role sync)
   components/
-    CalendarApp.tsx     topbar, view state, realtime subscription
-    Timeline.tsx         Month/Week property-row rendering
-    YearView.tsx         Year mini-month grid
-    BookingModal.tsx     new/edit booking form + role-gated fields
+    CalendarApp.tsx       topbar, view state, realtime subscription
+    Timeline.tsx           Month/Week property-row rendering
+    YearView.tsx           Year mini-month grid
+    BookingModal.tsx       new/edit booking form + role-gated fields
+    PropertiesAdmin.tsx    per-property iCal feeds + access instructions UI
   lib/
-    supabase/            browser/server Supabase client factories
-    calendar-utils.ts    date math ported from the prototype
-    types.ts             shared domain types
-  proxy.ts               auth guard (Next.js 16 renamed middleware -> proxy)
+    supabase/              browser/server/service-role client factories
+    calendar-utils.ts      date math ported from the prototype
+    ical.ts                minimal VEVENT (iCal) parser
+    ical-sync.ts           shared fetch + upsert logic, used by button & cron
+    types.ts               shared domain types
+  proxy.ts                 auth guard (Next.js 16 renamed middleware -> proxy)
 supabase/
   migrations/
-    0001_init.sql                        schema + RLS policies + RPCs
-    0002_photos_and_cleaner_scope.sql     storage bucket + cleaner-scoped RLS
-  seed.sql                                optional demo properties
+    0001_init.sql                             schema + RLS policies + RPCs
+    0002_photos_and_cleaner_scope.sql          storage bucket + cleaner-scoped RLS
+    0003_ical_sync_and_access_instructions.sql  ical_feeds table + access_instructions
+  seed.sql                                     optional demo properties
+vercel.json                                    Cron schedule for auto-sync
 ```

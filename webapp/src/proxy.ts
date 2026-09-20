@@ -1,7 +1,12 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_PATHS = ["/login", "/auth"];
+// /api/cron isn't user-facing at all -- it's hit by Vercel Cron with no
+// session cookie, and authenticates itself via CRON_SECRET instead (see
+// src/app/api/cron/sync-ical/route.ts). It must stay out of the
+// session-required gate below or Cron's requests just get redirected to
+// /login and never run.
+const PUBLIC_PATHS = ["/login", "/auth", "/api/cron"];
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });

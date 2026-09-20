@@ -119,6 +119,7 @@ export default function Timeline({
                   const cls = ["booking-bar", b.status];
                   if (isStart) cls.push("start");
                   if (isEnd) cls.push("end");
+                  if (b.ical_missing_since) cls.push("ical-stale");
                   const label = weekly
                     ? `${STATUS_LABEL[b.status]} · ${b.nights}n`
                     : isStart
@@ -135,6 +136,7 @@ export default function Timeline({
                         top: weekly ? 8 : 6,
                         height: rowH - (weekly ? 16 : 12),
                       }}
+                      title={b.ical_missing_since ? "No longer in source calendar — may be cancelled" : undefined}
                       onClick={(e) => {
                         e.stopPropagation();
                         onBarClick(b);

@@ -11,6 +11,19 @@ export interface Profile {
 export interface Property {
   id: string;
   name: string;
+  access_instructions?: string;
+}
+
+export type IcalSyncStatus = "never" | "ok" | "error";
+
+export interface IcalFeed {
+  id: string;
+  property_id: string;
+  source_label: string;
+  ical_url: string;
+  last_synced_at: string | null;
+  last_sync_status: IcalSyncStatus;
+  last_sync_error: string | null;
 }
 
 export interface OvenChecklistEntry {
@@ -29,6 +42,8 @@ export interface Checklist {
   oven?: OvenChecklistEntry;
 }
 
+export type BookingSource = "manual" | "ical";
+
 export interface Booking {
   id: string;
   property_id: string;
@@ -38,4 +53,7 @@ export interface Booking {
   notes: string;
   checklist: Checklist;
   assigned_cleaner_id: string | null;
+  source?: BookingSource;
+  external_uid?: string | null;
+  ical_missing_since?: string | null;
 }

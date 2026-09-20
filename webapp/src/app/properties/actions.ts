@@ -1,0 +1,77 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { createClient } from "@/lib/supabase/server";
+import { syncOneFeed } from "@/lib/ical-sync";
+
+// All of these rely on Postgres RLS (`properties_admin_write` /
+// `ical_feeds_admin_all`) to actually enforce admin-only -- a non-admin
+// calling these just gets a permission error back from Supabase.
+
+export async function updateAccessInstructions(propertyId: string, text: string) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("properties")
+    .update({ access_instructions: text })
+    .eq("id", propertyId);
+  if (error) throw new Error(error.message);
+  revalidatePath("/properties");
+  revalidatePath("/calendar");
+}
+
+export async function addIcalFeed(propertyId: string, sourceLabel: string, icalUrl: string) {
+  if (!sourceLabel.trim()) throw new Error("Give this feed a label.");
+  try {
+    const url = new URL(icalUrl);
+    if (url.protocol !== "http:" && url.protocol !== "https:") throw new Error("bad protocol");
+  } catch {
+    throw new Error("Enter a valid http(s) calendar URL.");
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("ical_feeds")
+    .insert({ property_id: propertyId, source_label: sourceLabel.trim(), ical_url: icalUrl.trim() });
+  if (error) throw new Error(error.message);
+  revalidatePath("/properties");
+}
+
+export async function deleteIcalFeed(feedId: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("ical_feeds").delete().eq("id", feedId);
+  if (error) throw new Error(error.message);
+  revalidatePath("/properties");
+}
+
+export async function syncIcalFeed(feedId: string) {
+  const supabase = await createClient();
+  const { data: feed, error } = await supabase
+    .from("ical_feeds")
+    .select("id, property_id, ical_url")
+    .eq("id", feedId)
+    .single();
+  if (error || !feed) throw new Error(error?.message ?? "Feed not found.");
+
+  await syncOneFeed(supabase, feed);
+  revalidatePath("/properties");
+  revalidatePath("/calendar");
+}
+
+export async function syncAllFeeds() {
+  const supabase = await createClient();
+  const { data: feeds, error } = await supabase.from("ical_feeds").select("id, property_id, ical_url");
+  if (error) throw new Error(error.message);
+
+  let failed = 0;
+  for (const feed of feeds ?? []) {
+    try {
+      await syncOneFeed(supabase, feed);
+    } catch {
+      failed += 1; // recorded on the feed row itself; keep syncing the rest
+    }
+  }
+
+  revalidatePath("/properties");
+  revalidatePath("/calendar");
+  return { synced: (feeds ?? []).length, failed };
+}

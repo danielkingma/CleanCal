@@ -732,6 +732,96 @@ main {
   margin-bottom: 14px;
 }
 
+.access-note {
+  font-size: 13.5px;
+  color: var(--ink);
+  background: var(--paper-2);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+/* ---- Properties admin ---- */
+.property-card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 20px 22px;
+  margin-bottom: 20px;
+  max-width: 760px;
+}
+.feed-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 10px;
+}
+.feed-table td {
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--line);
+  font-size: 13.5px;
+  vertical-align: top;
+}
+.feed-url {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--muted);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+}
+.sync-pill {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 2px 9px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  background: var(--paper-2);
+  color: var(--muted);
+}
+.sync-pill.ok {
+  background: rgba(20, 63, 56, 0.12);
+  color: var(--teal-deep);
+}
+.sync-pill.error {
+  background: rgba(217, 104, 59, 0.14);
+  color: var(--coral);
+}
+.sync-error {
+  margin-top: 4px;
+  font-size: 11.5px;
+  color: var(--coral);
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.add-feed-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.add-feed-row input {
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 8px 10px;
+  font-size: 13.5px;
+  font-family: inherit;
+  background: var(--paper);
+  color: var(--ink);
+  flex: 1;
+  min-width: 160px;
+}
+
+.booking-bar.ical-stale {
+  opacity: 0.55;
+  outline: 1.5px dashed var(--coral);
+  outline-offset: -1.5px;
+}
+
 /* ---- Auth ---- */
 .auth-shell {
   min-height: 100vh;

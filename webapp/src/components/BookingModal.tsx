@@ -229,6 +229,7 @@ export default function BookingModal({
   }
 
   const oven = checklist.oven ?? { checked: false, outcome: null };
+  const selectedProperty = properties.find((p) => p.id === propertyId);
 
   return (
     <div className="overlay open" onClick={(e) => e.target === e.currentTarget && onClose()}>
@@ -238,6 +239,12 @@ export default function BookingModal({
         {error ? <div className="error-banner">{error}</div> : null}
         {mode === "edit" && role === "cleaner" && !isAssignedCleaner ? (
           <div className="error-banner">This booking isn&apos;t assigned to you — view only.</div>
+        ) : null}
+        {mode === "edit" && booking?.ical_missing_since ? (
+          <div className="error-banner">
+            No longer in the source calendar as of {new Date(booking.ical_missing_since).toLocaleDateString()} —
+            the guest may have cancelled. Review and delete if so.
+          </div>
         ) : null}
 
         <div className="field">
@@ -255,6 +262,13 @@ export default function BookingModal({
             ))}
           </select>
         </div>
+
+        {selectedProperty?.access_instructions ? (
+          <div className="field">
+            <label>Access instructions</label>
+            <p className="access-note">{selectedProperty.access_instructions}</p>
+          </div>
+        ) : null}
 
         <div className="two-col">
           <div className="field">
