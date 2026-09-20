@@ -81,7 +81,9 @@ exactly the same as an OTA: just another URL.
   a dashed outline on its calendar bar) rather than silently deleted —
   deleting it is left to an admin to confirm.
 - **Automatic sync (optional)**: `vercel.json` defines a Cron Job hitting
-  `/api/cron/sync-ical` every 6 hours. This route has no user session to
+  `/api/cron/sync-ical` once daily (Vercel's Hobby/free plan only allows
+  daily cron jobs; bump the schedule in `vercel.json` if you're on Pro and
+  want it more often). This route has no user session to
   authenticate with, so it uses a Supabase **service-role key** (bypasses
   RLS entirely) gated behind a `CRON_SECRET` you set yourself — see
   `.env.local.example`. Skip both env vars entirely if you'd rather just
