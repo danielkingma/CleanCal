@@ -2,11 +2,13 @@ import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { syncOneFeed } from "@/lib/ical-sync";
 
-// Vercel Cron hits this on a schedule (see vercel.json) with an
-// `Authorization: Bearer <CRON_SECRET>` header it fills in automatically
-// from the CRON_SECRET env var. This route is unauthenticated by user
-// session, so it uses the service-role client -- CRON_SECRET is what
-// stands in for auth here, so it must actually be set in production.
+// An external scheduler (e.g. cron-job.org) hits this on a schedule with
+// an `Authorization: Bearer <CRON_SECRET>` header -- see webapp/README.md
+// for setup. (Vercel's own Cron Jobs would work too, but Hobby-plan
+// accounts are limited to once daily, too infrequent for this.) This
+// route is unauthenticated by user session, so it uses the service-role
+// client -- CRON_SECRET is what stands in for auth here, so it must
+// actually be set in production.
 export async function GET(request: Request) {
   const expected = process.env.CRON_SECRET;
   if (!expected) {

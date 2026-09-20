@@ -80,14 +80,32 @@ exactly the same as an OTA: just another URL.
   flagged (`ical_missing_since`, shown as a banner in the booking modal and
   a dashed outline on its calendar bar) rather than silently deleted —
   deleting it is left to an admin to confirm.
-- **Automatic sync (optional)**: `vercel.json` defines a Cron Job hitting
-  `/api/cron/sync-ical` once daily (Vercel's Hobby/free plan only allows
-  daily cron jobs; bump the schedule in `vercel.json` if you're on Pro and
-  want it more often). This route has no user session to
-  authenticate with, so it uses a Supabase **service-role key** (bypasses
-  RLS entirely) gated behind a `CRON_SECRET` you set yourself — see
-  `.env.local.example`. Skip both env vars entirely if you'd rather just
-  click "Sync now"/"Sync all feeds" — everything else works the same.
+- **Automatic sync (optional)**: `/api/cron/sync-ical` re-syncs every
+  configured feed when hit with the right secret. It doesn't care who
+  calls it, so rather than Vercel's own Cron Jobs (Hobby-plan accounts
+  are limited to once daily — too infrequent for a 5-minute cadence), a
+  **free external scheduler** works just as well:
+
+  1. In Vercel project settings, add two environment variables:
+     - `SUPABASE_SERVICE_ROLE_KEY` — from Supabase Settings → API Keys
+       (the **secret**/service-role key, not the publishable one).
+     - `CRON_SECRET` — any random string (`openssl rand -hex 32`).
+     Redeploy after adding them (env var changes need a new deployment
+     to take effect).
+  2. At [cron-job.org](https://cron-job.org) (free, no card required),
+     create an account and a new cron job:
+     - URL: `https://<your-app>.vercel.app/api/cron/sync-ical`
+     - Schedule: every 5 minutes (or whatever interval you want)
+     - Under "Advanced" → request headers, add:
+       `Authorization: Bearer <the CRON_SECRET value>`
+  3. Check the job's execution log on cron-job.org for a `200` response,
+     or watch `last_synced_at` update on a feed on the `/properties` page.
+
+  This route has no user session to authenticate with, which is why it
+  uses the service-role key (bypasses RLS entirely) — `CRON_SECRET` is
+  what stands in for auth instead. Skip all of this entirely if you'd
+  rather just click "Sync now"/"Sync all feeds" by hand — everything
+  else works exactly the same either way.
 - **Access instructions**: door codes, parking, wifi — set per property on
   `/properties`, shown read-only inside the booking modal to whoever opens
   a booking at that property (including the assigned cleaner).
@@ -195,5 +213,4 @@ supabase/
     0004_booking_platform_label.sql             source badge data (Airbnb/Vrbo/etc.)
     0005_booking_guests.sql                     guest name(s) field
   seed.sql                                     optional demo properties
-vercel.json                                    Cron schedule for auto-sync
 ```
