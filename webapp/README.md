@@ -1,12 +1,12 @@
-# CleanCal — web app (Phase 1)
+# CleanCal — web app (Phases 1 & 2)
 
 Real, hosted, multi-user rebuild of the CleanCal prototype: Next.js (App
-Router) + Supabase (Postgres, Auth, and — from Phase 2 — Storage), deployed
-to Vercel.
+Router) + Supabase (Postgres, Auth, and Storage), deployed to Vercel.
 
-This covers Phase 1 of the build brief: project scaffold, database schema,
-real auth with server-enforced roles, and the Month/Week/Year calendar UI
-ported from `cleancal-app.html`.
+This covers Phases 1 and 2 of the build brief: project scaffold, database
+schema, real auth with server-enforced roles, the Month/Week/Year calendar
+UI ported from `cleancal-app.html`, real photo uploads, and cleaner-scoped
+visibility.
 
 ## What's here
 
@@ -29,21 +29,27 @@ ported from `cleancal-app.html`.
   colors, and the booking modal with the cleaning checklist + oven
   sub-flow, all ported from the prototype's proven layout and CSS.
 - **Realtime**: booking changes broadcast to every connected client via
-  Supabase Realtime, so the calendar updates live across devices.
+  Supabase Realtime, so the calendar updates live across devices. Because
+  Realtime re-checks the same RLS policy as a normal `SELECT`, a cleaner's
+  subscription is automatically scoped the same way their initial fetch is.
+- **Photo uploads** (`supabase/migrations/0002_photos_and_cleaner_scope.sql`):
+  a private `booking-photos` Storage bucket, uploaded from the same "+"
+  tile the prototype used. Objects are stored at `<booking_id>/<file>`, so
+  storage RLS can check assignment without a join: admins can upload/delete
+  anything, cleaners only on bookings assigned to them, and only the
+  uploader (or an admin) can delete a given photo. Thumbnails render from
+  short-lived signed URLs, not public links.
+- **Cleaner-scoped visibility**: the `bookings` SELECT policy now only
+  lets a cleaner see rows where `assigned_cleaner_id = auth.uid()` (admins
+  still see everything). The calendar page also drops property rows a
+  cleaner has no booking on, so their view isn't a wall of empty rows.
+- The coral "!" attention badge reads `checklist.oven.outcome === "attention"`
+  and lights up as soon as a cleaner (or admin) flags the oven that way.
 
-## Not yet built (later phases, per the build brief)
+## Not yet built (Phase 3, per the build brief)
 
-- Real photo upload to Supabase Storage (the modal shows a placeholder
-  note — the `photos` table and its RLS policies already exist and are
-  ready for this).
-- The coral "!" attention badge is wired up (it reads
-  `checklist.oven.outcome`), but nothing yet drives it besides manually
-  setting the oven outcome in the modal.
-- Scoping cleaners' calendar view to only their assigned bookings (they
-  can currently see all bookings, but can only edit ones assigned to
-  them).
-- OTA integrations (Airbnb/Vrbo/Booking.com) and property access
-  instructions (Phase 3).
+- Airbnb / Vrbo / Booking.com API integration to auto-create bookings.
+- Property access instructions (door codes, parking) visible to cleaners.
 
 ## Setup
 
@@ -52,11 +58,13 @@ ported from `cleancal-app.html`.
 Create a new project at [supabase.com](https://supabase.com) (the free
 tier is enough to start).
 
-### 2. Run the schema migration
+### 2. Run the schema migrations
 
-In the Supabase dashboard, open **SQL Editor** and run the contents of
-`supabase/migrations/0001_init.sql`. Optionally also run `supabase/seed.sql`
-to seed the same demo properties the prototype used.
+In the Supabase dashboard, open **SQL Editor** and run
+`supabase/migrations/0001_init.sql`, then
+`supabase/migrations/0002_photos_and_cleaner_scope.sql`, in that order.
+Optionally also run `supabase/seed.sql` to seed the same demo properties
+the prototype used.
 
 (If you use the [Supabase CLI](https://supabase.com/docs/guides/cli)
 instead: `supabase link --project-ref <your-ref>` then
@@ -120,6 +128,8 @@ src/
     types.ts             shared domain types
   proxy.ts               auth guard (Next.js 16 renamed middleware -> proxy)
 supabase/
-  migrations/0001_init.sql   schema + RLS policies + RPCs
-  seed.sql                    optional demo properties
+  migrations/
+    0001_init.sql                        schema + RLS policies + RPCs
+    0002_photos_and_cleaner_scope.sql     storage bucket + cleaner-scoped RLS
+  seed.sql                                optional demo properties
 ```

@@ -26,17 +26,33 @@ export default async function CalendarPage() {
     role: "cleaner",
   };
 
-  const { data: properties } = await supabase
+  const { data: allProperties } = await supabase
     .from("properties")
     .select("id, name")
     .order("name");
 
-  const { data: bookings } = await supabase
+  // Admins see every booking; cleaners are scoped to their own assignments
+  // (also enforced in Postgres -- see `bookings_select_own_or_admin` in
+  // supabase/migrations/0002_photos_and_cleaner_scope.sql -- this filter
+  // is just so the calendar doesn't render a bunch of rows a cleaner has
+  // nothing to do on).
+  let bookingsQuery = supabase
     .from("bookings")
     .select(
       "id, property_id, checkin_date, nights, status, notes, checklist, assigned_cleaner_id",
     )
     .order("checkin_date");
+  if (currentProfile.role !== "admin") {
+    bookingsQuery = bookingsQuery.eq("assigned_cleaner_id", user.id);
+  }
+  const { data: bookings } = await bookingsQuery;
+
+  const properties =
+    currentProfile.role === "admin"
+      ? (allProperties ?? [])
+      : (allProperties ?? []).filter((p) =>
+          (bookings ?? []).some((b) => b.property_id === p.id),
+        );
 
   let cleaners: Profile[] = [];
   if (currentProfile.role === "admin") {
@@ -52,7 +68,7 @@ export default async function CalendarPage() {
     <CalendarApp
       currentProfile={currentProfile}
       currentUserEmail={user.email ?? ""}
-      properties={(properties ?? []) as Property[]}
+      properties={properties as Property[]}
       initialBookings={(bookings ?? []) as Booking[]}
       cleaners={cleaners}
     />

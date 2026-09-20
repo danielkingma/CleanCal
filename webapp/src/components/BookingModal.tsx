@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   createBooking,
   deleteBooking,
@@ -8,8 +8,17 @@ import {
   updateBookingCleaner,
   type BookingInput,
 } from "@/app/calendar/actions";
+import { createClient } from "@/lib/supabase/client";
 import { CHECKLIST_ITEMS, addDays, daysBetween, fromISO, isoDate } from "@/lib/calendar-utils";
 import type { Booking, BookingStatus, Checklist, Profile, Property, Role } from "@/lib/types";
+
+const PHOTOS_BUCKET = "booking-photos";
+
+interface PhotoItem {
+  id: string;
+  path: string;
+  url: string;
+}
 
 interface BookingModalProps {
   mode: "new" | "edit";
@@ -67,6 +76,80 @@ export default function BookingModal({
   );
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  const [photos, setPhotos] = useState<PhotoItem[]>([]);
+  const [photosLoading, setPhotosLoading] = useState(mode === "edit");
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (mode !== "edit" || !booking) return;
+    let cancelled = false;
+    const supabase = createClient();
+
+    (async () => {
+      const { data, error: fetchError } = await supabase
+        .from("photos")
+        .select("id, storage_path")
+        .eq("booking_id", booking.id)
+        .order("created_at");
+      if (fetchError || !data) {
+        if (!cancelled) setPhotosLoading(false);
+        return;
+      }
+      const withUrls = await Promise.all(
+        data.map(async (p) => {
+          const { data: signed } = await supabase.storage
+            .from(PHOTOS_BUCKET)
+            .createSignedUrl(p.storage_path, 3600);
+          return { id: p.id as string, path: p.storage_path as string, url: signed?.signedUrl ?? "" };
+        }),
+      );
+      if (!cancelled) {
+        setPhotos(withUrls);
+        setPhotosLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [mode, booking]);
+
+  async function handleFilesSelected(fileList: FileList | null) {
+    if (!fileList || fileList.length === 0 || !booking || !canEditCleaning) return;
+    setUploading(true);
+    setError(null);
+    const supabase = createClient();
+
+    for (const file of Array.from(fileList)) {
+      try {
+        const path = `${booking.id}/${crypto.randomUUID()}-${file.name}`;
+        const { error: uploadError } = await supabase.storage.from(PHOTOS_BUCKET).upload(path, file);
+        if (uploadError) throw uploadError;
+
+        const { data: row, error: insertError } = await supabase
+          .from("photos")
+          .insert({ booking_id: booking.id, storage_path: path, uploaded_by: currentUserId })
+          .select("id")
+          .single();
+        if (insertError) throw insertError;
+
+        const { data: signed } = await supabase.storage.from(PHOTOS_BUCKET).createSignedUrl(path, 3600);
+        setPhotos((prev) => [...prev, { id: row.id as string, path, url: signed?.signedUrl ?? "" }]);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Photo upload failed.");
+      }
+    }
+    setUploading(false);
+  }
+
+  async function handleRemovePhoto(photo: PhotoItem) {
+    setPhotos((prev) => prev.filter((p) => p.id !== photo.id));
+    const supabase = createClient();
+    await supabase.storage.from(PHOTOS_BUCKET).remove([photo.path]);
+    await supabase.from("photos").delete().eq("id", photo.id);
+  }
 
   function onCheckinChange(value: string) {
     setCheckinDate(value);
@@ -304,7 +387,49 @@ export default function BookingModal({
             ) : null}
 
             <h3 style={{ marginTop: 14 }}>Photos</h3>
-            <p className="photo-note">Photo uploads arrive in Phase 2.</p>
+            {photosLoading ? (
+              <p className="photo-note">Loading photos…</p>
+            ) : (
+              <div className="photo-strip">
+                {photos.map((p) => (
+                  <div className="photo-thumb" key={p.id}>
+                    {/* eslint-disable-next-line @next/next/no-img-element -- short-lived signed URLs, not a static asset */}
+                    <img src={p.url} alt="" />
+                    {canEditCleaning ? (
+                      <button
+                        type="button"
+                        className="rm"
+                        onClick={() => handleRemovePhoto(p)}
+                        aria-label="Remove photo"
+                      >
+                        ✕
+                      </button>
+                    ) : null}
+                  </div>
+                ))}
+                {canEditCleaning ? (
+                  <button
+                    type="button"
+                    className="photo-add"
+                    disabled={uploading}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    {uploading ? "…" : "+"}
+                  </button>
+                ) : null}
+              </div>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              style={{ display: "none" }}
+              onChange={(e) => {
+                handleFilesSelected(e.target.files);
+                e.target.value = "";
+              }}
+            />
           </div>
         ) : null}
 
