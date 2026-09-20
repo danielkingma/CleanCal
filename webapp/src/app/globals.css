@@ -180,6 +180,7 @@ main {
   align-items: center;
   gap: 16px;
   margin-bottom: 14px;
+  padding-left: 14px;
   flex-wrap: wrap;
 }
 .legend-item {
