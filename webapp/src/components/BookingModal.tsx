@@ -10,6 +10,7 @@ import {
 } from "@/app/calendar/actions";
 import { createClient } from "@/lib/supabase/client";
 import { CHECKLIST_ITEMS, addDays, daysBetween, fromISO, isoDate } from "@/lib/calendar-utils";
+import { getPlatformBadge } from "@/lib/platform-badge";
 import type { Booking, BookingStatus, Checklist, Profile, Property, Role } from "@/lib/types";
 
 const PHOTOS_BUCKET = "booking-photos";
@@ -230,11 +231,19 @@ export default function BookingModal({
 
   const oven = checklist.oven ?? { checked: false, outcome: null };
   const selectedProperty = properties.find((p) => p.id === propertyId);
+  const platform = getPlatformBadge(booking?.platform_label);
 
   return (
     <div className="overlay open" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="modal">
-        <h2>{mode === "new" ? "New booking" : "Edit booking"}</h2>
+        <h2 style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {mode === "new" ? "New booking" : "Edit booking"}
+          {platform ? (
+            <span className="source-pill" style={{ background: platform.color }}>
+              {platform.name}
+            </span>
+          ) : null}
+        </h2>
 
         {error ? <div className="error-banner">{error}</div> : null}
         {mode === "edit" && role === "cleaner" && !isAssignedCleaner ? (

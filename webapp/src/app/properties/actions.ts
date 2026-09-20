@@ -68,7 +68,7 @@ export async function syncIcalFeed(feedId: string) {
   const supabase = await createClient();
   const { data: feed, error } = await supabase
     .from("ical_feeds")
-    .select("id, property_id, ical_url")
+    .select("id, property_id, ical_url, source_label")
     .eq("id", feedId)
     .single();
   if (error || !feed) throw new Error(error?.message ?? "Feed not found.");
@@ -80,7 +80,9 @@ export async function syncIcalFeed(feedId: string) {
 
 export async function syncAllFeeds() {
   const supabase = await createClient();
-  const { data: feeds, error } = await supabase.from("ical_feeds").select("id, property_id, ical_url");
+  const { data: feeds, error } = await supabase
+    .from("ical_feeds")
+    .select("id, property_id, ical_url, source_label");
   if (error) throw new Error(error.message);
 
   let failed = 0;

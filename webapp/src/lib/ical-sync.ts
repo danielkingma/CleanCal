@@ -6,6 +6,7 @@ interface FeedRow {
   id: string;
   property_id: string;
   ical_url: string;
+  source_label: string;
 }
 
 // Shared by the admin-triggered server action (cookie-scoped client, RLS
@@ -35,6 +36,7 @@ export async function syncOneFeed(supabase: SupabaseClient, feed: FeedRow): Prom
         checkin_date: e.startDate,
         nights: daysBetween(fromISO(e.startDate), fromISO(e.endDate)),
         source: "ical" as const,
+        platform_label: feed.source_label,
       }));
       const { error: upsertError } = await supabase
         .from("bookings")

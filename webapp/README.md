@@ -91,6 +91,14 @@ exactly the same as an OTA: just another URL.
 - **Access instructions**: door codes, parking, wifi — set per property on
   `/properties`, shown read-only inside the booking modal to whoever opens
   a booking at that property (including the assigned cleaner).
+- **Source badge on the calendar** (`src/lib/platform-badge.ts`): a synced
+  booking gets a small colored left-edge stripe and letter badge showing
+  which feed it came from (Airbnb, Vrbo, Booking.com get a distinct
+  recognizable color each; any other feed label gets a neutral one). This
+  is intentionally separate from the bar's own amber/blue/teal background,
+  which still means cleaning status, not source — the two aren't allowed
+  to collide. It's letter badges + color, not the actual OTA logos, since
+  those are trademarked assets this app has no rights to reproduce.
 
 Still not built: nothing else from the brief remains — OTA integration and
 access instructions were the only two Phase 3 items, and both are covered
@@ -106,10 +114,11 @@ tier is enough to start).
 ### 2. Run the schema migrations
 
 In the Supabase dashboard, open **SQL Editor** and run, in order:
-`0001_init.sql`, `0002_photos_and_cleaner_scope.sql`, then
-`0003_ical_sync_and_access_instructions.sql` (all under
-`supabase/migrations/`). Optionally also run `supabase/seed.sql` to seed
-the same demo properties the prototype used.
+`0001_init.sql`, `0002_photos_and_cleaner_scope.sql`,
+`0003_ical_sync_and_access_instructions.sql`, then
+`0004_booking_platform_label.sql` (all under `supabase/migrations/`).
+Optionally also run `supabase/seed.sql` to seed the same demo properties
+the prototype used.
 
 (If you use the [Supabase CLI](https://supabase.com/docs/guides/cli)
 instead: `supabase link --project-ref <your-ref>` then
@@ -175,6 +184,7 @@ src/
     calendar-utils.ts      date math ported from the prototype
     ical.ts                minimal VEVENT (iCal) parser
     ical-sync.ts           shared fetch + upsert logic, used by button & cron
+    platform-badge.ts      Airbnb/Vrbo/Booking.com/other badge color + letter
     types.ts               shared domain types
   proxy.ts                 auth guard (Next.js 16 renamed middleware -> proxy)
 supabase/
@@ -182,6 +192,7 @@ supabase/
     0001_init.sql                             schema + RLS policies + RPCs
     0002_photos_and_cleaner_scope.sql          storage bucket + cleaner-scoped RLS
     0003_ical_sync_and_access_instructions.sql  ical_feeds table + access_instructions
+    0004_booking_platform_label.sql             source badge data (Airbnb/Vrbo/etc.)
   seed.sql                                     optional demo properties
 vercel.json                                    Cron schedule for auto-sync
 ```

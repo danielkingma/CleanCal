@@ -16,6 +16,7 @@ import {
   isoDate,
   sameDay,
 } from "@/lib/calendar-utils";
+import { getPlatformBadge } from "@/lib/platform-badge";
 
 interface TimelineProps {
   days: Date[];
@@ -125,6 +126,7 @@ export default function Timeline({
                     : isStart
                       ? STATUS_LABEL[b.status]
                       : "";
+                  const platform = getPlatformBadge(b.platform_label);
 
                   return (
                     <div
@@ -142,6 +144,18 @@ export default function Timeline({
                         onBarClick(b);
                       }}
                     >
+                      {platform ? (
+                        <>
+                          <span className="platform-stripe" style={{ background: platform.color }} />
+                          <span
+                            className="platform-badge"
+                            style={{ background: platform.color }}
+                            title={platform.name}
+                          >
+                            {platform.code}
+                          </span>
+                        </>
+                      ) : null}
                       {hasAttention(b) ? (
                         <span className="attn-marker" title="Requires attention">
                           !

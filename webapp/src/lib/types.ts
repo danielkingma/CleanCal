@@ -56,4 +56,5 @@ export interface Booking {
   source?: BookingSource;
   external_uid?: string | null;
   ical_missing_since?: string | null;
+  platform_label?: string | null;
 }

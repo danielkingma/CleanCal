@@ -22,7 +22,7 @@ export async function GET(request: Request) {
   const supabase = createServiceClient();
   const { data: feeds, error } = await supabase
     .from("ical_feeds")
-    .select("id, property_id, ical_url");
+    .select("id, property_id, ical_url, source_label");
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

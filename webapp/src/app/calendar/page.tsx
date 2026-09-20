@@ -39,7 +39,7 @@ export default async function CalendarPage() {
   let bookingsQuery = supabase
     .from("bookings")
     .select(
-      "id, property_id, checkin_date, nights, status, notes, checklist, assigned_cleaner_id, source, external_uid, ical_missing_since",
+      "id, property_id, checkin_date, nights, status, notes, checklist, assigned_cleaner_id, source, external_uid, ical_missing_since, platform_label",
     )
     .order("checkin_date");
   if (currentProfile.role !== "admin") {
