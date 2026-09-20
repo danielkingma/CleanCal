@@ -6,6 +6,7 @@ Short-term rental operations platform concept — combines the best of Breezeway
 
 - `docs/CleanCal_Platform_Specification.docx` — full product specification: positioning, architecture, user roles, feature set, MVP roadmap, pricing, go-to-market, and success metrics.
 - `web/index.html` — self-contained webpage version of the spec (open directly in a browser, or serve via GitHub Pages — see below).
+- `webapp/` — the real, hosted, multi-user Next.js + Supabase implementation (Phase 1 of the build brief). See `webapp/README.md` for setup.
 
 ## Viewing the webpage on GitHub Pages
 
@@ -18,4 +19,4 @@ Once this is pushed to GitHub:
 
 ## Status
 
-MVP specification complete. Next: assemble core team, apply for OTA API access (Airbnb, Vrbo, Booking.com), begin Phase 1 development.
+MVP specification complete. Phase 1 of the build (auth, schema, calendar UI in `webapp/`) is underway — see `webapp/README.md` for what's done and what's next.
