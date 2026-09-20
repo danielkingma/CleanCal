@@ -6,6 +6,14 @@ export interface Profile {
   id: string;
   name: string;
   role: Role;
+  bio?: string;
+  phone?: string;
+  service_area?: string;
+}
+
+export interface CleanerRating {
+  average: number;
+  count: number;
 }
 
 export interface Property {
@@ -58,4 +66,6 @@ export interface Booking {
   external_uid?: string | null;
   ical_missing_since?: string | null;
   platform_label?: string | null;
+  rating?: number | null;
+  rating_comment?: string;
 }

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   createBooking,
   deleteBooking,
+  rateBooking,
   updateBookingAdmin,
   updateBookingCleaner,
   type BookingInput,
@@ -11,7 +12,7 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { CHECKLIST_ITEMS, addDays, daysBetween, fromISO, isoDate } from "@/lib/calendar-utils";
 import { getPlatformBadge } from "@/lib/platform-badge";
-import type { Booking, BookingStatus, Checklist, Profile, Property, Role } from "@/lib/types";
+import type { Booking, BookingStatus, Checklist, CleanerRating, Profile, Property, Role } from "@/lib/types";
 
 const PHOTOS_BUCKET = "booking-photos";
 
@@ -27,6 +28,7 @@ interface BookingModalProps {
   currentUserId: string;
   properties: Property[];
   cleaners: Profile[];
+  cleanerRatings: Record<string, CleanerRating>;
   booking?: Booking;
   presetPropertyId?: string;
   presetDate?: string;
@@ -47,6 +49,7 @@ export default function BookingModal({
   currentUserId,
   properties,
   cleaners,
+  cleanerRatings,
   booking,
   presetPropertyId,
   presetDate,
@@ -78,6 +81,25 @@ export default function BookingModal({
   );
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  const [rating, setRating] = useState<number>(booking?.rating ?? 0);
+  const [ratingComment, setRatingComment] = useState(booking?.rating_comment ?? "");
+  const [savingRating, setSavingRating] = useState(false);
+  const [ratingSaved, setRatingSaved] = useState(false);
+
+  async function handleSaveRating() {
+    if (!booking || rating < 1) return;
+    setSavingRating(true);
+    setRatingSaved(false);
+    try {
+      await rateBooking(booking.id, rating, ratingComment);
+      setRatingSaved(true);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn't save rating.");
+    } finally {
+      setSavingRating(false);
+    }
+  }
 
   const [photos, setPhotos] = useState<PhotoItem[]>([]);
   const [photosLoading, setPhotosLoading] = useState(mode === "edit");
@@ -338,11 +360,15 @@ export default function BookingModal({
               onChange={(e) => setAssignedCleanerId(e.target.value || null)}
             >
               <option value="">Unassigned</option>
-              {cleaners.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name || c.id}
-                </option>
-              ))}
+              {cleaners.map((c) => {
+                const r = cleanerRatings[c.id];
+                const label = r ? `${c.name || c.id} — ★${r.average.toFixed(1)} (${r.count})` : c.name || c.id;
+                return (
+                  <option key={c.id} value={c.id}>
+                    {label}
+                  </option>
+                );
+              })}
             </select>
           </div>
         ) : null}
@@ -467,6 +493,48 @@ export default function BookingModal({
                 e.target.value = "";
               }}
             />
+          </div>
+        ) : null}
+
+        {mode === "edit" && isAdmin && booking?.assigned_cleaner_id && status === "complete" ? (
+          <div className="clean-section">
+            <h3>Rate this cleaning</h3>
+            <div className="star-row">
+              {[1, 2, 3, 4, 5].map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  className={`star-btn${n <= rating ? " sel" : ""}`}
+                  onClick={() => {
+                    setRating(n);
+                    setRatingSaved(false);
+                  }}
+                  aria-label={`${n} star${n === 1 ? "" : "s"}`}
+                >
+                  ★
+                </button>
+              ))}
+            </div>
+            <textarea
+              value={ratingComment}
+              onChange={(e) => {
+                setRatingComment(e.target.value);
+                setRatingSaved(false);
+              }}
+              placeholder="Optional note about this cleaning"
+              style={{ marginTop: 10 }}
+            />
+            <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 10 }}>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={handleSaveRating}
+                disabled={savingRating || rating < 1}
+              >
+                {savingRating ? "Saving…" : "Save rating"}
+              </button>
+              {ratingSaved ? <span style={{ fontSize: 12.5, color: "var(--teal-deep)" }}>Saved</span> : null}
+            </div>
           </div>
         ) : null}
 

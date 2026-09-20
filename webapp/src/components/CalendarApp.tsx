@@ -15,7 +15,7 @@ import {
   fromISO,
   isoDate,
 } from "@/lib/calendar-utils";
-import type { Booking, Profile, Property } from "@/lib/types";
+import type { Booking, CleanerRating, Profile, Property } from "@/lib/types";
 
 interface CalendarAppProps {
   currentProfile: Profile;
@@ -23,6 +23,7 @@ interface CalendarAppProps {
   properties: Property[];
   initialBookings: Booking[];
   cleaners: Profile[];
+  cleanerRatings: Record<string, CleanerRating>;
 }
 
 type View = "week" | "month" | "year";
@@ -40,6 +41,7 @@ export default function CalendarApp({
   properties,
   initialBookings,
   cleaners,
+  cleanerRatings,
 }: CalendarAppProps) {
   const router = useRouter();
   const [view, setView] = useState<View>("month");
@@ -162,6 +164,9 @@ export default function CalendarApp({
         <div className="user-badge">
           <span className="role-pill">{currentProfile.role}</span>
           <span>{currentUserEmail}</span>
+          <Link href="/profile" className="signout-btn">
+            My Profile
+          </Link>
           <form action="/logout" method="post">
             <button type="submit" className="signout-btn">
               Sign out
@@ -171,6 +176,11 @@ export default function CalendarApp({
         {isAdmin ? (
           <Link href="/properties" className="today-btn">
             Properties
+          </Link>
+        ) : null}
+        {isAdmin ? (
+          <Link href="/cleaners" className="today-btn">
+            Cleaners
           </Link>
         ) : null}
         {isAdmin ? (
@@ -237,6 +247,7 @@ export default function CalendarApp({
           currentUserId={currentProfile.id}
           properties={properties}
           cleaners={cleaners}
+          cleanerRatings={cleanerRatings}
           booking={modal.booking}
           presetPropertyId={modal.presetPropertyId}
           presetDate={modal.presetDate}

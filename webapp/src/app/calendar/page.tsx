@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import CalendarApp from "@/components/CalendarApp";
-import type { Booking, Profile, Property } from "@/lib/types";
+import type { Booking, CleanerRating, Profile, Property } from "@/lib/types";
 
 export default async function CalendarPage() {
   const supabase = await createClient();
@@ -39,7 +39,7 @@ export default async function CalendarPage() {
   let bookingsQuery = supabase
     .from("bookings")
     .select(
-      "id, property_id, checkin_date, nights, status, notes, guests, checklist, assigned_cleaner_id, source, external_uid, ical_missing_since, platform_label",
+      "id, property_id, checkin_date, nights, status, notes, guests, checklist, assigned_cleaner_id, source, external_uid, ical_missing_since, platform_label, rating, rating_comment",
     )
     .order("checkin_date");
   if (currentProfile.role !== "admin") {
@@ -55,6 +55,7 @@ export default async function CalendarPage() {
         );
 
   let cleaners: Profile[] = [];
+  let cleanerRatings: Record<string, CleanerRating> = {};
   if (currentProfile.role === "admin") {
     const { data } = await supabase
       .from("profiles")
@@ -62,6 +63,25 @@ export default async function CalendarPage() {
       .eq("role", "cleaner")
       .order("name");
     cleaners = data ?? [];
+
+    const { data: ratedBookings } = await supabase
+      .from("bookings")
+      .select("assigned_cleaner_id, rating")
+      .not("rating", "is", null);
+    const totals = new Map<string, { total: number; count: number }>();
+    for (const b of ratedBookings ?? []) {
+      if (!b.assigned_cleaner_id || b.rating == null) continue;
+      const entry = totals.get(b.assigned_cleaner_id) ?? { total: 0, count: 0 };
+      entry.total += b.rating;
+      entry.count += 1;
+      totals.set(b.assigned_cleaner_id, entry);
+    }
+    cleanerRatings = Object.fromEntries(
+      Array.from(totals.entries()).map(([id, { total, count }]) => [
+        id,
+        { average: total / count, count },
+      ]),
+    );
   }
 
   return (
@@ -71,6 +91,7 @@ export default async function CalendarPage() {
       properties={properties as Property[]}
       initialBookings={(bookings ?? []) as Booking[]}
       cleaners={cleaners}
+      cleanerRatings={cleanerRatings}
     />
   );
 }

@@ -41,6 +41,19 @@ export async function deleteBooking(id: string) {
   revalidatePath("/calendar");
 }
 
+// Admin rates the cleaner's work on a booking. Covered by the same
+// `bookings_admin_write` RLS policy as everything else admin-only here.
+export async function rateBooking(id: string, rating: number, comment: string) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("bookings")
+    .update({ rating, rating_comment: comment })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+  revalidatePath("/calendar");
+  revalidatePath("/cleaners");
+}
+
 // Cleaner write path: goes through the `cleaner_update_booking` RPC, which
 // checks server-side that the booking is assigned to the caller before
 // touching anything, and only ever writes status/checklist.

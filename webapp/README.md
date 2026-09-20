@@ -118,9 +118,37 @@ exactly the same as an OTA: just another URL.
   to collide. It's letter badges + color, not the actual OTA logos, since
   those are trademarked assets this app has no rights to reproduce.
 
-Still not built: nothing else from the brief remains — OTA integration and
-access instructions were the only two Phase 3 items, and both are covered
-above (OTA integration via the iCal mechanism rather than partner APIs).
+Everything from the build brief itself is covered — OTA integration and
+access instructions were the only two Phase 3 items, and both are above
+(OTA integration via the iCal mechanism rather than partner APIs).
+
+## Beyond the brief: cleaner marketplace (first slice)
+
+The original product spec (`docs/CleanCal_Platform_Specification.docx`)
+describes a much larger cleaner marketplace — browsing/hiring gig
+cleaners, ratings, background checks (Checkr), ID verification, dispute
+resolution. That's a second product's worth of scope; what's built so far
+is just the profile + ratings piece:
+
+- **`/profile`** (any signed-in user): edit your own name, phone, service
+  area, and bio. Deliberately can't touch your own `role` — that RPC
+  (`update_own_profile`) only ever writes the other four columns.
+- **`/cleaners`** (admin only): a read-only directory of every cleaner's
+  profile plus their average rating and rated-job count.
+- **Rating a cleaning**: once a booking's assigned and marked Complete,
+  the booking modal shows a 1-5 star + comment rater (admin only). Ratings
+  aren't a separate table — just two columns on `bookings` — so they're
+  already scoped to whoever can see that booking under existing RLS.
+- The "Assigned cleaner" dropdown in the booking modal shows each
+  cleaner's average rating next to their name, so assignment already
+  benefits from ratings without a separate browsing/job-board UI.
+
+**Not built**: an open job board (cleaners claiming unassigned jobs rather
+than an admin picking one), dispute resolution, background checks, and ID
+verification. The latter two specifically need a real account with a
+vetted third-party provider (Checkr for background checks; Stripe
+Identity or Persona for ID verification) before there's anything to
+integrate — same situation as the OTA "API" question earlier.
 
 ## Setup
 
@@ -134,9 +162,9 @@ tier is enough to start).
 In the Supabase dashboard, open **SQL Editor** and run, in order:
 `0001_init.sql`, `0002_photos_and_cleaner_scope.sql`,
 `0003_ical_sync_and_access_instructions.sql`, `0004_booking_platform_label.sql`,
-then `0005_booking_guests.sql` (all under `supabase/migrations/`).
-Optionally also run `supabase/seed.sql` to seed the same demo properties
-the prototype used.
+`0005_booking_guests.sql`, then `0006_cleaner_profiles_and_ratings.sql`
+(all under `supabase/migrations/`). Optionally also run `supabase/seed.sql`
+to seed the same demo properties the prototype used.
 
 (If you use the [Supabase CLI](https://supabase.com/docs/guides/cli)
 instead: `supabase link --project-ref <your-ref>` then
@@ -190,6 +218,8 @@ src/
     logout/               POST route that signs the user out
     calendar/            the protected calendar page + booking server actions
     properties/          admin-only iCal feeds + access instructions page
+    profile/              self-service name/bio/phone/service-area editor
+    cleaners/              admin-only cleaner directory + aggregate ratings
     api/cron/sync-ical/   optional Vercel Cron target (service-role sync)
   components/
     CalendarApp.tsx       topbar, view state, realtime subscription
@@ -197,6 +227,7 @@ src/
     YearView.tsx           Year mini-month grid
     BookingModal.tsx       new/edit booking form + role-gated fields
     PropertiesAdmin.tsx    per-property iCal feeds + access instructions UI
+    ProfileForm.tsx        self-service profile editor
   lib/
     supabase/              browser/server/service-role client factories
     calendar-utils.ts      date math ported from the prototype
@@ -212,5 +243,6 @@ supabase/
     0003_ical_sync_and_access_instructions.sql  ical_feeds table + access_instructions
     0004_booking_platform_label.sql             source badge data (Airbnb/Vrbo/etc.)
     0005_booking_guests.sql                     guest name(s) field
+    0006_cleaner_profiles_and_ratings.sql        profile fields + booking ratings
   seed.sql                                     optional demo properties
 ```

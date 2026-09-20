@@ -705,6 +705,27 @@ main {
   border-radius: 8px;
   padding: 12px;
 }
+.star-row {
+  display: flex;
+  gap: 4px;
+}
+.star-btn {
+  border: none;
+  background: none;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--line);
+  padding: 2px;
+}
+.star-btn.sel {
+  color: var(--amber);
+}
+.rating-summary {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--teal-deep);
+  white-space: nowrap;
+}
 .photo-strip {
   display: flex;
   flex-wrap: wrap;
