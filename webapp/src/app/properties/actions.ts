@@ -17,6 +17,18 @@ export async function createProperty(name: string) {
   revalidatePath("/calendar");
 }
 
+// Cascades in the database: deleting a property also deletes every
+// booking (and each booking's photos) on it -- see the `on delete
+// cascade` references in supabase/migrations/0001_init.sql. The
+// confirmation prompt lives in the UI (PropertiesAdmin.tsx), not here.
+export async function deleteProperty(propertyId: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("properties").delete().eq("id", propertyId);
+  if (error) throw new Error(error.message);
+  revalidatePath("/properties");
+  revalidatePath("/calendar");
+}
+
 export async function updateAccessInstructions(propertyId: string, text: string) {
   const supabase = await createClient();
   const { error } = await supabase

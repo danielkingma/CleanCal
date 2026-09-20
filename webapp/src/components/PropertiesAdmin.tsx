@@ -6,6 +6,7 @@ import {
   addIcalFeed,
   createProperty,
   deleteIcalFeed,
+  deleteProperty,
   syncAllFeeds,
   syncIcalFeed,
   updateAccessInstructions,
@@ -134,6 +135,23 @@ function PropertyCard({ property, feeds }: { property: Property; feeds: IcalFeed
 
   const [syncingFeedId, setSyncingFeedId] = useState<string | null>(null);
   const [deletingFeedId, setDeletingFeedId] = useState<string | null>(null);
+  const [deletingProperty, setDeletingProperty] = useState(false);
+  const [deletePropertyError, setDeletePropertyError] = useState<string | null>(null);
+
+  async function handleDeleteProperty() {
+    const confirmed = window.confirm(
+      `Delete "${property.name}"? This also permanently deletes every booking, photo, and calendar feed on this property. This can't be undone.`,
+    );
+    if (!confirmed) return;
+    setDeletePropertyError(null);
+    setDeletingProperty(true);
+    try {
+      await deleteProperty(property.id);
+    } catch (e) {
+      setDeletePropertyError(e instanceof Error ? e.message : "Couldn't delete property.");
+      setDeletingProperty(false);
+    }
+  }
 
   async function handleSaveInstructions() {
     setSavingInstructions(true);
@@ -182,7 +200,18 @@ function PropertyCard({ property, feeds }: { property: Property; feeds: IcalFeed
 
   return (
     <div className="property-card">
-      <h2 style={{ fontSize: 18, margin: "0 0 14px" }}>{property.name}</h2>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+        <h2 style={{ fontSize: 18, margin: 0 }}>{property.name}</h2>
+        <button
+          type="button"
+          className="btn btn-danger"
+          onClick={handleDeleteProperty}
+          disabled={deletingProperty}
+        >
+          {deletingProperty ? "Deleting…" : "Delete property"}
+        </button>
+      </div>
+      {deletePropertyError ? <div className="error-banner">{deletePropertyError}</div> : null}
 
       <div className="field">
         <label htmlFor={`instr-${property.id}`}>
