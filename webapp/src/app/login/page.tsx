@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { sendMagicLink, type MagicLinkState } from "./actions";
+import Logo from "@/components/Logo";
 
 const initialState: MagicLinkState = { status: "idle" };
 
@@ -12,6 +13,7 @@ export default function LoginPage() {
     <div className="auth-shell">
       <div className="auth-card">
         <div className="brand">
+          <Logo />
           Clean<span>Cal</span>
         </div>
         <p className="auth-sub">Sign in with a magic link sent to your email.</p>

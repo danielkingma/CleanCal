@@ -70,6 +70,9 @@ a {
 }
 .brand {
   font-size: 21px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
 }
 .brand span {
   color: var(--teal);

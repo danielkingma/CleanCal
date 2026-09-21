@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { updateOwnProfile } from "@/app/profile/actions";
+import Logo from "./Logo";
 import type { Profile } from "@/lib/types";
 
 export default function ProfileForm({ profile, email }: { profile: Profile; email: string }) {
@@ -32,6 +33,7 @@ export default function ProfileForm({ profile, email }: { profile: Profile; emai
     <div>
       <div className="topbar">
         <div className="brand">
+          <Logo />
           Clean<span>Cal</span>
         </div>
         <div style={{ color: "var(--muted)", fontSize: 14 }}>My Profile</div>

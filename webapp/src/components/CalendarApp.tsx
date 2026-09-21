@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import Logo from "./Logo";
 import Timeline from "./Timeline";
 import YearView from "./YearView";
 import BookingModal from "./BookingModal";
@@ -136,6 +137,7 @@ export default function CalendarApp({
     <div>
       <div className="topbar">
         <div className="brand">
+          <Logo />
           Clean<span>Cal</span>
         </div>
         <div className="nav-controls">

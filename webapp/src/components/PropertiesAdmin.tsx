@@ -11,6 +11,7 @@ import {
   syncIcalFeed,
   updateAccessInstructions,
 } from "@/app/properties/actions";
+import Logo from "./Logo";
 import type { IcalFeed, Property } from "@/lib/types";
 
 interface PropertiesAdminProps {
@@ -60,6 +61,7 @@ export default function PropertiesAdmin({ properties, feeds }: PropertiesAdminPr
     <div>
       <div className="topbar">
         <div className="brand">
+          <Logo />
           Clean<span>Cal</span>
         </div>
         <div style={{ color: "var(--muted)", fontSize: 14 }}>Properties</div>

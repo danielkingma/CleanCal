@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import Logo from "@/components/Logo";
 import type { Profile } from "@/lib/types";
 
 export default async function CleanersPage() {
@@ -38,6 +39,7 @@ export default async function CleanersPage() {
     <div>
       <div className="topbar">
         <div className="brand">
+          <Logo />
           Clean<span>Cal</span>
         </div>
         <div style={{ color: "var(--muted)", fontSize: 14 }}>Cleaners</div>
