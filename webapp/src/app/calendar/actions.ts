@@ -76,6 +76,38 @@ export async function releaseOpenBooking(id: string) {
   revalidatePath("/calendar");
 }
 
+// Post a message in a booking's dispute thread. Works for admin or the
+// assigned cleaner -- RLS (`dispute_messages_insert_admin` /
+// `dispute_messages_insert_assigned_cleaner`) decides which applies, and
+// a trigger stamps the real author name/role server-side regardless of
+// what's passed here. Any message reopens the thread if it was resolved.
+export async function postDisputeMessage(bookingId: string, body: string) {
+  if (!body.trim()) throw new Error("Message can't be empty.");
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not signed in.");
+  const { error } = await supabase
+    .from("dispute_messages")
+    .insert({ booking_id: bookingId, author_id: user.id, body: body.trim() });
+  if (error) throw new Error(error.message);
+  revalidatePath("/calendar");
+}
+
+// Admin marks a dispute resolved. A plain bookings update, covered by
+// the existing `bookings_admin_write` policy -- a non-admin calling this
+// just gets a permission error back from Supabase.
+export async function resolveDispute(bookingId: string) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("bookings")
+    .update({ dispute_status: "resolved" })
+    .eq("id", bookingId);
+  if (error) throw new Error(error.message);
+  revalidatePath("/calendar");
+}
+
 // Cleaner write path: goes through the `cleaner_update_booking` RPC, which
 // checks server-side that the booking is assigned to the caller before
 // touching anything, and only ever writes status/checklist.

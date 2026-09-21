@@ -51,6 +51,15 @@ export interface Checklist {
 }
 
 export type BookingSource = "manual" | "ical";
+export type DisputeStatus = "none" | "open" | "resolved";
+
+export interface DisputeMessage {
+  id: string;
+  author_name: string;
+  author_role: Role;
+  body: string;
+  created_at: string;
+}
 
 export interface Booking {
   id: string;
@@ -69,4 +78,5 @@ export interface Booking {
   platform_label?: string | null;
   rating?: number | null;
   rating_comment?: string;
+  dispute_status: DisputeStatus;
 }

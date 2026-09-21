@@ -415,6 +415,24 @@ main {
   z-index: 2;
   line-height: 1;
 }
+.dispute-marker {
+  position: absolute;
+  bottom: -5px;
+  right: -5px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--blue);
+  color: white;
+  font-size: 9px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--white);
+  z-index: 2;
+  line-height: 1;
+}
 
 /* ---- Booking source (platform) indicators ---- */
 .platform-stripe {
@@ -728,6 +746,71 @@ main {
   font-weight: 600;
   color: var(--teal-deep);
   white-space: nowrap;
+}
+.dispute-pill {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 2px 9px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.dispute-pill.open {
+  background: rgba(46, 110, 158, 0.14);
+  color: var(--blue);
+}
+.dispute-pill.resolved {
+  background: rgba(20, 63, 56, 0.12);
+  color: var(--teal-deep);
+}
+.dispute-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 220px;
+  overflow-y: auto;
+  margin-bottom: 4px;
+}
+.dispute-msg {
+  background: var(--paper-2);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+.dispute-msg-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.dispute-msg-author {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.dispute-role-pill {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  border-radius: 999px;
+  padding: 1px 7px;
+  background: var(--line);
+  color: var(--muted);
+}
+.dispute-role-pill.admin {
+  background: rgba(20, 63, 56, 0.15);
+  color: var(--teal-deep);
+}
+.dispute-msg-time {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--muted);
+}
+.dispute-msg-body {
+  font-size: 13px;
+  color: var(--ink);
+  white-space: pre-wrap;
 }
 .photo-strip {
   display: flex;

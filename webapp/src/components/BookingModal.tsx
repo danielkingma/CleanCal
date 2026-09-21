@@ -5,8 +5,10 @@ import {
   claimOpenBooking,
   createBooking,
   deleteBooking,
+  postDisputeMessage,
   rateBooking,
   releaseOpenBooking,
+  resolveDispute,
   updateBookingAdmin,
   updateBookingCleaner,
   type BookingInput,
@@ -14,7 +16,16 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { CHECKLIST_ITEMS, addDays, daysBetween, fromISO, isoDate } from "@/lib/calendar-utils";
 import { getPlatformBadge } from "@/lib/platform-badge";
-import type { Booking, BookingStatus, Checklist, CleanerRating, Profile, Property, Role } from "@/lib/types";
+import type {
+  Booking,
+  BookingStatus,
+  Checklist,
+  CleanerRating,
+  DisputeMessage,
+  Profile,
+  Property,
+  Role,
+} from "@/lib/types";
 
 const PHOTOS_BUCKET = "booking-photos";
 
@@ -138,6 +149,73 @@ export default function BookingModal({
   const [photosLoading, setPhotosLoading] = useState(mode === "edit");
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const canSeeDispute = mode === "edit" && !!booking?.assigned_cleaner_id && (isAdmin || isAssignedCleaner);
+  const [disputeMessages, setDisputeMessages] = useState<DisputeMessage[]>([]);
+  const [disputeLoading, setDisputeLoading] = useState(canSeeDispute);
+  const [newMessage, setNewMessage] = useState("");
+  const [postingMessage, setPostingMessage] = useState(false);
+  const [resolving, setResolving] = useState(false);
+
+  useEffect(() => {
+    if (!canSeeDispute || !booking) return;
+    let cancelled = false;
+    const supabase = createClient();
+
+    (async () => {
+      const { data } = await supabase
+        .from("dispute_messages")
+        .select("id, author_name, author_role, body, created_at")
+        .eq("booking_id", booking.id)
+        .order("created_at");
+      if (!cancelled) {
+        setDisputeMessages((data as DisputeMessage[] | null) ?? []);
+        setDisputeLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canSeeDispute, booking?.id]);
+
+  async function handlePostMessage() {
+    if (!booking || !newMessage.trim()) return;
+    setPostingMessage(true);
+    setError(null);
+    try {
+      await postDisputeMessage(booking.id, newMessage);
+      setDisputeMessages((prev) => [
+        ...prev,
+        {
+          id: `local-${Date.now()}`,
+          author_name: "You",
+          author_role: role,
+          body: newMessage.trim(),
+          created_at: new Date().toISOString(),
+        },
+      ]);
+      setNewMessage("");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn't post message.");
+    } finally {
+      setPostingMessage(false);
+    }
+  }
+
+  async function handleResolveDispute() {
+    if (!booking) return;
+    setResolving(true);
+    setError(null);
+    try {
+      await resolveDispute(booking.id);
+      onDone();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn't resolve dispute.");
+      setResolving(false);
+    }
+  }
 
   useEffect(() => {
     if (mode !== "edit" || !booking) return;
@@ -606,6 +684,69 @@ export default function BookingModal({
                 {savingRating ? "Saving…" : "Save rating"}
               </button>
               {ratingSaved ? <span style={{ fontSize: 12.5, color: "var(--teal-deep)" }}>Saved</span> : null}
+            </div>
+          </div>
+        ) : null}
+
+        {canSeeDispute ? (
+          <div className="clean-section">
+            <h3 style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              Dispute
+              {booking?.dispute_status && booking.dispute_status !== "none" ? (
+                <span className={`dispute-pill ${booking.dispute_status}`}>
+                  {booking.dispute_status === "open" ? "Open" : "Resolved"}
+                </span>
+              ) : null}
+            </h3>
+
+            {disputeLoading ? (
+              <p className="photo-note">Loading messages…</p>
+            ) : (
+              <div className="dispute-thread">
+                {disputeMessages.length === 0 ? (
+                  <p className="photo-note">No messages yet — post one to flag an issue.</p>
+                ) : (
+                  disputeMessages.map((m) => (
+                    <div className="dispute-msg" key={m.id}>
+                      <div className="dispute-msg-head">
+                        <span className="dispute-msg-author">{m.author_name}</span>
+                        <span className={`dispute-role-pill ${m.author_role}`}>{m.author_role}</span>
+                        <span className="dispute-msg-time">
+                          {new Date(m.created_at).toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="dispute-msg-body">{m.body}</div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+
+            <textarea
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              placeholder="Describe the issue, or reply to the thread"
+              style={{ marginTop: 10 }}
+            />
+            <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 10 }}>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={handlePostMessage}
+                disabled={postingMessage || !newMessage.trim()}
+              >
+                {postingMessage ? "Posting…" : "Post"}
+              </button>
+              {isAdmin && booking?.dispute_status === "open" ? (
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={handleResolveDispute}
+                  disabled={resolving}
+                >
+                  {resolving ? "Resolving…" : "Mark resolved"}
+                </button>
+              ) : null}
             </div>
           </div>
         ) : null}

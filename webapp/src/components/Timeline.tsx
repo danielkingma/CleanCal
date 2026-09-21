@@ -175,6 +175,11 @@ export default function Timeline({
                           !
                         </span>
                       ) : null}
+                      {b.dispute_status === "open" ? (
+                        <span className="dispute-marker" title="Open dispute">
+                          !
+                        </span>
+                      ) : null}
                       {label}
                     </div>
                   );

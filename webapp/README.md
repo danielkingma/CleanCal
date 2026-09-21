@@ -165,11 +165,39 @@ enforced in RLS, not just the query): they now see their own assignments
 *plus* any open, unclaimed job across every property, but never another
 cleaner's specific assignment.
 
-**Not built**: dispute resolution, background checks, and ID
-verification. The latter two specifically need a real account with a
-vetted third-party provider (Checkr for background checks; Stripe
-Identity or Persona for ID verification) before there's anything to
-integrate — same situation as the OTA "API" question earlier.
+## Dispute resolution (slice 3)
+
+A lightweight comment thread on a booking, for a cleaner or admin to
+flag an issue (property condition, payment disagreement, whatever) for
+an admin to resolve:
+
+- Shows up in the booking modal for admin, or the cleaner it's assigned
+  to — nobody else. Backed by a `dispute_messages` table rather than
+  free-text on the booking itself, so it's an actual back-and-forth
+  thread, not a single field either side overwrites.
+- `bookings.dispute_status` (`none` / `open` / `resolved`) drives a
+  small pill in the modal and a blue "!" badge on the calendar bar so an
+  open dispute is visible without opening every booking.
+- Posting a message — by either side — always sets status back to
+  `open`, including reopening one an admin had marked resolved. That
+  transition runs in a Postgres trigger (`bump_dispute_status`), not
+  application code, so it fires the same way regardless of who's
+  posting; a cleaner has no generic UPDATE access to `bookings`, so this
+  couldn't work as a plain client-side "insert then update" without it.
+- Each message's author name and role are stamped server-side from the
+  real `profiles` row at insert time (another trigger,
+  `stamp_dispute_message_author`) rather than trusted from the client,
+  so nobody can post a message under a different name or role.
+- "Mark resolved" is admin-only, enforced the same way as every other
+  admin-only write here: a plain `bookings` update covered by the
+  existing `bookings_admin_write` RLS policy, nothing new needed for it.
+
+**Not built**: background checks and ID verification. Both need a real
+account with a vetted third-party provider (Checkr for background
+checks; Stripe Identity or Persona for ID verification) before there's
+anything to integrate — same situation as the OTA "API" question
+earlier. That's everything from the ordered marketplace list except
+those two.
 
 ## Setup
 
@@ -183,10 +211,10 @@ tier is enough to start).
 In the Supabase dashboard, open **SQL Editor** and run, in order:
 `0001_init.sql`, `0002_photos_and_cleaner_scope.sql`,
 `0003_ical_sync_and_access_instructions.sql`, `0004_booking_platform_label.sql`,
-`0005_booking_guests.sql`, `0006_cleaner_profiles_and_ratings.sql`, then
-`0007_open_job_board.sql` (all under `supabase/migrations/`). Optionally
-also run `supabase/seed.sql` to seed the same demo properties the
-prototype used.
+`0005_booking_guests.sql`, `0006_cleaner_profiles_and_ratings.sql`,
+`0007_open_job_board.sql`, then `0008_dispute_resolution.sql` (all under
+`supabase/migrations/`). Optionally also run `supabase/seed.sql` to seed
+the same demo properties the prototype used.
 
 (If you use the [Supabase CLI](https://supabase.com/docs/guides/cli)
 instead: `supabase link --project-ref <your-ref>` then
@@ -267,5 +295,6 @@ supabase/
     0005_booking_guests.sql                     guest name(s) field
     0006_cleaner_profiles_and_ratings.sql        profile fields + booking ratings
     0007_open_job_board.sql                      is_open_job + claim/release RPCs
+    0008_dispute_resolution.sql                  dispute_messages + status triggers
   seed.sql                                     optional demo properties
 ```
