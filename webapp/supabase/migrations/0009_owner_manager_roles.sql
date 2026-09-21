@@ -4,11 +4,14 @@
 -- line goes once it exists), never role changes, never deleting a
 -- property.
 
-update public.profiles set role = 'owner' where role = 'admin';
-
+-- Widen the constraint before the data migration below -- otherwise the
+-- UPDATE to 'owner' collides with the still-active old constraint, which
+-- only allowed 'admin'/'cleaner'.
 alter table public.profiles drop constraint if exists profiles_role_check;
 alter table public.profiles add constraint profiles_role_check
   check (role in ('owner', 'manager', 'cleaner'));
+
+update public.profiles set role = 'owner' where role = 'admin';
 
 -- is_admin() is kept as the function name -- it's referenced by every
 -- existing "admin-only" RLS policy across prior migrations (bookings,
