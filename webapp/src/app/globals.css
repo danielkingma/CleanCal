@@ -132,6 +132,15 @@ a {
   color: var(--ink);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
+.year-property-select {
+  border: 1px solid var(--line);
+  background: var(--white);
+  border-radius: 7px;
+  padding: 6px 10px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink);
+}
 .new-btn {
   background: var(--teal-deep);
   color: var(--white);
@@ -538,6 +547,97 @@ main {
   width: 3.5px;
   height: 3.5px;
   border-radius: 50%;
+}
+
+/* ---- Year view, scoped to one property ---- */
+.py-year-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+.py-month {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--white);
+  padding: 12px;
+}
+.py-month-title {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 8px;
+  text-align: center;
+}
+.py-weekday-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  font-size: 10px;
+  color: var(--muted);
+  text-align: center;
+  margin-bottom: 4px;
+}
+.py-week {
+  margin-bottom: 3px;
+}
+.py-day-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+}
+.py-day-cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10.5px;
+  color: var(--ink);
+  background: none;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.py-day-cell:hover {
+  background: var(--paper-2);
+}
+.py-day-cell.other-month {
+  opacity: 0.25;
+}
+.py-day-cell.is-today {
+  background: var(--coral);
+  color: white;
+  font-weight: 600;
+}
+.py-bar-stack {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin-top: 2px;
+}
+.py-bar {
+  grid-row: 1;
+  height: 16px;
+  border: none;
+  color: var(--white);
+  font-size: 9.5px;
+  font-weight: 600;
+  padding: 0 4px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-align: left;
+  cursor: pointer;
+}
+.py-bar.round-left {
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+.py-bar.round-right {
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+.py-bar.open-job {
+  outline: 1.5px dashed var(--teal-deep);
+  outline-offset: -1.5px;
+  font-style: italic;
 }
 
 /* ---- Modal ---- */
@@ -1045,6 +1145,9 @@ main {
 @media (max-width: 900px) {
   .year-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+  .py-year-grid {
+    grid-template-columns: 1fr;
   }
   main {
     padding: 16px;

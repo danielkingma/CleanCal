@@ -253,6 +253,30 @@ through:
   `regenerate_ical_export_token()` RPC can change it (checks `is_admin()`
   itself; there's no update policy on the table at all).
 
+## Year view, scoped to a single property (slice 6)
+
+The Year tab now has a property picker next to it. With no property
+picked it's unchanged (the small dot-summary grid across every
+property). Picking one switches to a full month-by-month grid for that
+property only — 12 real calendars, guest-name bars spanning each stay's
+actual check-in/checkout, colored by source the same way Month/Week are
+(`getPlatformBadge`) — modeled on the per-listing calendar view OTAs
+like Airbnb show a host, so a single property's whole year is readable
+without the noise of every other property's bookings on top of it.
+
+- Nightly pricing isn't part of this: an OTA's own calendar-sync feed
+  never includes price (it's stripped before export), so there's no data
+  source this could pull from — showing it would mean adding manual
+  price entry, a step toward the financials/income feature Manager is
+  meant not to see, and out of scope here.
+- A stay that crosses a week row is drawn as one bar per row, clipped to
+  that row's 7 days, with rounded corners only on the edge that's the
+  real check-in or checkout — so it reads as one continuous booking
+  across the row break rather than two separate ones.
+- Clicking a guest bar opens that booking for editing, same modal as
+  Month/Week. Clicking a bare day jumps to Month view on that date, same
+  as the all-properties Year view already did.
+
 ## Backlog
 
 Waiting on something outside this repo before there's anything to build:
@@ -345,7 +369,8 @@ src/
   components/
     CalendarApp.tsx       topbar, view state, realtime subscription
     Timeline.tsx           Month/Week property-row rendering
-    YearView.tsx           Year mini-month grid
+    YearView.tsx           Year mini-month grid (all properties)
+    PropertyYearView.tsx   Year full-grid view, scoped to one property
     BookingModal.tsx       new/edit booking form + role-gated fields
     PropertiesAdmin.tsx    per-property iCal feeds + access instructions UI
     ProfileForm.tsx        self-service profile editor

@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import Logo from "./Logo";
 import Timeline from "./Timeline";
 import YearView from "./YearView";
+import PropertyYearView from "./PropertyYearView";
 import BookingModal from "./BookingModal";
 import {
   DAY_W_MONTH,
@@ -46,6 +47,7 @@ export default function CalendarApp({
 }: CalendarAppProps) {
   const router = useRouter();
   const [view, setView] = useState<View>("month");
+  const [yearPropertyId, setYearPropertyId] = useState("");
   const [cursor, setCursor] = useState(() => new Date());
   const [bookings, setBookings] = useState<Booking[]>(initialBookings);
   const [modal, setModal] = useState<ModalState | null>(null);
@@ -163,6 +165,20 @@ export default function CalendarApp({
             </button>
           ))}
         </div>
+        {view === "year" ? (
+          <select
+            className="year-property-select"
+            value={yearPropertyId}
+            onChange={(e) => setYearPropertyId(e.target.value)}
+          >
+            <option value="">All properties</option>
+            {properties.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+        ) : null}
         <div className="user-badge">
           <span className="role-pill">{currentProfile.role}</span>
           <span>{currentUserEmail}</span>
@@ -216,18 +232,30 @@ export default function CalendarApp({
         </div>
 
         {view === "year" ? (
-          <YearView
-            year={cursor.getFullYear()}
-            bookings={bookings}
-            onSelectMonth={(m) => {
-              setCursor(new Date(cursor.getFullYear(), m, 1));
-              setView("month");
-            }}
-            onSelectDate={(d) => {
-              setCursor(fromISO(d));
-              setView("month");
-            }}
-          />
+          yearPropertyId ? (
+            <PropertyYearView
+              year={cursor.getFullYear()}
+              bookings={bookings.filter((b) => b.property_id === yearPropertyId)}
+              onSelectBooking={(booking) => setModal({ mode: "edit", booking })}
+              onSelectDate={(d) => {
+                setCursor(fromISO(d));
+                setView("month");
+              }}
+            />
+          ) : (
+            <YearView
+              year={cursor.getFullYear()}
+              bookings={bookings}
+              onSelectMonth={(m) => {
+                setCursor(new Date(cursor.getFullYear(), m, 1));
+                setView("month");
+              }}
+              onSelectDate={(d) => {
+                setCursor(fromISO(d));
+                setView("month");
+              }}
+            />
+          )
         ) : (
           <Timeline
             days={days}
