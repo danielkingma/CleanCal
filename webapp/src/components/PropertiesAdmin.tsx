@@ -7,6 +7,7 @@ import {
   createProperty,
   deleteIcalFeed,
   deleteProperty,
+  regenerateExportToken,
   syncAllFeeds,
   syncIcalFeed,
   updateAccessInstructions,
@@ -18,9 +19,17 @@ interface PropertiesAdminProps {
   properties: Property[];
   feeds: IcalFeed[];
   isOwner: boolean;
+  exportTokenByPropertyId: Record<string, string>;
+  exportBaseUrl: string;
 }
 
-export default function PropertiesAdmin({ properties, feeds, isOwner }: PropertiesAdminProps) {
+export default function PropertiesAdmin({
+  properties,
+  feeds,
+  isOwner,
+  exportTokenByPropertyId,
+  exportBaseUrl,
+}: PropertiesAdminProps) {
   const [syncingAll, setSyncingAll] = useState(false);
   const [syncAllMessage, setSyncAllMessage] = useState<string | null>(null);
 
@@ -120,6 +129,8 @@ export default function PropertiesAdmin({ properties, feeds, isOwner }: Properti
             property={property}
             feeds={feeds.filter((f) => f.property_id === property.id)}
             isOwner={isOwner}
+            exportToken={exportTokenByPropertyId[property.id] ?? ""}
+            exportBaseUrl={exportBaseUrl}
           />
         ))}
       </main>
@@ -131,10 +142,14 @@ function PropertyCard({
   property,
   feeds,
   isOwner,
+  exportToken,
+  exportBaseUrl,
 }: {
   property: Property;
   feeds: IcalFeed[];
   isOwner: boolean;
+  exportToken: string;
+  exportBaseUrl: string;
 }) {
   const [instructions, setInstructions] = useState(property.access_instructions ?? "");
   const [savingInstructions, setSavingInstructions] = useState(false);
@@ -149,6 +164,39 @@ function PropertyCard({
   const [deletingFeedId, setDeletingFeedId] = useState<string | null>(null);
   const [deletingProperty, setDeletingProperty] = useState(false);
   const [deletePropertyError, setDeletePropertyError] = useState<string | null>(null);
+
+  const [currentExportToken, setCurrentExportToken] = useState(exportToken);
+  const [copied, setCopied] = useState(false);
+  const [regenerating, setRegenerating] = useState(false);
+  const [regenerateError, setRegenerateError] = useState<string | null>(null);
+  const exportUrl = `${exportBaseUrl}/${currentExportToken}`;
+
+  async function handleCopyExportUrl() {
+    try {
+      await navigator.clipboard.writeText(exportUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // clipboard access can be blocked; the URL is still selectable in the input
+    }
+  }
+
+  async function handleRegenerateExportUrl() {
+    const confirmed = window.confirm(
+      "Regenerate this link? Any OTA using the current one will stop receiving updates until you paste in the new link.",
+    );
+    if (!confirmed) return;
+    setRegenerateError(null);
+    setRegenerating(true);
+    try {
+      const newToken = await regenerateExportToken(property.id);
+      setCurrentExportToken(newToken);
+    } catch (e) {
+      setRegenerateError(e instanceof Error ? e.message : "Couldn't regenerate link.");
+    } finally {
+      setRegenerating(false);
+    }
+  }
 
   async function handleDeleteProperty() {
     const confirmed = window.confirm(
@@ -328,6 +376,28 @@ function PropertyCard({
           </button>
         </div>
         {addError ? <div className="error-banner">{addError}</div> : null}
+      </div>
+
+      <div className="field">
+        <label>
+          Calendar export — paste this into Airbnb/Vrbo/Booking.com&apos;s &quot;connect to another
+          website&quot; step, so each platform sees bookings made on the others
+        </label>
+        <div className="add-feed-row">
+          <input type="text" readOnly value={exportUrl} onFocus={(e) => e.target.select()} />
+          <button type="button" className="btn btn-secondary" onClick={handleCopyExportUrl}>
+            {copied ? "Copied" : "Copy"}
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={handleRegenerateExportUrl}
+            disabled={regenerating}
+          >
+            {regenerating ? "Regenerating…" : "Regenerate link"}
+          </button>
+        </div>
+        {regenerateError ? <div className="error-banner">{regenerateError}</div> : null}
       </div>
     </div>
   );

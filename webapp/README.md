@@ -220,6 +220,39 @@ someone else without handing over everything:
   somehow called it directly would just get a permission error back.
   You can't change your own role, so you can't lock yourself out.
 
+## Calendar export — sync back out (slice 5)
+
+Phase 3's iCal sync only pulls dates *in*: CleanCal never told Airbnb
+about a booking that came from Vrbo, so the same nights could still get
+double-booked on a platform that doesn't know about it. This closes the
+loop — each property now also *exports* a feed of everything booked on
+it, source included, so pasting that one URL into every OTA's "connect
+to another website" step makes CleanCal the hub all of them sync
+through:
+
+- **`/api/ical/<token>`**: a public, unauthenticated `.ics` feed — an
+  OTA's calendar importer can't log in, so an unguessable per-property
+  token in the URL stands in for auth instead (same idea as
+  `CRON_SECRET` on the sync route). Lists every booking on that property
+  regardless of source (Airbnb-imported, Vrbo-imported, manual, open-job)
+  as a plain "Reserved" block; a booking flagged `ical_missing_since`
+  (the guest may have cancelled) is left out until an admin confirms it.
+- **Where to find it**: the "Calendar export" field on each property
+  card on `/properties`, with a Copy button. Paste it into Airbnb's
+  Calendar → Connect to another website (Step 2 in their UI — "Other
+  website link"), Vrbo, Booking.com, or a direct-booking site's own
+  "import calendar" field, same as you'd paste any other iCal link.
+- **Regenerate link**: rotates the token, so the old URL immediately
+  404s — for if a link leaked or you're moving a property between
+  accounts. You'd need to re-paste the new one into every OTA that had
+  the old one.
+- The token lives in its own `ical_export_tokens` table rather than a
+  plain column on `properties`, specifically so it's *not* covered by
+  the existing "any signed-in user can read properties" policy —
+  reading it requires `is_admin()` (staff), and only the
+  `regenerate_ical_export_token()` RPC can change it (checks `is_admin()`
+  itself; there's no update policy on the table at all).
+
 ## Backlog
 
 Waiting on something outside this repo before there's anything to build:
@@ -245,10 +278,10 @@ In the Supabase dashboard, open **SQL Editor** and run, in order:
 `0001_init.sql`, `0002_photos_and_cleaner_scope.sql`,
 `0003_ical_sync_and_access_instructions.sql`, `0004_booking_platform_label.sql`,
 `0005_booking_guests.sql`, `0006_cleaner_profiles_and_ratings.sql`,
-`0007_open_job_board.sql`, `0008_dispute_resolution.sql`, then
-`0009_owner_manager_roles.sql` (all under `supabase/migrations/`).
-Optionally also run `supabase/seed.sql` to seed the same demo properties
-the prototype used.
+`0007_open_job_board.sql`, `0008_dispute_resolution.sql`,
+`0009_owner_manager_roles.sql`, then `0010_ical_export.sql` (all under
+`supabase/migrations/`). Optionally also run `supabase/seed.sql` to seed
+the same demo properties the prototype used.
 
 (If you use the [Supabase CLI](https://supabase.com/docs/guides/cli)
 instead: `supabase link --project-ref <your-ref>` then
@@ -308,6 +341,7 @@ src/
     profile/              self-service name/bio/phone/service-area editor
     cleaners/              staff-only cleaner directory + Owner-only Team roles UI
     api/cron/sync-ical/   optional Vercel Cron target (service-role sync)
+    api/ical/[token]/     public per-property .ics export feed
   components/
     CalendarApp.tsx       topbar, view state, realtime subscription
     Timeline.tsx           Month/Week property-row rendering
@@ -321,6 +355,7 @@ src/
     calendar-utils.ts      date math ported from the prototype
     ical.ts                minimal VEVENT (iCal) parser
     ical-sync.ts           shared fetch + upsert logic, used by button & cron
+    ical-export.ts         builds the outbound .ics feed for api/ical/[token]
     platform-badge.ts      Airbnb/Vrbo/Booking.com/other badge color + letter
     types.ts               shared domain types
   proxy.ts                 auth guard (Next.js 16 renamed middleware -> proxy)
@@ -335,5 +370,6 @@ supabase/
     0007_open_job_board.sql                      is_open_job + claim/release RPCs
     0008_dispute_resolution.sql                  dispute_messages + status triggers
     0009_owner_manager_roles.sql                 owner/manager/cleaner roles + RLS split
+    0010_ical_export.sql                         per-property export tokens + regenerate RPC
   seed.sql                                     optional demo properties
 ```

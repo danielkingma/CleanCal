@@ -78,6 +78,20 @@ export async function syncIcalFeed(feedId: string) {
   revalidatePath("/calendar");
 }
 
+// Rotates a property's export token, invalidating whatever URL any OTA
+// currently has on file for it -- enforced by the `regenerate_ical_
+// export_token` RPC (0010_ical_export.sql), which checks is_admin()
+// itself rather than relying on a table policy.
+export async function regenerateExportToken(propertyId: string): Promise<string> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("regenerate_ical_export_token", {
+    p_property_id: propertyId,
+  });
+  if (error) throw new Error(error.message);
+  revalidatePath("/properties");
+  return data as string;
+}
+
 export async function syncAllFeeds() {
   const supabase = await createClient();
   const { data: feeds, error } = await supabase
