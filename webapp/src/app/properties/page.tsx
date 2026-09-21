@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import PropertiesAdmin from "@/components/PropertiesAdmin";
-import type { IcalFeed, Property } from "@/lib/types";
+import { isStaff, type IcalFeed, type Property } from "@/lib/types";
 
 export default async function PropertiesPage() {
   const supabase = await createClient();
@@ -16,7 +16,8 @@ export default async function PropertiesPage() {
     .select("role")
     .eq("id", user.id)
     .maybeSingle();
-  if (profile?.role !== "admin") redirect("/calendar");
+  if (!isStaff(profile?.role)) redirect("/calendar");
+  const isOwner = profile?.role === "owner";
 
   const { data: properties } = await supabase
     .from("properties")
@@ -32,6 +33,7 @@ export default async function PropertiesPage() {
     <PropertiesAdmin
       properties={(properties ?? []) as Property[]}
       feeds={(feeds ?? []) as IcalFeed[]}
+      isOwner={isOwner}
     />
   );
 }

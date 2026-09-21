@@ -2,7 +2,8 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import Logo from "@/components/Logo";
-import type { Profile } from "@/lib/types";
+import TeamRoles from "@/components/TeamRoles";
+import { isStaff, type Profile } from "@/lib/types";
 
 export default async function CleanersPage() {
   const supabase = await createClient();
@@ -13,13 +14,20 @@ export default async function CleanersPage() {
   if (!user) redirect("/login");
 
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-  if (profile?.role !== "admin") redirect("/calendar");
+  if (!isStaff(profile?.role)) redirect("/calendar");
+  const isOwner = profile?.role === "owner";
 
   const { data: cleaners } = await supabase
     .from("profiles")
     .select("id, name, bio, phone, service_area")
     .eq("role", "cleaner")
     .order("name");
+
+  let allProfiles: Profile[] = [];
+  if (isOwner) {
+    const { data } = await supabase.from("profiles").select("id, name, role").order("name");
+    allProfiles = data ?? [];
+  }
 
   const { data: ratedBookings } = await supabase
     .from("bookings")
@@ -51,6 +59,8 @@ export default async function CleanersPage() {
       </div>
 
       <main>
+        {isOwner ? <TeamRoles profiles={allProfiles} currentUserId={user.id} /> : null}
+
         {(cleaners ?? []).length === 0 ? (
           <p className="photo-note" style={{ maxWidth: 760 }}>
             No cleaners have signed up yet. Anyone who signs in gets the cleaner role by

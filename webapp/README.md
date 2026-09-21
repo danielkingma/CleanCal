@@ -195,6 +195,31 @@ an admin to resolve:
 That's everything from the ordered marketplace list except background
 checks and ID verification — see **Backlog** below.
 
+## Owner / Manager / Cleaner roles (slice 4)
+
+A third role, so an owner can hand day-to-day running of the account to
+someone else without handing over everything:
+
+- **Owner** (renamed from `admin` — same account, same access, existing
+  admins are migrated automatically). Everything a Manager can do, plus
+  the two things kept exclusive: changing anyone's role, and deleting a
+  property.
+- **Manager**: full operational access — properties, calendar feeds,
+  bookings, assigning/rating cleaners, resolving disputes, the works.
+  This is also where an income/financials feature would draw the line
+  once one exists, per the brief that prompted this.
+- **Cleaner**: unchanged.
+- `is_admin()` (used throughout the RLS policies from every earlier
+  migration) is redefined to mean "owner or manager," so the existing
+  policies extend to Manager automatically. A separate `is_owner()`
+  covers the two Owner-only cases via their own narrower policies
+  (`profiles_owner_write`, `properties_owner_delete`).
+- **Team roles**, on `/cleaners` (Owner only): every account with a role
+  dropdown next to it. Changing a role calls `updateUserRole`, which is
+  really just enforced by `profiles_owner_write` RLS — a Manager who
+  somehow called it directly would just get a permission error back.
+  You can't change your own role, so you can't lock yourself out.
+
 ## Backlog
 
 Waiting on something outside this repo before there's anything to build:
@@ -220,9 +245,10 @@ In the Supabase dashboard, open **SQL Editor** and run, in order:
 `0001_init.sql`, `0002_photos_and_cleaner_scope.sql`,
 `0003_ical_sync_and_access_instructions.sql`, `0004_booking_platform_label.sql`,
 `0005_booking_guests.sql`, `0006_cleaner_profiles_and_ratings.sql`,
-`0007_open_job_board.sql`, then `0008_dispute_resolution.sql` (all under
-`supabase/migrations/`). Optionally also run `supabase/seed.sql` to seed
-the same demo properties the prototype used.
+`0007_open_job_board.sql`, `0008_dispute_resolution.sql`, then
+`0009_owner_manager_roles.sql` (all under `supabase/migrations/`).
+Optionally also run `supabase/seed.sql` to seed the same demo properties
+the prototype used.
 
 (If you use the [Supabase CLI](https://supabase.com/docs/guides/cli)
 instead: `supabase link --project-ref <your-ref>` then
@@ -237,16 +263,19 @@ cp .env.local.example .env.local
 Fill in `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 from your project's **Settings → API** page.
 
-### 4. Bootstrap your first admin
+### 4. Bootstrap your first owner
 
 Every new sign-up defaults to the `cleaner` role (least privilege). To
-make yourself an admin, sign in once through the app, then in the SQL
+make yourself the owner, sign in once through the app, then in the SQL
 Editor run:
 
 ```sql
-update public.profiles set role = 'admin' where id =
+update public.profiles set role = 'owner' where id =
   (select id from auth.users where email = 'you@example.com');
 ```
+
+From there, promote anyone else to `owner`, `manager`, or back to
+`cleaner` from the Team roles section on `/cleaners`.
 
 ### 5. Run it
 
@@ -277,7 +306,7 @@ src/
     calendar/            the protected calendar page + booking server actions
     properties/          admin-only iCal feeds + access instructions page
     profile/              self-service name/bio/phone/service-area editor
-    cleaners/              admin-only cleaner directory + aggregate ratings
+    cleaners/              staff-only cleaner directory + Owner-only Team roles UI
     api/cron/sync-ical/   optional Vercel Cron target (service-role sync)
   components/
     CalendarApp.tsx       topbar, view state, realtime subscription
@@ -286,6 +315,7 @@ src/
     BookingModal.tsx       new/edit booking form + role-gated fields
     PropertiesAdmin.tsx    per-property iCal feeds + access instructions UI
     ProfileForm.tsx        self-service profile editor
+    TeamRoles.tsx           Owner-only role management table
   lib/
     supabase/              browser/server/service-role client factories
     calendar-utils.ts      date math ported from the prototype
@@ -304,5 +334,6 @@ supabase/
     0006_cleaner_profiles_and_ratings.sql        profile fields + booking ratings
     0007_open_job_board.sql                      is_open_job + claim/release RPCs
     0008_dispute_resolution.sql                  dispute_messages + status triggers
+    0009_owner_manager_roles.sql                 owner/manager/cleaner roles + RLS split
   seed.sql                                     optional demo properties
 ```

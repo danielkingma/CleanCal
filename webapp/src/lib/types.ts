@@ -1,4 +1,15 @@
-export type Role = "admin" | "cleaner";
+export type Role = "owner" | "manager" | "cleaner";
+
+// "Staff" = admin-equivalent operational access (matches the database's
+// is_admin() function, which now means "owner or manager"). Owner-only
+// actions (changing someone's role, deleting a property) check the role
+// directly instead.
+export function isStaff(role: Role | undefined): boolean {
+  return role === "owner" || role === "manager";
+}
+export function isOwner(role: Role | undefined): boolean {
+  return role === "owner";
+}
 
 export type BookingStatus = "to-clean" | "in-progress" | "complete";
 

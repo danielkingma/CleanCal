@@ -16,7 +16,7 @@ import {
   fromISO,
   isoDate,
 } from "@/lib/calendar-utils";
-import type { Booking, CleanerRating, Profile, Property } from "@/lib/types";
+import { isStaff, type Booking, type CleanerRating, type Profile, type Property } from "@/lib/types";
 
 interface CalendarAppProps {
   currentProfile: Profile;
@@ -120,7 +120,7 @@ export default function CalendarApp({
   }
 
   function openNewModal(propertyId?: string, dateIso?: string) {
-    if (currentProfile.role !== "admin") return;
+    if (!isStaff(currentProfile.role)) return;
     setModal({ mode: "new", presetPropertyId: propertyId, presetDate: dateIso });
   }
   function closeModal() {
@@ -131,7 +131,7 @@ export default function CalendarApp({
     router.refresh();
   }
 
-  const isAdmin = currentProfile.role === "admin";
+  const isStaffUser = isStaff(currentProfile.role);
 
   return (
     <div>
@@ -175,17 +175,17 @@ export default function CalendarApp({
             </button>
           </form>
         </div>
-        {isAdmin ? (
+        {isStaffUser ? (
           <Link href="/properties" className="today-btn">
             Properties
           </Link>
         ) : null}
-        {isAdmin ? (
+        {isStaffUser ? (
           <Link href="/cleaners" className="today-btn">
             Cleaners
           </Link>
         ) : null}
-        {isAdmin ? (
+        {isStaffUser ? (
           <button
             className="new-btn"
             onClick={() => openNewModal(properties[0]?.id, isoDate(cursor))}
@@ -237,7 +237,7 @@ export default function CalendarApp({
             bookings={bookings}
             onBarClick={(booking) => setModal({ mode: "edit", booking })}
             onTrackClick={(propertyId, dateIso) => openNewModal(propertyId, dateIso)}
-            canCreate={isAdmin}
+            canCreate={isStaffUser}
           />
         )}
       </main>

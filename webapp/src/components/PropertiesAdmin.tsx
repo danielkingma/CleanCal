@@ -17,9 +17,10 @@ import type { IcalFeed, Property } from "@/lib/types";
 interface PropertiesAdminProps {
   properties: Property[];
   feeds: IcalFeed[];
+  isOwner: boolean;
 }
 
-export default function PropertiesAdmin({ properties, feeds }: PropertiesAdminProps) {
+export default function PropertiesAdmin({ properties, feeds, isOwner }: PropertiesAdminProps) {
   const [syncingAll, setSyncingAll] = useState(false);
   const [syncAllMessage, setSyncAllMessage] = useState<string | null>(null);
 
@@ -118,6 +119,7 @@ export default function PropertiesAdmin({ properties, feeds }: PropertiesAdminPr
             key={property.id}
             property={property}
             feeds={feeds.filter((f) => f.property_id === property.id)}
+            isOwner={isOwner}
           />
         ))}
       </main>
@@ -125,7 +127,15 @@ export default function PropertiesAdmin({ properties, feeds }: PropertiesAdminPr
   );
 }
 
-function PropertyCard({ property, feeds }: { property: Property; feeds: IcalFeed[] }) {
+function PropertyCard({
+  property,
+  feeds,
+  isOwner,
+}: {
+  property: Property;
+  feeds: IcalFeed[];
+  isOwner: boolean;
+}) {
   const [instructions, setInstructions] = useState(property.access_instructions ?? "");
   const [savingInstructions, setSavingInstructions] = useState(false);
   const [instructionsSaved, setInstructionsSaved] = useState(false);
@@ -204,14 +214,16 @@ function PropertyCard({ property, feeds }: { property: Property; feeds: IcalFeed
     <div className="property-card">
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
         <h2 style={{ fontSize: 18, margin: 0 }}>{property.name}</h2>
-        <button
-          type="button"
-          className="btn btn-danger"
-          onClick={handleDeleteProperty}
-          disabled={deletingProperty}
-        >
-          {deletingProperty ? "Deleting…" : "Delete property"}
-        </button>
+        {isOwner ? (
+          <button
+            type="button"
+            className="btn btn-danger"
+            onClick={handleDeleteProperty}
+            disabled={deletingProperty}
+          >
+            {deletingProperty ? "Deleting…" : "Delete property"}
+          </button>
+        ) : null}
       </div>
       {deletePropertyError ? <div className="error-banner">{deletePropertyError}</div> : null}
 

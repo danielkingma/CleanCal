@@ -16,15 +16,16 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { CHECKLIST_ITEMS, addDays, daysBetween, fromISO, isoDate } from "@/lib/calendar-utils";
 import { getPlatformBadge } from "@/lib/platform-badge";
-import type {
-  Booking,
-  BookingStatus,
-  Checklist,
-  CleanerRating,
-  DisputeMessage,
-  Profile,
-  Property,
-  Role,
+import {
+  isStaff,
+  type Booking,
+  type BookingStatus,
+  type Checklist,
+  type CleanerRating,
+  type DisputeMessage,
+  type Profile,
+  type Property,
+  type Role,
 } from "@/lib/types";
 
 const PHOTOS_BUCKET = "booking-photos";
@@ -69,14 +70,14 @@ export default function BookingModal({
   onClose,
   onDone,
 }: BookingModalProps) {
-  const isAdmin = role === "admin";
+  const isStaffUser = isStaff(role);
   const isAssignedCleaner = role === "cleaner" && !!booking && booking.assigned_cleaner_id === currentUserId;
   const isUnclaimedOpenJob =
     role === "cleaner" && !!booking && booking.is_open_job && !booking.assigned_cleaner_id;
   const isClaimedFromOpen = role === "cleaner" && !!booking && booking.is_open_job && isAssignedCleaner;
-  const canEditCore = isAdmin;
-  const canEditCleaning = isAdmin || isAssignedCleaner;
-  const canSave = mode === "new" ? isAdmin : canEditCleaning;
+  const canEditCore = isStaffUser;
+  const canEditCleaning = isStaffUser || isAssignedCleaner;
+  const canSave = mode === "new" ? isStaffUser : canEditCleaning;
 
   const [propertyId, setPropertyId] = useState(
     booking?.property_id ?? presetPropertyId ?? properties[0]?.id ?? "",
@@ -150,7 +151,7 @@ export default function BookingModal({
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const canSeeDispute = mode === "edit" && !!booking?.assigned_cleaner_id && (isAdmin || isAssignedCleaner);
+  const canSeeDispute = mode === "edit" && !!booking?.assigned_cleaner_id && (isStaffUser || isAssignedCleaner);
   const [disputeMessages, setDisputeMessages] = useState<DisputeMessage[]>([]);
   const [disputeLoading, setDisputeLoading] = useState(canSeeDispute);
   const [newMessage, setNewMessage] = useState("");
@@ -324,7 +325,7 @@ export default function BookingModal({
     setError(null);
     setSaving(true);
     try {
-      if (isAdmin) {
+      if (isStaffUser) {
         const input: BookingInput = {
           property_id: propertyId,
           checkin_date: checkinDate,
@@ -466,7 +467,7 @@ export default function BookingModal({
           />
         </div>
 
-        {isAdmin ? (
+        {isStaffUser ? (
           <div className="field">
             <label>Assignment</label>
             <div className="segmented-row">
@@ -491,7 +492,7 @@ export default function BookingModal({
           </div>
         ) : null}
 
-        {isAdmin && !isOpenJob ? (
+        {isStaffUser && !isOpenJob ? (
           <div className="field">
             <label htmlFor="fCleaner">Assigned cleaner</label>
             <select
@@ -513,7 +514,7 @@ export default function BookingModal({
           </div>
         ) : null}
 
-        {isAdmin && isOpenJob ? (
+        {isStaffUser && isOpenJob ? (
           <div className="field">
             <p className="access-note">
               {booking?.assigned_cleaner_id
@@ -646,7 +647,7 @@ export default function BookingModal({
           </div>
         ) : null}
 
-        {mode === "edit" && isAdmin && booking?.assigned_cleaner_id && status === "complete" ? (
+        {mode === "edit" && isStaffUser && booking?.assigned_cleaner_id && status === "complete" ? (
           <div className="clean-section">
             <h3>Rate this cleaning</h3>
             <div className="star-row">
@@ -737,7 +738,7 @@ export default function BookingModal({
               >
                 {postingMessage ? "Posting…" : "Post"}
               </button>
-              {isAdmin && booking?.dispute_status === "open" ? (
+              {isStaffUser && booking?.dispute_status === "open" ? (
                 <button
                   type="button"
                   className="btn btn-secondary"
@@ -752,7 +753,7 @@ export default function BookingModal({
         ) : null}
 
         <div className="modal-actions">
-          {mode === "edit" && isAdmin ? (
+          {mode === "edit" && isStaffUser ? (
             <button type="button" className="btn btn-danger" disabled={saving} onClick={handleDelete}>
               Delete
             </button>

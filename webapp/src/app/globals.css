@@ -798,7 +798,8 @@ main {
   background: var(--line);
   color: var(--muted);
 }
-.dispute-role-pill.admin {
+.dispute-role-pill.owner,
+.dispute-role-pill.manager {
   background: rgba(20, 63, 56, 0.15);
   color: var(--teal-deep);
 }

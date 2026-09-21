@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import CalendarApp from "@/components/CalendarApp";
-import type { Booking, CleanerRating, Profile, Property } from "@/lib/types";
+import { isStaff, type Booking, type CleanerRating, type Profile, type Property } from "@/lib/types";
 
 export default async function CalendarPage() {
   const supabase = await createClient();
@@ -43,7 +43,7 @@ export default async function CalendarPage() {
       "id, property_id, checkin_date, nights, status, notes, guests, checklist, assigned_cleaner_id, is_open_job, source, external_uid, ical_missing_since, platform_label, rating, rating_comment, dispute_status",
     )
     .order("checkin_date");
-  if (currentProfile.role !== "admin") {
+  if (!isStaff(currentProfile.role)) {
     bookingsQuery = bookingsQuery.or(
       `assigned_cleaner_id.eq.${user.id},and(is_open_job.eq.true,assigned_cleaner_id.is.null)`,
     );
@@ -51,7 +51,7 @@ export default async function CalendarPage() {
   const { data: bookings } = await bookingsQuery;
 
   const properties =
-    currentProfile.role === "admin"
+    isStaff(currentProfile.role)
       ? (allProperties ?? [])
       : (allProperties ?? []).filter((p) =>
           (bookings ?? []).some((b) => b.property_id === p.id),
@@ -59,7 +59,7 @@ export default async function CalendarPage() {
 
   let cleaners: Profile[] = [];
   let cleanerRatings: Record<string, CleanerRating> = {};
-  if (currentProfile.role === "admin") {
+  if (isStaff(currentProfile.role)) {
     const { data } = await supabase
       .from("profiles")
       .select("id, name, role")
