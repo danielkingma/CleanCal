@@ -32,18 +32,21 @@ export default async function CalendarPage() {
     .order("name");
 
   // Admins see every booking; cleaners are scoped to their own assignments
-  // (also enforced in Postgres -- see `bookings_select_own_or_admin` in
-  // supabase/migrations/0002_photos_and_cleaner_scope.sql -- this filter
-  // is just so the calendar doesn't render a bunch of rows a cleaner has
-  // nothing to do on).
+  // plus any open, unclaimed job (also enforced in Postgres -- see
+  // `bookings_select_own_open_or_admin` in
+  // supabase/migrations/0007_open_job_board.sql -- this filter is just so
+  // the calendar doesn't render a bunch of rows a cleaner has nothing to
+  // do on).
   let bookingsQuery = supabase
     .from("bookings")
     .select(
-      "id, property_id, checkin_date, nights, status, notes, guests, checklist, assigned_cleaner_id, source, external_uid, ical_missing_since, platform_label, rating, rating_comment",
+      "id, property_id, checkin_date, nights, status, notes, guests, checklist, assigned_cleaner_id, is_open_job, source, external_uid, ical_missing_since, platform_label, rating, rating_comment",
     )
     .order("checkin_date");
   if (currentProfile.role !== "admin") {
-    bookingsQuery = bookingsQuery.eq("assigned_cleaner_id", user.id);
+    bookingsQuery = bookingsQuery.or(
+      `assigned_cleaner_id.eq.${user.id},and(is_open_job.eq.true,assigned_cleaner_id.is.null)`,
+    );
   }
   const { data: bookings } = await bookingsQuery;
 

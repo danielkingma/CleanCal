@@ -62,6 +62,7 @@ export interface Booking {
   guests: string;
   checklist: Checklist;
   assigned_cleaner_id: string | null;
+  is_open_job: boolean;
   source?: BookingSource;
   external_uid?: string | null;
   ical_missing_since?: string | null;

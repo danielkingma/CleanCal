@@ -117,15 +117,23 @@ export default function Timeline({
                   const endUnit = isEnd ? endIdx + CHECKOUT_FRAC : endIdx + 1;
                   const left = startUnit * dayW;
                   const width = (endUnit - startUnit) * dayW;
+                  const isOpenUnclaimed = b.is_open_job && !b.assigned_cleaner_id;
                   const cls = ["booking-bar", b.status];
                   if (isStart) cls.push("start");
                   if (isEnd) cls.push("end");
                   if (b.ical_missing_since) cls.push("ical-stale");
-                  const label = weekly
-                    ? `${STATUS_LABEL[b.status]} · ${b.nights}n`
-                    : isStart
-                      ? STATUS_LABEL[b.status]
-                      : "";
+                  if (isOpenUnclaimed) cls.push("open-job");
+                  const label = isOpenUnclaimed
+                    ? weekly
+                      ? "Open — tap to claim"
+                      : isStart
+                        ? "Open"
+                        : ""
+                    : weekly
+                      ? `${STATUS_LABEL[b.status]} · ${b.nights}n`
+                      : isStart
+                        ? STATUS_LABEL[b.status]
+                        : "";
                   const platform = getPlatformBadge(b.platform_label);
 
                   return (
@@ -138,7 +146,13 @@ export default function Timeline({
                         top: weekly ? 8 : 6,
                         height: rowH - (weekly ? 16 : 12),
                       }}
-                      title={b.ical_missing_since ? "No longer in source calendar — may be cancelled" : undefined}
+                      title={
+                        b.ical_missing_since
+                          ? "No longer in source calendar — may be cancelled"
+                          : isOpenUnclaimed
+                            ? "Open job — click to claim"
+                            : undefined
+                      }
                       onClick={(e) => {
                         e.stopPropagation();
                         onBarClick(b);

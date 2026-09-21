@@ -143,8 +143,29 @@ is just the profile + ratings piece:
   cleaner's average rating next to their name, so assignment already
   benefits from ratings without a separate browsing/job-board UI.
 
-**Not built**: an open job board (cleaners claiming unassigned jobs rather
-than an admin picking one), dispute resolution, background checks, and ID
+## Open job board (slice 2)
+
+Per-booking, an admin now chooses between the two halves of the "hybrid"
+model from the original spec, side by side rather than picking one:
+
+- **Reserved** (the original behavior): pick a specific cleaner from the
+  dropdown, same as before.
+- **Open — any cleaner can claim**: the booking goes into a shared,
+  unclaimed pool. Any cleaner sees it (a dashed teal outline and an
+  "Open" label on the calendar bar, on top of their own assignments) and
+  can claim it from the booking modal. First to claim it wins — claiming
+  is one atomic `UPDATE ... WHERE assigned_cleaner_id IS NULL` in
+  Postgres (`claim_open_booking`), so two cleaners racing for the same
+  job can't both succeed. A cleaner who can no longer do a job they
+  claimed can release it back into the pool (`release_open_booking`) for
+  someone else to pick up.
+
+Cleaners' visibility into `bookings` was broadened accordingly (still
+enforced in RLS, not just the query): they now see their own assignments
+*plus* any open, unclaimed job across every property, but never another
+cleaner's specific assignment.
+
+**Not built**: dispute resolution, background checks, and ID
 verification. The latter two specifically need a real account with a
 vetted third-party provider (Checkr for background checks; Stripe
 Identity or Persona for ID verification) before there's anything to
@@ -162,9 +183,10 @@ tier is enough to start).
 In the Supabase dashboard, open **SQL Editor** and run, in order:
 `0001_init.sql`, `0002_photos_and_cleaner_scope.sql`,
 `0003_ical_sync_and_access_instructions.sql`, `0004_booking_platform_label.sql`,
-`0005_booking_guests.sql`, then `0006_cleaner_profiles_and_ratings.sql`
-(all under `supabase/migrations/`). Optionally also run `supabase/seed.sql`
-to seed the same demo properties the prototype used.
+`0005_booking_guests.sql`, `0006_cleaner_profiles_and_ratings.sql`, then
+`0007_open_job_board.sql` (all under `supabase/migrations/`). Optionally
+also run `supabase/seed.sql` to seed the same demo properties the
+prototype used.
 
 (If you use the [Supabase CLI](https://supabase.com/docs/guides/cli)
 instead: `supabase link --project-ref <your-ref>` then
@@ -244,5 +266,6 @@ supabase/
     0004_booking_platform_label.sql             source badge data (Airbnb/Vrbo/etc.)
     0005_booking_guests.sql                     guest name(s) field
     0006_cleaner_profiles_and_ratings.sql        profile fields + booking ratings
+    0007_open_job_board.sql                      is_open_job + claim/release RPCs
   seed.sql                                     optional demo properties
 ```

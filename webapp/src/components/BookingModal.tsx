@@ -2,9 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
+  claimOpenBooking,
   createBooking,
   deleteBooking,
   rateBooking,
+  releaseOpenBooking,
   updateBookingAdmin,
   updateBookingCleaner,
   type BookingInput,
@@ -58,6 +60,9 @@ export default function BookingModal({
 }: BookingModalProps) {
   const isAdmin = role === "admin";
   const isAssignedCleaner = role === "cleaner" && !!booking && booking.assigned_cleaner_id === currentUserId;
+  const isUnclaimedOpenJob =
+    role === "cleaner" && !!booking && booking.is_open_job && !booking.assigned_cleaner_id;
+  const isClaimedFromOpen = role === "cleaner" && !!booking && booking.is_open_job && isAssignedCleaner;
   const canEditCore = isAdmin;
   const canEditCleaning = isAdmin || isAssignedCleaner;
   const canSave = mode === "new" ? isAdmin : canEditCleaning;
@@ -79,8 +84,36 @@ export default function BookingModal({
   const [assignedCleanerId, setAssignedCleanerId] = useState<string | null>(
     booking?.assigned_cleaner_id ?? null,
   );
+  const [isOpenJob, setIsOpenJob] = useState(booking?.is_open_job ?? false);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [claiming, setClaiming] = useState(false);
+
+  async function handleClaim() {
+    if (!booking) return;
+    setError(null);
+    setClaiming(true);
+    try {
+      await claimOpenBooking(booking.id);
+      onDone();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn't claim this job.");
+      setClaiming(false);
+    }
+  }
+
+  async function handleRelease() {
+    if (!booking) return;
+    setError(null);
+    setClaiming(true);
+    try {
+      await releaseOpenBooking(booking.id);
+      onDone();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn't release this job.");
+      setClaiming(false);
+    }
+  }
 
   const [rating, setRating] = useState<number>(booking?.rating ?? 0);
   const [ratingComment, setRatingComment] = useState(booking?.rating_comment ?? "");
@@ -223,6 +256,7 @@ export default function BookingModal({
           guests,
           checklist,
           assigned_cleaner_id: assignedCleanerId,
+          is_open_job: isOpenJob,
         };
         if (mode === "new") {
           await createBooking(input);
@@ -270,8 +304,11 @@ export default function BookingModal({
         </h2>
 
         {error ? <div className="error-banner">{error}</div> : null}
-        {mode === "edit" && role === "cleaner" && !isAssignedCleaner ? (
+        {mode === "edit" && role === "cleaner" && !isAssignedCleaner && !isUnclaimedOpenJob ? (
           <div className="error-banner">This booking isn&apos;t assigned to you — view only.</div>
+        ) : null}
+        {isUnclaimedOpenJob ? (
+          <div className="info-banner">This job is open — claim it below to take it on.</div>
         ) : null}
         {mode === "edit" && booking?.ical_missing_since ? (
           <div className="error-banner">
@@ -353,6 +390,31 @@ export default function BookingModal({
 
         {isAdmin ? (
           <div className="field">
+            <label>Assignment</label>
+            <div className="segmented-row">
+              <button
+                type="button"
+                className={`segmented-opt${!isOpenJob ? " sel" : ""}`}
+                onClick={() => setIsOpenJob(false)}
+              >
+                Reserved for a cleaner
+              </button>
+              <button
+                type="button"
+                className={`segmented-opt${isOpenJob ? " sel" : ""}`}
+                onClick={() => {
+                  setIsOpenJob(true);
+                  setAssignedCleanerId(null);
+                }}
+              >
+                Open — any cleaner can claim
+              </button>
+            </div>
+          </div>
+        ) : null}
+
+        {isAdmin && !isOpenJob ? (
+          <div className="field">
             <label htmlFor="fCleaner">Assigned cleaner</label>
             <select
               id="fCleaner"
@@ -370,6 +432,16 @@ export default function BookingModal({
                 );
               })}
             </select>
+          </div>
+        ) : null}
+
+        {isAdmin && isOpenJob ? (
+          <div className="field">
+            <p className="access-note">
+              {booking?.assigned_cleaner_id
+                ? `Claimed by ${cleaners.find((c) => c.id === booking.assigned_cleaner_id)?.name || "a cleaner"}.`
+                : "Posted to the open job board — any cleaner can claim it from their calendar."}
+            </p>
           </div>
         ) : null}
 
@@ -550,6 +622,16 @@ export default function BookingModal({
             <button type="button" className="btn btn-secondary" onClick={onClose} disabled={saving}>
               Cancel
             </button>
+            {isUnclaimedOpenJob ? (
+              <button type="button" className="btn btn-primary" disabled={claiming} onClick={handleClaim}>
+                {claiming ? "Claiming…" : "Claim this job"}
+              </button>
+            ) : null}
+            {isClaimedFromOpen ? (
+              <button type="button" className="btn btn-secondary" disabled={claiming} onClick={handleRelease}>
+                {claiming ? "Releasing…" : "Release job"}
+              </button>
+            ) : null}
             {canSave ? (
               <button type="button" className="btn btn-primary" disabled={saving} onClick={handleSave}>
                 {saving ? "Saving…" : "Save"}
