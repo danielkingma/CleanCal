@@ -192,12 +192,20 @@ an admin to resolve:
   admin-only write here: a plain `bookings` update covered by the
   existing `bookings_admin_write` RLS policy, nothing new needed for it.
 
-**Not built**: background checks and ID verification. Both need a real
-account with a vetted third-party provider (Checkr for background
-checks; Stripe Identity or Persona for ID verification) before there's
-anything to integrate — same situation as the OTA "API" question
-earlier. That's everything from the ordered marketplace list except
-those two.
+That's everything from the ordered marketplace list except background
+checks and ID verification — see **Backlog** below.
+
+## Backlog
+
+Waiting on something outside this repo before there's anything to build:
+
+- **Background checks (Checkr)** and **ID verification (Stripe Identity
+  or Persona)** — the last two pieces of the cleaner marketplace. Both
+  need you to sign up with the provider and get real API credentials
+  first; not something that can be stubbed or faked, since they involve
+  legally regulated handling of background-check data (FCRA compliance
+  in the US) and government ID documents. Once you have an account and
+  keys for either one, say so and this gets wired up properly.
 
 ## Setup
 
