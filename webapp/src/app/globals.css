@@ -406,40 +406,44 @@ main {
   background: inherit;
   clip-path: polygon(0 0, 0 100%, 100% 50%);
 }
+/* attn-marker, dispute-marker, and platform-badge are deliberately
+   rendered as siblings of .booking-bar, not children -- the bar's own
+   overflow:hidden (needed to truncate long labels) would otherwise clip
+   these circles, which sit half outside the bar's corner by design.
+   Their top/left position is set per-instance via inline style; only
+   their look lives here. */
 .attn-marker {
   position: absolute;
-  top: -5px;
-  right: -5px;
-  width: 15px;
-  height: 15px;
+  width: 17px;
+  height: 17px;
   border-radius: 50%;
   background: var(--coral);
   color: white;
-  font-size: 9px;
+  font-size: 10.5px;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1.5px solid var(--white);
-  z-index: 2;
+  border: 2px solid var(--white);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  z-index: 3;
   line-height: 1;
 }
 .dispute-marker {
   position: absolute;
-  bottom: -5px;
-  right: -5px;
-  width: 15px;
-  height: 15px;
+  width: 17px;
+  height: 17px;
   border-radius: 50%;
   background: var(--blue);
   color: white;
-  font-size: 9px;
+  font-size: 10.5px;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1.5px solid var(--white);
-  z-index: 2;
+  border: 2px solid var(--white);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  z-index: 3;
   line-height: 1;
 }
 
@@ -454,19 +458,18 @@ main {
 }
 .platform-badge {
   position: absolute;
-  top: -5px;
-  left: -5px;
-  width: 15px;
-  height: 15px;
+  width: 17px;
+  height: 17px;
   border-radius: 50%;
   color: white;
-  font-size: 9px;
+  font-size: 10.5px;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1.5px solid var(--white);
-  z-index: 2;
+  border: 2px solid var(--white);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  z-index: 3;
   line-height: 1;
 }
 .source-pill {

@@ -1,5 +1,6 @@
 "use client";
 
+import { Fragment } from "react";
 import type { Booking, Property } from "@/lib/types";
 import {
   CHECKIN_FRAC,
@@ -135,53 +136,68 @@ export default function Timeline({
                         ? STATUS_LABEL[b.status]
                         : "";
                   const platform = getPlatformBadge(b.platform_label);
+                  const barTop = weekly ? 8 : 6;
+                  const barHeight = rowH - (weekly ? 16 : 12);
 
                   return (
-                    <div
-                      key={b.id}
-                      className={cls.join(" ")}
-                      style={{
-                        left,
-                        width,
-                        top: weekly ? 8 : 6,
-                        height: rowH - (weekly ? 16 : 12),
-                      }}
-                      title={
-                        b.ical_missing_since
-                          ? "No longer in source calendar — may be cancelled"
-                          : isOpenUnclaimed
-                            ? "Open job — click to claim"
-                            : undefined
-                      }
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onBarClick(b);
-                      }}
-                    >
-                      {platform ? (
-                        <>
+                    <Fragment key={b.id}>
+                      <div
+                        className={cls.join(" ")}
+                        style={{
+                          left,
+                          width,
+                          top: barTop,
+                          height: barHeight,
+                        }}
+                        title={
+                          b.ical_missing_since
+                            ? "No longer in source calendar — may be cancelled"
+                            : isOpenUnclaimed
+                              ? "Open job — click to claim"
+                              : undefined
+                        }
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onBarClick(b);
+                        }}
+                      >
+                        {platform ? (
                           <span className="platform-stripe" style={{ background: platform.color }} />
-                          <span
-                            className="platform-badge"
-                            style={{ background: platform.color }}
-                            title={platform.name}
-                          >
-                            {platform.code}
-                          </span>
-                        </>
+                        ) : null}
+                        {label}
+                      </div>
+                      {/* Rendered as siblings of the bar, not children -- the bar's
+                          overflow:hidden (needed to truncate long labels) would
+                          otherwise clip these corner badges, which are deliberately
+                          positioned half outside the bar's own box. */}
+                      {platform ? (
+                        <span
+                          className="platform-badge"
+                          style={{ left: left - 5, top: barTop - 5, background: platform.color }}
+                          title={platform.name}
+                        >
+                          {platform.code}
+                        </span>
                       ) : null}
                       {hasAttention(b) ? (
-                        <span className="attn-marker" title="Requires attention">
+                        <span
+                          className="attn-marker"
+                          style={{ left: left + width - 12, top: barTop - 5 }}
+                          title="Requires attention"
+                        >
                           !
                         </span>
                       ) : null}
                       {b.dispute_status === "open" ? (
-                        <span className="dispute-marker" title="Open dispute">
+                        <span
+                          className="dispute-marker"
+                          style={{ left: left + width - 12, top: barTop + barHeight - 12 }}
+                          title="Open dispute"
+                        >
                           !
                         </span>
                       ) : null}
-                      {label}
-                    </div>
+                    </Fragment>
                   );
                 })}
               </div>
