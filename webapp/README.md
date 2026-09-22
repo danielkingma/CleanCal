@@ -111,9 +111,16 @@ exactly the same as an OTA: just another URL.
   a booking at that property (including the assigned cleaner).
 - **Source badge on the calendar** (`src/lib/platform-badge.ts`): a synced
   booking gets a small colored left-edge stripe and letter badge showing
-  which feed it came from (Airbnb, Vrbo, Booking.com get a distinct
-  recognizable color each; any other feed label gets a neutral one). This
-  is intentionally separate from the bar's own amber/blue/teal background,
+  which feed it came from. Recognizes Airbnb, Vrbo, Booking.com, Expedia,
+  Agoda, Stayz, Trip.com/Ctrip, Xiaozhu, Tujia, 9flats, Casamundo,
+  Interhome, NOVASOL, HomeToGo, Plum Guide, Furnished Finder, and Houfy,
+  each with its own distinct color; any other feed label (a direct
+  booking site, say) still gets a neutral badge from its first letter.
+  This list is just pattern-matching on the feed's label text — syncing
+  from any of them (or one not listed) already works today via the same
+  generic iCal import on `/properties`; adding a platform here only gets
+  it a recognizable color instead of the neutral fallback. This is
+  intentionally separate from the bar's own amber/blue/teal background,
   which still means cleaning status, not source — the two aren't allowed
   to collide. It's letter badges + color, not the actual OTA logos, since
   those are trademarked assets this app has no rights to reproduce.
