@@ -546,7 +546,7 @@ main {
   background: var(--paper-2);
 }
 .py-day-cell.other-month {
-  opacity: 0.3;
+  color: var(--line);
 }
 .py-day-cell.is-today {
   background: var(--coral);
@@ -560,6 +560,7 @@ main {
   grid-template-columns: repeat(7, 1fr);
   gap: 2px;
   margin: 2px 0;
+  min-height: 16px;
 }
 .py-bar {
   grid-row: 1;

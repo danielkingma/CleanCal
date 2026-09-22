@@ -139,36 +139,34 @@ export default function PropertyYearView({
                         );
                       })}
                     </div>
-                    {segments.length > 0 ? (
-                      <div className="py-bar-stack">
-                        {segments.map((seg) => {
-                          const platform = getPlatformBadge(seg.booking.platform_label);
-                          const isOpenUnclaimed = seg.booking.is_open_job && !seg.booking.assigned_cleaner_id;
-                          const label = isOpenUnclaimed ? "Open" : seg.booking.guests || "Reserved";
-                          return (
-                            <button
-                              type="button"
-                              key={seg.booking.id}
-                              className={`py-bar${seg.roundLeft ? " round-left" : ""}${seg.roundRight ? " round-right" : ""}${isOpenUnclaimed ? " open-job" : ""}`}
-                              style={{
-                                gridColumn: `${seg.startCol + 1} / span ${seg.span}`,
-                                gridRow: seg.lane + 1,
-                                marginLeft: `${seg.marginLeftPct}%`,
-                                marginRight: `${seg.marginRightPct}%`,
-                                background: platform?.color ?? NEUTRAL_BAR_COLOR,
-                              }}
-                              title={`${seg.booking.guests || "Reserved"} — ${seg.booking.checkin_date}, ${seg.booking.nights}n`}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onSelectBooking(seg.booking);
-                              }}
-                            >
-                              {label}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    ) : null}
+                    <div className="py-bar-stack">
+                      {segments.map((seg) => {
+                        const platform = getPlatformBadge(seg.booking.platform_label);
+                        const isOpenUnclaimed = seg.booking.is_open_job && !seg.booking.assigned_cleaner_id;
+                        const label = isOpenUnclaimed ? "Open" : seg.booking.guests || "Reserved";
+                        return (
+                          <button
+                            type="button"
+                            key={seg.booking.id}
+                            className={`py-bar${seg.roundLeft ? " round-left" : ""}${seg.roundRight ? " round-right" : ""}${isOpenUnclaimed ? " open-job" : ""}`}
+                            style={{
+                              gridColumn: `${seg.startCol + 1} / span ${seg.span}`,
+                              gridRow: seg.lane + 1,
+                              marginLeft: `${seg.marginLeftPct}%`,
+                              marginRight: `${seg.marginRightPct}%`,
+                              background: platform?.color ?? NEUTRAL_BAR_COLOR,
+                            }}
+                            title={`${seg.booking.guests || "Reserved"} — ${seg.booking.checkin_date}, ${seg.booking.nights}n`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onSelectBooking(seg.booking);
+                            }}
+                          >
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 );
               })}
