@@ -6,7 +6,6 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import Logo from "./Logo";
 import Timeline from "./Timeline";
-import YearView from "./YearView";
 import PropertyYearView from "./PropertyYearView";
 import BookingModal from "./BookingModal";
 import {
@@ -47,7 +46,7 @@ export default function CalendarApp({
 }: CalendarAppProps) {
   const router = useRouter();
   const [view, setView] = useState<View>("month");
-  const [yearPropertyId, setYearPropertyId] = useState("");
+  const [yearPropertyId, setYearPropertyId] = useState(() => properties[0]?.id ?? "");
   const [cursor, setCursor] = useState(() => new Date());
   const [bookings, setBookings] = useState<Booking[]>(initialBookings);
   const [modal, setModal] = useState<ModalState | null>(null);
@@ -165,13 +164,12 @@ export default function CalendarApp({
             </button>
           ))}
         </div>
-        {view === "year" ? (
+        {view === "year" && properties.length > 0 ? (
           <select
             className="year-property-select"
             value={yearPropertyId}
             onChange={(e) => setYearPropertyId(e.target.value)}
           >
-            <option value="">All properties</option>
             {properties.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name}
@@ -243,18 +241,7 @@ export default function CalendarApp({
               }}
             />
           ) : (
-            <YearView
-              year={cursor.getFullYear()}
-              bookings={bookings}
-              onSelectMonth={(m) => {
-                setCursor(new Date(cursor.getFullYear(), m, 1));
-                setView("month");
-              }}
-              onSelectDate={(d) => {
-                setCursor(fromISO(d));
-                setView("month");
-              }}
-            />
+            <p className="photo-note">Add a property to see its year calendar here.</p>
           )
         ) : (
           <Timeline

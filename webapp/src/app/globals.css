@@ -481,74 +481,6 @@ main {
   vertical-align: middle;
 }
 
-/* ---- Year view ---- */
-.year-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 18px;
-}
-.mini-month {
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--white);
-  padding: 12px;
-}
-.mini-month-title {
-  font-weight: 600;
-  font-size: 13.5px;
-  margin-bottom: 8px;
-  cursor: pointer;
-  text-align: center;
-  background: none;
-  border: none;
-  width: 100%;
-  color: var(--ink);
-}
-.mini-month-title:hover {
-  color: var(--teal);
-}
-.mini-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 2px;
-}
-.mini-cell {
-  aspect-ratio: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  color: var(--muted);
-  border-radius: 4px;
-  cursor: pointer;
-  position: relative;
-  background: none;
-  border: none;
-}
-.mini-cell:hover {
-  background: var(--paper-2);
-}
-.mini-cell.other-month {
-  opacity: 0.25;
-}
-.mini-cell.is-today {
-  background: var(--coral);
-  color: white;
-  font-weight: 600;
-}
-.mini-dots {
-  display: flex;
-  gap: 1px;
-  position: absolute;
-  bottom: 2px;
-}
-.mini-dot {
-  width: 3.5px;
-  height: 3.5px;
-  border-radius: 50%;
-}
-
 /* ---- Year view, scoped to one property ---- */
 .py-year-grid {
   display: grid;
@@ -1143,9 +1075,6 @@ main {
 }
 
 @media (max-width: 900px) {
-  .year-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
   .py-year-grid {
     grid-template-columns: 1fr;
   }

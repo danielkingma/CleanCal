@@ -255,14 +255,19 @@ through:
 
 ## Year view, scoped to a single property (slice 6)
 
-The Year tab now has a property picker next to it. With no property
-picked it's unchanged (the small dot-summary grid across every
-property). Picking one switches to a full month-by-month grid for that
-property only — 12 real calendars, guest-name bars spanning each stay's
-actual check-in/checkout, colored by source the same way Month/Week are
+The Year tab is a property picker plus a full month-by-month grid for
+whichever property is selected (defaults to the first one) — 12 real
+calendars, guest-name bars spanning each stay's actual check-in through
+checkout, colored by source the same way Month/Week are
 (`getPlatformBadge`) — modeled on the per-listing calendar view OTAs
-like Airbnb show a host, so a single property's whole year is readable
-without the noise of every other property's bookings on top of it.
+like Airbnb show a host.
+
+There's deliberately no "all properties at once" mode: an earlier
+version summarized every property as small colored dots on a mini
+calendar, but with more than one property that's unreadable — you
+can't tell which dot belongs to which listing, so it didn't actually
+answer "what does this year look like." Picking one property and
+showing its real bookings does.
 
 - Nightly pricing isn't part of this: an OTA's own calendar-sync feed
   never includes price (it's stripped before export), so there's no data
@@ -274,8 +279,7 @@ without the noise of every other property's bookings on top of it.
   real check-in or checkout — so it reads as one continuous booking
   across the row break rather than two separate ones.
 - Clicking a guest bar opens that booking for editing, same modal as
-  Month/Week. Clicking a bare day jumps to Month view on that date, same
-  as the all-properties Year view already did.
+  Month/Week. Clicking a bare day jumps to Month view on that date.
 
 ## Backlog
 
@@ -369,7 +373,6 @@ src/
   components/
     CalendarApp.tsx       topbar, view state, realtime subscription
     Timeline.tsx           Month/Week property-row rendering
-    YearView.tsx           Year mini-month grid (all properties)
     PropertyYearView.tsx   Year full-grid view, scoped to one property
     BookingModal.tsx       new/edit booking form + role-gated fields
     PropertiesAdmin.tsx    per-property iCal feeds + access instructions UI
