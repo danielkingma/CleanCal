@@ -499,21 +499,33 @@ main {
   margin-bottom: 8px;
   text-align: center;
 }
+.py-grid {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+}
 .py-weekday-row {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  font-size: 10px;
+  font-size: 9.5px;
+  font-weight: 600;
   color: var(--muted);
   text-align: center;
-  margin-bottom: 4px;
+  background: var(--paper-2);
+  border-bottom: 1px solid var(--line);
 }
-.py-week {
-  margin-bottom: 3px;
+.py-weekday-row span {
+  padding: 3px 0;
+}
+.py-weekday-row span:not(:last-child) {
+  border-right: 1px solid var(--line);
+}
+.py-week:not(.last) {
+  border-bottom: 1px solid var(--line);
 }
 .py-day-row {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 1px;
 }
 .py-day-cell {
   aspect-ratio: 1;
@@ -524,25 +536,30 @@ main {
   color: var(--ink);
   background: none;
   border: none;
-  border-radius: 4px;
   cursor: pointer;
+  transition: background 0.12s ease;
+}
+.py-day-cell:not(:last-child) {
+  border-right: 1px solid var(--line);
 }
 .py-day-cell:hover {
   background: var(--paper-2);
 }
 .py-day-cell.other-month {
-  opacity: 0.25;
+  opacity: 0.3;
 }
 .py-day-cell.is-today {
   background: var(--coral);
   color: white;
   font-weight: 600;
+  border-radius: 4px;
+  box-shadow: 0 0 0 1px var(--coral);
 }
 .py-bar-stack {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 2px;
-  margin-top: 2px;
+  margin: 2px 0;
 }
 .py-bar {
   grid-row: 1;

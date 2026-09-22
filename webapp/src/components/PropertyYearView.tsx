@@ -97,63 +97,68 @@ export default function PropertyYearView({
         return (
           <div className="py-month" key={m}>
             <div className="py-month-title">{MONTH_NAMES[m]}</div>
-            <div className="py-weekday-row">
-              {WD.map((wd) => (
-                <span key={wd}>{wd[0]}</span>
-              ))}
-            </div>
-            {weekStarts.map((weekStart) => {
-              const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
-              const segments = weekSegments(weekStart, bookings);
+            <div className="py-grid">
+              <div className="py-weekday-row">
+                {WD.map((wd) => (
+                  <span key={wd}>{wd[0]}</span>
+                ))}
+              </div>
+              {weekStarts.map((weekStart, weekIdx) => {
+                const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+                const segments = weekSegments(weekStart, bookings);
 
-              return (
-                <div className="py-week" key={isoDate(weekStart)}>
-                  <div className="py-day-row">
-                    {days.map((d) => {
-                      const otherMonth = d.getMonth() !== m;
-                      return (
-                        <button
-                          type="button"
-                          key={isoDate(d)}
-                          className={`py-day-cell${otherMonth ? " other-month" : ""}${sameDay(d, today) ? " is-today" : ""}`}
-                          onClick={() => onSelectDate(isoDate(d))}
-                        >
-                          {d.getDate()}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  {segments.length > 0 ? (
-                    <div className="py-bar-stack">
-                      {segments.map((seg) => {
-                        const platform = getPlatformBadge(seg.booking.platform_label);
-                        const isOpenUnclaimed = seg.booking.is_open_job && !seg.booking.assigned_cleaner_id;
-                        const label = isOpenUnclaimed ? "Open" : seg.booking.guests || "Reserved";
+                return (
+                  <div
+                    className={`py-week${weekIdx === weekStarts.length - 1 ? " last" : ""}`}
+                    key={isoDate(weekStart)}
+                  >
+                    <div className="py-day-row">
+                      {days.map((d) => {
+                        const otherMonth = d.getMonth() !== m;
                         return (
                           <button
                             type="button"
-                            key={seg.booking.id}
-                            className={`py-bar${seg.roundLeft ? " round-left" : ""}${seg.roundRight ? " round-right" : ""}${isOpenUnclaimed ? " open-job" : ""}`}
-                            style={{
-                              gridColumn: `${seg.startCol + 1} / span ${seg.span}`,
-                              gridRow: seg.lane + 1,
-                              background: platform?.color ?? NEUTRAL_BAR_COLOR,
-                            }}
-                            title={`${seg.booking.guests || "Reserved"} — ${seg.booking.checkin_date}, ${seg.booking.nights}n`}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onSelectBooking(seg.booking);
-                            }}
+                            key={isoDate(d)}
+                            className={`py-day-cell${otherMonth ? " other-month" : ""}${sameDay(d, today) ? " is-today" : ""}`}
+                            onClick={() => onSelectDate(isoDate(d))}
                           >
-                            {label}
+                            {d.getDate()}
                           </button>
                         );
                       })}
                     </div>
-                  ) : null}
-                </div>
-              );
-            })}
+                    {segments.length > 0 ? (
+                      <div className="py-bar-stack">
+                        {segments.map((seg) => {
+                          const platform = getPlatformBadge(seg.booking.platform_label);
+                          const isOpenUnclaimed = seg.booking.is_open_job && !seg.booking.assigned_cleaner_id;
+                          const label = isOpenUnclaimed ? "Open" : seg.booking.guests || "Reserved";
+                          return (
+                            <button
+                              type="button"
+                              key={seg.booking.id}
+                              className={`py-bar${seg.roundLeft ? " round-left" : ""}${seg.roundRight ? " round-right" : ""}${isOpenUnclaimed ? " open-job" : ""}`}
+                              style={{
+                                gridColumn: `${seg.startCol + 1} / span ${seg.span}`,
+                                gridRow: seg.lane + 1,
+                                background: platform?.color ?? NEUTRAL_BAR_COLOR,
+                              }}
+                              title={`${seg.booking.guests || "Reserved"} — ${seg.booking.checkin_date}, ${seg.booking.nights}n`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onSelectBooking(seg.booking);
+                              }}
+                            >
+                              {label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         );
       })}
