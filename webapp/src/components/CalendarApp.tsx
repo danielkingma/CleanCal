@@ -18,6 +18,11 @@ import {
 } from "@/lib/calendar-utils";
 import { isStaff, type Booking, type CleanerRating, type Profile, type Property } from "@/lib/types";
 
+// Points at the published CleanCal Handbook artifact. Not part of this
+// repo's own content -- update this if the handbook is ever republished
+// somewhere else.
+const HANDBOOK_URL = "https://claude.ai/artifact/DTYa9CziQcXdn6cGeYncAG";
+
 interface CalendarAppProps {
   currentProfile: Profile;
   currentUserEmail: string;
@@ -180,6 +185,14 @@ export default function CalendarApp({
         <div className="user-badge">
           <span className="role-pill">{currentProfile.role}</span>
           <span>{currentUserEmail}</span>
+          <a
+            href={HANDBOOK_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="signout-btn"
+          >
+            Handbook
+          </a>
           <Link href="/profile" className="signout-btn">
             My Profile
           </Link>
