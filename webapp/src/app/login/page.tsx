@@ -6,6 +6,10 @@ import Logo from "@/components/Logo";
 
 const initialState: MagicLinkState = { status: "idle" };
 
+// Points at the published CleanCal Handbook artifact -- see the same
+// constant in CalendarApp.tsx. Update both if the handbook ever moves.
+const HANDBOOK_URL = "https://claude.ai/artifact/DTYa9CziQcXdn6cGeYncAG";
+
 export default function LoginPage() {
   const [state, formAction, pending] = useActionState(sendMagicLink, initialState);
 
@@ -32,6 +36,9 @@ export default function LoginPage() {
           </p>
         ) : null}
       </div>
+      <a href={HANDBOOK_URL} target="_blank" rel="noopener noreferrer" className="auth-footer-link">
+        New here? Read the CleanCal Handbook
+      </a>
     </div>
   );
 }

@@ -1061,8 +1061,10 @@ main {
 .auth-shell {
   min-height: 100vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 16px;
   padding: 20px;
 }
 .auth-card {
@@ -1095,6 +1097,15 @@ main {
   color: var(--teal-deep);
   font-size: 13px;
   margin-top: 14px;
+}
+.auth-footer-link {
+  color: var(--muted);
+  font-size: 13.5px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.auth-footer-link:hover {
+  color: var(--teal-deep);
 }
 
 @media (max-width: 900px) {
