@@ -2,6 +2,8 @@
 
 import type { Booking } from "@/lib/types";
 import {
+  CHECKIN_FRAC,
+  CHECKOUT_FRAC,
   MONTH_NAMES,
   WD,
   addDays,
@@ -23,9 +25,11 @@ interface PropertyYearViewProps {
 interface BarSegment {
   booking: Booking;
   startCol: number; // 0-6, day of week within this row
-  span: number; // nights this row covers
+  span: number; // day-columns this row covers, including a checkout day sliver
   roundLeft: boolean; // this segment includes the actual check-in
   roundRight: boolean; // this segment includes the actual checkout
+  marginLeftPct: number; // inset the visible bar to the 2pm check-in mark
+  marginRightPct: number; // inset the visible bar to the 10am checkout mark
   lane: number;
 }
 
@@ -33,27 +37,35 @@ const NEUTRAL_BAR_COLOR = "#5B6560";
 
 // A stay can run longer than a week, so it's drawn as one segment per row
 // it crosses (like any month-grid multi-day event), clipped to that row's
-// 7 days. Segments only get rounded corners on the edge that's the real
-// start/end of the stay, so a bar crossing a row boundary reads as one
-// continuous booking rather than several.
+// 7 days. Segments only get rounded corners -- and the 2pm/10am inset
+// below -- on the edge that's the real start/end of the stay, so a bar
+// crossing a row boundary reads as one continuous booking rather than
+// several, matching the Month/Week timeline's check-in/checkout overlap.
 function weekSegments(weekStart: Date, bookings: Booking[]): BarSegment[] {
-  const weekEndExclusive = addDays(weekStart, 7);
+  const weekEndInclusive = addDays(weekStart, 6);
 
   const segments = bookings
     .map((b): BarSegment | null => {
       const checkin = fromISO(b.checkin_date);
-      const checkout = checkoutDate(b);
-      if (checkout <= weekStart || checkin >= weekEndExclusive) return null;
+      const checkout = checkoutDate(b); // exclusive: the day after the last night
+      // The checkout day itself gets a column too -- the bar only fills a
+      // sliver of it (up to CHECKOUT_FRAC), same as the Month/Week bars.
+      if (checkout < weekStart || checkin > weekEndInclusive) return null;
       const segStart = checkin < weekStart ? weekStart : checkin;
-      const segEndExclusive = checkout > weekEndExclusive ? weekEndExclusive : checkout;
-      const span = daysBetween(segStart, segEndExclusive);
+      const segEndInclusive = checkout > weekEndInclusive ? weekEndInclusive : checkout;
+      const startCol = daysBetween(weekStart, segStart);
+      const span = daysBetween(segStart, segEndInclusive) + 1;
       if (span <= 0) return null;
+      const roundLeft = sameDay(segStart, checkin);
+      const roundRight = sameDay(segEndInclusive, checkout);
       return {
         booking: b,
-        startCol: daysBetween(weekStart, segStart),
+        startCol,
         span,
-        roundLeft: sameDay(segStart, checkin),
-        roundRight: daysBetween(segEndExclusive, checkout) === 0,
+        roundLeft,
+        roundRight,
+        marginLeftPct: roundLeft ? (CHECKIN_FRAC / span) * 100 : 0,
+        marginRightPct: roundRight ? ((1 - CHECKOUT_FRAC) / span) * 100 : 0,
         lane: 0,
       };
     })
@@ -141,6 +153,8 @@ export default function PropertyYearView({
                               style={{
                                 gridColumn: `${seg.startCol + 1} / span ${seg.span}`,
                                 gridRow: seg.lane + 1,
+                                marginLeft: `${seg.marginLeftPct}%`,
+                                marginRight: `${seg.marginRightPct}%`,
                                 background: platform?.color ?? NEUTRAL_BAR_COLOR,
                               }}
                               title={`${seg.booking.guests || "Reserved"} — ${seg.booking.checkin_date}, ${seg.booking.nights}n`}

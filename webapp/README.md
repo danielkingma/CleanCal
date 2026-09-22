@@ -278,6 +278,12 @@ showing its real bookings does.
   that row's 7 days, with rounded corners only on the edge that's the
   real check-in or checkout — so it reads as one continuous booking
   across the row break rather than two separate ones.
+- Same check-in 2pm / checkout 10am overlap as Month/Week: a bar starts
+  partway into its check-in day's cell and ends partway into its
+  checkout day's cell (`CHECKIN_FRAC`/`CHECKOUT_FRAC` from
+  `calendar-utils.ts`), rather than occupying whole day cells — so
+  back-to-back bookings on the same day still read as a same-day
+  turnover, not an overlap or a gap.
 - Clicking a guest bar opens that booking for editing, same modal as
   Month/Week. Clicking a bare day jumps to Month view on that date.
 
