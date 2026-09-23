@@ -76,6 +76,17 @@ export async function releaseOpenBooking(id: string) {
   revalidatePath("/calendar");
 }
 
+// Cleaner declines a job an Owner/Manager assigned directly to them
+// (not from the open board) -- puts it back in the open pool instead of
+// leaving it stuck. Only works before the job has started -- see
+// decline_assigned_booking in supabase/migrations/0011_decline_assigned_job.sql.
+export async function declineAssignedBooking(id: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("decline_assigned_booking", { p_booking_id: id });
+  if (error) throw new Error(error.message);
+  revalidatePath("/calendar");
+}
+
 // Post a message in a booking's dispute thread. Works for admin or the
 // assigned cleaner -- RLS (`dispute_messages_insert_admin` /
 // `dispute_messages_insert_assigned_cleaner`) decides which applies, and

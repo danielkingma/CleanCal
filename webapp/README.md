@@ -327,6 +327,18 @@ answer "what needs my attention today" better than a graph would, and
 it's built so a later reporting pass (date ranges, per-property
 breakdowns, CSV export) extends this rather than replacing it.
 
+## Declining an assigned job (slice 9)
+
+Claiming/releasing an *open* job already existed (slice 2), but a job
+an Owner/Manager assigned directly to a specific cleaner had no
+decline path — only status/checklist writes. A cleaner can now decline
+a directly-assigned job (while it's still `to-clean` — backing out
+mid-clean is what disputes are for), which puts it back into the open
+pool for another cleaner to claim rather than leaving it silently stuck
+(`decline_assigned_booking` in
+`supabase/migrations/0011_decline_assigned_job.sql`), the same outcome
+as releasing a claimed open job.
+
 ## Backlog
 
 Waiting on something outside this repo before there's anything to build:
@@ -353,9 +365,10 @@ In the Supabase dashboard, open **SQL Editor** and run, in order:
 `0003_ical_sync_and_access_instructions.sql`, `0004_booking_platform_label.sql`,
 `0005_booking_guests.sql`, `0006_cleaner_profiles_and_ratings.sql`,
 `0007_open_job_board.sql`, `0008_dispute_resolution.sql`,
-`0009_owner_manager_roles.sql`, then `0010_ical_export.sql` (all under
-`supabase/migrations/`). Optionally also run `supabase/seed.sql` to seed
-the same demo properties the prototype used.
+`0009_owner_manager_roles.sql`, `0010_ical_export.sql`, then
+`0011_decline_assigned_job.sql` (all under `supabase/migrations/`).
+Optionally also run `supabase/seed.sql` to seed the same demo
+properties the prototype used.
 
 (If you use the [Supabase CLI](https://supabase.com/docs/guides/cli)
 instead: `supabase link --project-ref <your-ref>` then
@@ -447,5 +460,6 @@ supabase/
     0008_dispute_resolution.sql                  dispute_messages + status triggers
     0009_owner_manager_roles.sql                 owner/manager/cleaner roles + RLS split
     0010_ical_export.sql                         per-property export tokens + regenerate RPC
+    0011_decline_assigned_job.sql                decline_assigned_booking RPC
   seed.sql                                     optional demo properties
 ```

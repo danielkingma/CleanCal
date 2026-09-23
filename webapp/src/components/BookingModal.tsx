@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   claimOpenBooking,
   createBooking,
+  declineAssignedBooking,
   deleteBooking,
   postDisputeMessage,
   rateBooking,
@@ -75,6 +76,12 @@ export default function BookingModal({
   const isUnclaimedOpenJob =
     role === "cleaner" && !!booking && booking.is_open_job && !booking.assigned_cleaner_id;
   const isClaimedFromOpen = role === "cleaner" && !!booking && booking.is_open_job && isAssignedCleaner;
+  const isDeclinableAssigned =
+    role === "cleaner" &&
+    !!booking &&
+    !booking.is_open_job &&
+    isAssignedCleaner &&
+    booking.status === "to-clean";
   const canEditCore = isStaffUser;
   const canEditCleaning = isStaffUser || isAssignedCleaner;
   const canSave = mode === "new" ? isStaffUser : canEditCleaning;
@@ -123,6 +130,23 @@ export default function BookingModal({
       onDone();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Couldn't release this job.");
+      setClaiming(false);
+    }
+  }
+
+  async function handleDecline() {
+    if (!booking) return;
+    const confirmed = window.confirm(
+      "Decline this job? It goes back to the open job board for another cleaner to claim.",
+    );
+    if (!confirmed) return;
+    setError(null);
+    setClaiming(true);
+    try {
+      await declineAssignedBooking(booking.id);
+      onDone();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn't decline this job.");
       setClaiming(false);
     }
   }
@@ -767,6 +791,11 @@ export default function BookingModal({
             {isUnclaimedOpenJob ? (
               <button type="button" className="btn btn-primary" disabled={claiming} onClick={handleClaim}>
                 {claiming ? "Claiming…" : "Claim this job"}
+              </button>
+            ) : null}
+            {isDeclinableAssigned ? (
+              <button type="button" className="btn btn-secondary" disabled={claiming} onClick={handleDecline}>
+                {claiming ? "Declining…" : "Decline job"}
               </button>
             ) : null}
             {isClaimedFromOpen ? (
