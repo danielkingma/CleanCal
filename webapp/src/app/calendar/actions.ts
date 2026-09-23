@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { sendPushToUsers } from "@/lib/push";
 import type { BookingStatus, Checklist } from "@/lib/types";
 
 export interface BookingInput {
@@ -16,6 +17,44 @@ export interface BookingInput {
   is_open_job: boolean;
 }
 
+type SupabaseServer = Awaited<ReturnType<typeof createClient>>;
+
+// Push a heads-up about a new/changed assignment. Only ever called after
+// the write it describes has already succeeded -- a failure here is
+// swallowed inside sendPushToUsers, never surfaced to the admin saving
+// the booking.
+async function notifyAssignment(
+  supabase: SupabaseServer,
+  input: Pick<BookingInput, "property_id" | "checkin_date" | "assigned_cleaner_id" | "is_open_job">,
+) {
+  const { data: property } = await supabase
+    .from("properties")
+    .select("name")
+    .eq("id", input.property_id)
+    .maybeSingle();
+  const propertyName = property?.name ?? "a property";
+  const when = new Date(input.checkin_date).toLocaleDateString();
+
+  if (input.is_open_job) {
+    // Staff creating/editing this booking is always admin, so profiles
+    // RLS (profiles_select_own_or_admin) already lets this read every
+    // cleaner's id directly -- no RPC needed.
+    const { data: cleanerProfiles } = await supabase.from("profiles").select("id").eq("role", "cleaner");
+    const ids = (cleanerProfiles ?? []).map((p) => p.id as string);
+    await sendPushToUsers(ids, {
+      title: "New open job posted",
+      body: `${propertyName} — check-in ${when}. First to claim it gets it.`,
+      url: "/calendar",
+    });
+  } else if (input.assigned_cleaner_id) {
+    await sendPushToUsers([input.assigned_cleaner_id], {
+      title: "New job assigned to you",
+      body: `${propertyName} — check-in ${when}.`,
+      url: "/calendar",
+    });
+  }
+}
+
 // Admin-only writes. Enforcement lives in Postgres RLS (see
 // supabase/migrations/0001_init.sql `bookings_admin_write`), not here --
 // a non-admin calling this will simply get a permission error back from
@@ -26,13 +65,30 @@ export async function createBooking(input: BookingInput) {
   const { error } = await supabase.from("bookings").insert(input);
   if (error) throw new Error(error.message);
   revalidatePath("/calendar");
+  await notifyAssignment(supabase, input);
 }
 
 export async function updateBookingAdmin(id: string, input: BookingInput) {
   const supabase = await createClient();
+  const { data: existing } = await supabase
+    .from("bookings")
+    .select("assigned_cleaner_id, is_open_job")
+    .eq("id", id)
+    .maybeSingle();
   const { error } = await supabase.from("bookings").update(input).eq("id", id);
   if (error) throw new Error(error.message);
   revalidatePath("/calendar");
+
+  // Only notify when the assignment itself actually changed -- otherwise
+  // every edit to notes/checklist/etc. on an already-assigned booking
+  // would re-notify the same cleaner for no reason.
+  const assignmentChanged =
+    !existing ||
+    existing.assigned_cleaner_id !== input.assigned_cleaner_id ||
+    existing.is_open_job !== input.is_open_job;
+  if (assignmentChanged) {
+    await notifyAssignment(supabase, input);
+  }
 }
 
 export async function deleteBooking(id: string) {
@@ -46,6 +102,11 @@ export async function deleteBooking(id: string) {
 // `bookings_admin_write` RLS policy as everything else admin-only here.
 export async function rateBooking(id: string, rating: number, comment: string) {
   const supabase = await createClient();
+  const { data: booking } = await supabase
+    .from("bookings")
+    .select("assigned_cleaner_id")
+    .eq("id", id)
+    .maybeSingle();
   const { error } = await supabase
     .from("bookings")
     .update({ rating, rating_comment: comment })
@@ -53,6 +114,14 @@ export async function rateBooking(id: string, rating: number, comment: string) {
   if (error) throw new Error(error.message);
   revalidatePath("/calendar");
   revalidatePath("/cleaners");
+
+  if (booking?.assigned_cleaner_id) {
+    await sendPushToUsers([booking.assigned_cleaner_id], {
+      title: "You got a new rating",
+      body: `★ ${rating}${comment ? ` — ${comment}` : ""}`,
+      url: "/history",
+    });
+  }
 }
 
 // Cleaner claims an open, unclaimed job for themselves. Atomic in
@@ -82,9 +151,28 @@ export async function releaseOpenBooking(id: string) {
 // decline_assigned_booking in supabase/migrations/0011_decline_assigned_job.sql.
 export async function declineAssignedBooking(id: string) {
   const supabase = await createClient();
+  const { data: booking } = await supabase
+    .from("bookings")
+    .select("property_id, checkin_date")
+    .eq("id", id)
+    .maybeSingle();
   const { error } = await supabase.rpc("decline_assigned_booking", { p_booking_id: id });
   if (error) throw new Error(error.message);
   revalidatePath("/calendar");
+
+  if (booking) {
+    const { data: staffIds } = await supabase.rpc("staff_user_ids");
+    const { data: property } = await supabase
+      .from("properties")
+      .select("name")
+      .eq("id", booking.property_id)
+      .maybeSingle();
+    await sendPushToUsers((staffIds as string[] | null) ?? [], {
+      title: "Job declined",
+      body: `${property?.name ?? "A booking"} — check-in ${new Date(booking.checkin_date).toLocaleDateString()} is back on the open board.`,
+      url: "/calendar",
+    });
+  }
 }
 
 // Post a message in a booking's dispute thread. Works for admin or the
@@ -104,6 +192,35 @@ export async function postDisputeMessage(bookingId: string, body: string) {
     .insert({ booking_id: bookingId, author_id: user.id, body: body.trim() });
   if (error) throw new Error(error.message);
   revalidatePath("/calendar");
+
+  const { data: authorProfile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+  const { data: booking } = await supabase
+    .from("bookings")
+    .select("assigned_cleaner_id, property_id")
+    .eq("id", bookingId)
+    .maybeSingle();
+  if (booking) {
+    const { data: property } = await supabase
+      .from("properties")
+      .select("name")
+      .eq("id", booking.property_id)
+      .maybeSingle();
+    const payload = {
+      title: "New dispute message",
+      body: `${property?.name ?? "A booking"}: ${body.trim().slice(0, 120)}`,
+      url: "/calendar",
+    };
+    if (authorProfile?.role === "cleaner") {
+      const { data: staffIds } = await supabase.rpc("staff_user_ids");
+      await sendPushToUsers((staffIds as string[] | null) ?? [], payload);
+    } else if (booking.assigned_cleaner_id) {
+      await sendPushToUsers([booking.assigned_cleaner_id], payload);
+    }
+  }
 }
 
 // Admin marks a dispute resolved. A plain bookings update, covered by

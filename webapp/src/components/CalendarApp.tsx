@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import Logo from "./Logo";
+import NotificationsToggle from "./NotificationsToggle";
 import Timeline from "./Timeline";
 import PropertyYearView from "./PropertyYearView";
 import BookingModal from "./BookingModal";
@@ -204,6 +205,7 @@ export default function CalendarApp({
           <Link href="/profile" className="signout-btn">
             My Profile
           </Link>
+          <NotificationsToggle />
           <form action="/logout" method="post">
             <button type="submit" className="signout-btn">
               Sign out

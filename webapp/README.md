@@ -375,6 +375,55 @@ hard block, just a heads-up, since staff may still know something the
 cleaner's calendar doesn't (e.g. the cleaner already agreed to make an
 exception).
 
+## Mobile app access + push notifications (slice 12)
+
+Rather than a separate native app (a whole second codebase, app-store
+review, and two more platforms to keep in sync), CleanCal is now an
+installable **Progressive Web App**: "Add to Home Screen" on iOS/Android
+puts it on the home screen with its own icon, launches full-screen (no
+browser chrome), and a service worker (`public/sw.js`) caches the app's
+static assets so it opens instantly on a flaky connection. Everything
+that makes it installable — `public/manifest.webmanifest`, the icon set
+in `public/`, the `<link rel="manifest">` / theme-color / apple-touch-icon
+metadata in `src/app/layout.tsx` — is standard web platform stuff, no new
+backend involved.
+
+Push notifications ride on the same service worker via the **Web Push**
+API (`web-push` on the server, VAPID keys to authenticate this app to the
+push services). A user opts in with the new "Enable notifications"
+button in the topbar, which requests permission and stores the resulting
+subscription in a `push_subscriptions` table
+(`supabase/migrations/0013_push_subscriptions.sql`) — self-service RLS,
+same shape as `cleaner_unavailable_dates`. Sending a push happens
+server-side (`src/lib/push.ts`), wired into the moments that already
+mattered but had no way to reach a phone that isn't sitting open on the
+calendar:
+
+- A job is directly assigned, or posted to the open board → that
+  cleaner (or every cleaner, for an open job) gets notified.
+- A cleaner declines an assigned job → Owner/Manager are notified it's
+  back on the open board.
+- A dispute message is posted → the other side of the conversation
+  (staff or the assigned cleaner) gets notified.
+- A cleaning gets rated → the cleaner is notified.
+
+Push is a best-effort convenience layered on top of data that already
+lives in Postgres (the record of truth), so a delivery failure — no
+subscription, an expired one, missing VAPID env vars — is swallowed
+rather than surfacing an error to whoever triggered it; see
+`src/lib/push.ts` for the deliberately quiet error handling. Notifying
+*other* users (an open job's every cleaner, or staff on a decline) needs
+the service-role client, since a user's own RLS-scoped session can only
+ever see their own `push_subscriptions` row; a new `staff_user_ids()`
+SECURITY DEFINER function (same migration) gives a cleaner's session
+just enough to find who to notify without granting general read access
+to other people's profiles.
+
+Push notifications are entirely optional — without the VAPID env vars
+set (see `.env.local.example`), the "Enable notifications" button simply
+never appears and the app works exactly as before. To generate your own
+key pair: `npx web-push generate-vapid-keys`.
+
 ## Backlog
 
 Waiting on something outside this repo before there's anything to build:
@@ -402,8 +451,8 @@ In the Supabase dashboard, open **SQL Editor** and run, in order:
 `0005_booking_guests.sql`, `0006_cleaner_profiles_and_ratings.sql`,
 `0007_open_job_board.sql`, `0008_dispute_resolution.sql`,
 `0009_owner_manager_roles.sql`, `0010_ical_export.sql`,
-`0011_decline_assigned_job.sql`, then
-`0012_cleaner_availability.sql` (all under `supabase/migrations/`).
+`0011_decline_assigned_job.sql`, `0012_cleaner_availability.sql`, then
+`0013_push_subscriptions.sql` (all under `supabase/migrations/`).
 Optionally also run `supabase/seed.sql` to seed the same demo
 properties the prototype used.
 
@@ -418,7 +467,10 @@ cp .env.local.example .env.local
 ```
 
 Fill in `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-from your project's **Settings → API** page.
+from your project's **Settings → API** page. Push notifications are
+optional — see the commented-out `VAPID_*` block in
+`.env.local.example` if you want the "Enable notifications" button to
+appear.
 
 ### 4. Bootstrap your first owner
 
@@ -450,7 +502,10 @@ Push this repo to Vercel, add the two `NEXT_PUBLIC_SUPABASE_*` env vars
 in the Vercel project settings, and deploy. In Supabase, add your
 production URL under **Authentication → URL Configuration → Redirect
 URLs** (`https://your-app.vercel.app/auth/callback`) so the magic-link
-flow works in production.
+flow works in production. If you want push notifications, also add the
+four `VAPID_*` / `NEXT_PUBLIC_VAPID_PUBLIC_KEY` env vars from
+`.env.local.example` to the Vercel project settings — push only works
+over HTTPS, which Vercel gives you by default.
 
 ## Project structure
 
@@ -468,6 +523,7 @@ src/
     dashboard/             staff-only stat tiles + "needs attention" summary
     reports/               staff-only filterable reporting + CSV export
     availability/          self-service unavailable-dates calendar
+    notifications/          push-subscription save/delete server actions
     api/cron/sync-ical/   optional Vercel Cron target (service-role sync)
     api/ical/[token]/     public per-property .ics export feed
   components/
@@ -480,6 +536,8 @@ src/
     ReportsView.tsx        /reports filters, breakdowns, CSV export
     TeamRoles.tsx           Owner-only role management table
     AvailabilityCalendar.tsx  self-service unavailable-dates toggle calendar
+    ServiceWorkerRegistration.tsx  registers public/sw.js on load
+    NotificationsToggle.tsx  Enable/disable push notifications button
   lib/
     supabase/              browser/server/service-role client factories
     calendar-utils.ts      date math ported from the prototype
@@ -487,8 +545,13 @@ src/
     ical-sync.ts           shared fetch + upsert logic, used by button & cron
     ical-export.ts         builds the outbound .ics feed for api/ical/[token]
     platform-badge.ts      Airbnb/Vrbo/Booking.com/other badge color + letter
+    push.ts                 sends Web Push notifications via the service-role client
     types.ts               shared domain types
   proxy.ts                 auth guard (Next.js 16 renamed middleware -> proxy)
+public/
+  manifest.webmanifest      PWA install metadata (name, icons, theme color)
+  sw.js                     service worker: asset caching + push/notificationclick
+  icon-192.png, icon-512.png, icon-maskable-512.png, apple-touch-icon.png
 supabase/
   migrations/
     0001_init.sql                             schema + RLS policies + RPCs
@@ -503,5 +566,6 @@ supabase/
     0010_ical_export.sql                         per-property export tokens + regenerate RPC
     0011_decline_assigned_job.sql                decline_assigned_booking RPC
     0012_cleaner_availability.sql                 cleaner_unavailable_dates table + self-service RLS
+    0013_push_subscriptions.sql                   push_subscriptions table + staff_user_ids() RPC
   seed.sql                                     optional demo properties
 ```

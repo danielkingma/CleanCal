@@ -6,7 +6,13 @@ import { NextResponse, type NextRequest } from "next/server";
 // src/app/api/cron/sync-ical/route.ts). It must stay out of the
 // session-required gate below or Cron's requests just get redirected to
 // /login and never run.
-const PUBLIC_PATHS = ["/login", "/auth", "/api/cron"];
+//
+// /manifest.webmanifest and /sw.js are fetched directly by the browser
+// (install prompts, service-worker update checks) whether or not anyone
+// is signed in -- gating them behind a session redirect breaks
+// installability on the login screen and silently breaks the service
+// worker's own update checks after a session expires.
+const PUBLIC_PATHS = ["/login", "/auth", "/api/cron", "/manifest.webmanifest", "/sw.js"];
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });

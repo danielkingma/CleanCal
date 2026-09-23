@@ -1,10 +1,13 @@
 import { createClient } from "@supabase/supabase-js";
 
-// Service-role client: bypasses Row Level Security entirely. Only ever
-// call this from a trusted, unauthenticated server context that has no
-// user session to scope a request to (right now: the Vercel Cron route
-// handler). Never import this from client-side code or anything that
-// handles an incoming user request directly.
+// Service-role client: bypasses Row Level Security entirely. Only two
+// callers: the Vercel Cron route handler (a trusted, unauthenticated
+// context with no user session to scope to), and src/lib/push.ts (which
+// needs to read push_subscriptions rows across users -- a caller acting
+// on their own booking still needs to reach the *other* party's
+// subscription to notify them, which their own RLS-scoped session can
+// never see). Never import this from client-side code, and never use it
+// to read or write anything beyond those narrow cases.
 export function createServiceClient() {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!key) {
