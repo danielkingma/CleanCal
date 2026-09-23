@@ -193,6 +193,9 @@ export default function CalendarApp({
           >
             Handbook
           </a>
+          <Link href="/history" className="signout-btn">
+            History
+          </Link>
           <Link href="/profile" className="signout-btn">
             My Profile
           </Link>

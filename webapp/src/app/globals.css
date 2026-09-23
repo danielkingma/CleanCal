@@ -986,6 +986,17 @@ main {
   border-collapse: collapse;
   margin-bottom: 10px;
 }
+.feed-table th {
+  text-align: left;
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--line);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+  font-weight: 600;
+}
 .feed-table td {
   padding: 8px 6px;
   border-bottom: 1px solid var(--line);

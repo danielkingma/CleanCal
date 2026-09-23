@@ -294,6 +294,20 @@ showing its real bookings does.
 - Clicking a guest bar opens that booking for editing, same modal as
   Month/Week. Clicking a bare day jumps to Month view on that date.
 
+## Cleaning history (slice 7)
+
+`/history` — a read-only log of every booking marked `complete`, newest
+first: property, guest(s), check-in, nights, source, rating, and any
+dispute. A Cleaner sees only their own completed jobs; an Owner or
+Manager sees every completed job across every property, with a
+"Cleaner" column added so it doubles as a full team activity log. No
+new table or RLS policy — it's a query over `bookings` that already
+existed, scoped the same way the calendar itself already scopes a
+cleaner's view (`assigned_cleaner_id = auth.uid()`), just presented as
+a history instead of a live calendar. The summary line's average
+rating is the same foundation a later "basic reporting" pass would
+build on.
+
 ## Backlog
 
 Waiting on something outside this repo before there's anything to build:
@@ -381,6 +395,7 @@ src/
     properties/          admin-only iCal feeds + access instructions page
     profile/              self-service name/bio/phone/service-area editor
     cleaners/              staff-only cleaner directory + Owner-only Team roles UI
+    history/              read-only completed-jobs log (own jobs, or everyone's if staff)
     api/cron/sync-ical/   optional Vercel Cron target (service-role sync)
     api/ical/[token]/     public per-property .ics export feed
   components/
