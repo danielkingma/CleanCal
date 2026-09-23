@@ -339,6 +339,22 @@ pool for another cleaner to claim rather than leaving it silently stuck
 `supabase/migrations/0011_decline_assigned_job.sql`), the same outcome
 as releasing a claimed open job.
 
+## Basic reporting (slice 10)
+
+`/reports` (Owner/Manager only) — the "later reporting pass" the
+dashboard was built to extend: filter every completed job by date
+range, property, and cleaner, see the same stat tiles the dashboard
+uses but scoped to just that filtered set, two breakdown tables (by
+property, by cleaner — cleans, nights, average rating), the full
+matching-jobs list, and an **Export CSV** button that downloads exactly
+what's filtered.
+
+No new table, no server-side aggregation endpoint — completed bookings
+are fetched once and every filter/breakdown/export runs client-side
+against that set (same "small dataset, aggregate in JS" approach as
+`/dashboard` and `/cleaners`), and the CSV is built and downloaded
+entirely in the browser via a `Blob`, no API route needed.
+
 ## Backlog
 
 Waiting on something outside this repo before there's anything to build:
@@ -429,6 +445,7 @@ src/
     cleaners/              staff-only cleaner directory + Owner-only Team roles UI
     history/              read-only completed-jobs log (own jobs, or everyone's if staff)
     dashboard/             staff-only stat tiles + "needs attention" summary
+    reports/               staff-only filterable reporting + CSV export
     api/cron/sync-ical/   optional Vercel Cron target (service-role sync)
     api/ical/[token]/     public per-property .ics export feed
   components/
@@ -438,6 +455,7 @@ src/
     BookingModal.tsx       new/edit booking form + role-gated fields
     PropertiesAdmin.tsx    per-property iCal feeds + access instructions UI
     ProfileForm.tsx        self-service profile editor
+    ReportsView.tsx        /reports filters, breakdowns, CSV export
     TeamRoles.tsx           Owner-only role management table
   lib/
     supabase/              browser/server/service-role client factories

@@ -211,6 +211,11 @@ export default function CalendarApp({
           </Link>
         ) : null}
         {isStaffUser ? (
+          <Link href="/reports" className="today-btn">
+            Reports
+          </Link>
+        ) : null}
+        {isStaffUser ? (
           <Link href="/properties" className="today-btn">
             Properties
           </Link>

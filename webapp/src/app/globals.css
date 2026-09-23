@@ -669,6 +669,17 @@ main {
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
+.filter-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+.filter-row .field {
+  margin-bottom: 0;
+  flex: 1 1 160px;
+  min-width: 160px;
+}
 .status-row {
   display: flex;
   gap: 8px;
