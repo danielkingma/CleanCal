@@ -972,6 +972,53 @@ main {
   white-space: pre-wrap;
 }
 
+/* ---- Dashboard ---- */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 34px;
+}
+.stat-tile {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--line);
+  border-radius: 10px;
+  padding: 18px 20px;
+}
+.stat-tile.accent-amber { border-left-color: var(--amber); }
+.stat-tile.accent-blue { border-left-color: var(--blue); }
+.stat-tile.accent-coral { border-left-color: var(--coral); }
+.stat-tile.accent-teal { border-left-color: var(--teal-deep); }
+.stat-tile.accent-muted { border-left-color: var(--muted); }
+.stat-number {
+  font-family: "Fraunces", serif;
+  font-weight: 600;
+  font-size: 32px;
+  line-height: 1;
+  color: var(--ink);
+}
+.stat-label {
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+}
+.attn-type-pill {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 2px 9px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.attn-type-pill.dispute { background: rgba(217, 104, 59, 0.16); color: var(--coral); }
+.attn-type-pill.flagged { background: rgba(180, 118, 63, 0.16); color: var(--amber); }
+.attn-type-pill.unclaimed { background: rgba(46, 110, 158, 0.14); color: var(--blue); }
+
 /* ---- Properties admin ---- */
 .property-card {
   background: var(--white);
@@ -1122,6 +1169,9 @@ main {
 @media (max-width: 900px) {
   .py-year-grid {
     grid-template-columns: 1fr;
+  }
+  .stat-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
   main {
     padding: 16px;

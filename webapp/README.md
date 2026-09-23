@@ -308,6 +308,25 @@ a history instead of a live calendar. The summary line's average
 rating is the same foundation a later "basic reporting" pass would
 build on.
 
+## Host dashboard (slice 8)
+
+`/dashboard` (Owner/Manager only) — an at-a-glance operational summary,
+separate from the calendar itself: a row of stat tiles (cleans due in
+the next 7 days, unclaimed open jobs, jobs in progress right now, open
+disputes, bookings flagged as possibly cancelled, and the team's
+average rating), plus a "Needs attention" table that pulls every open
+dispute, flagged booking, and unclaimed open job into one sorted list
+instead of making you go looking for them across properties.
+
+No new table, no aggregate SQL — every number is computed in the page
+itself from the same `bookings`/`properties`/`profiles` queries the
+rest of the app already runs, the same "small dataset, aggregate in
+JS" approach `/cleaners` already uses for rating averages. Deliberately
+not a chart-heavy dashboard: a handful of counts and an actionable list
+answer "what needs my attention today" better than a graph would, and
+it's built so a later reporting pass (date ranges, per-property
+breakdowns, CSV export) extends this rather than replacing it.
+
 ## Backlog
 
 Waiting on something outside this repo before there's anything to build:
@@ -396,6 +415,7 @@ src/
     profile/              self-service name/bio/phone/service-area editor
     cleaners/              staff-only cleaner directory + Owner-only Team roles UI
     history/              read-only completed-jobs log (own jobs, or everyone's if staff)
+    dashboard/             staff-only stat tiles + "needs attention" summary
     api/cron/sync-ical/   optional Vercel Cron target (service-role sync)
     api/ical/[token]/     public per-property .ics export feed
   components/

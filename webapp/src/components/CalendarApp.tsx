@@ -206,6 +206,11 @@ export default function CalendarApp({
           </form>
         </div>
         {isStaffUser ? (
+          <Link href="/dashboard" className="today-btn">
+            Dashboard
+          </Link>
+        ) : null}
+        {isStaffUser ? (
           <Link href="/properties" className="today-btn">
             Properties
           </Link>
