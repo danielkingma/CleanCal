@@ -59,6 +59,7 @@ export default async function CalendarPage() {
 
   let cleaners: Profile[] = [];
   let cleanerRatings: Record<string, CleanerRating> = {};
+  let cleanerUnavailableDates: Record<string, string[]> = {};
   if (isStaff(currentProfile.role)) {
     const { data } = await supabase
       .from("profiles")
@@ -85,6 +86,17 @@ export default async function CalendarPage() {
         { average: total / count, count },
       ]),
     );
+
+    const { data: unavailableRows } = await supabase
+      .from("cleaner_unavailable_dates")
+      .select("cleaner_id, date");
+    const unavailableMap = new Map<string, string[]>();
+    for (const row of unavailableRows ?? []) {
+      const list = unavailableMap.get(row.cleaner_id) ?? [];
+      list.push(row.date);
+      unavailableMap.set(row.cleaner_id, list);
+    }
+    cleanerUnavailableDates = Object.fromEntries(unavailableMap);
   }
 
   return (
@@ -95,6 +107,7 @@ export default async function CalendarPage() {
       initialBookings={(bookings ?? []) as Booking[]}
       cleaners={cleaners}
       cleanerRatings={cleanerRatings}
+      cleanerUnavailableDates={cleanerUnavailableDates}
     />
   );
 }

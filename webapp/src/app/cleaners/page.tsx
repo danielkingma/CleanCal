@@ -43,6 +43,20 @@ export default async function CleanersPage() {
     ratingByCleanerId.set(b.assigned_cleaner_id, entry);
   }
 
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const { data: unavailableRows } = await supabase
+    .from("cleaner_unavailable_dates")
+    .select("cleaner_id, date")
+    .gte("date", todayIso)
+    .order("date");
+
+  const unavailableByCleanerId = new Map<string, string[]>();
+  for (const row of unavailableRows ?? []) {
+    const list = unavailableByCleanerId.get(row.cleaner_id) ?? [];
+    list.push(row.date);
+    unavailableByCleanerId.set(row.cleaner_id, list);
+  }
+
   return (
     <div>
       <div className="topbar">
@@ -71,6 +85,7 @@ export default async function CleanersPage() {
         {(cleaners as Profile[] | null)?.map((cleaner) => {
           const rating = ratingByCleanerId.get(cleaner.id);
           const average = rating ? rating.total / rating.count : null;
+          const upcomingOff = unavailableByCleanerId.get(cleaner.id) ?? [];
 
           return (
             <div className="property-card" key={cleaner.id}>
@@ -87,6 +102,14 @@ export default async function CleanersPage() {
               {cleaner.bio ? (
                 <p style={{ fontSize: 13.5, margin: "10px 0 0" }}>{cleaner.bio}</p>
               ) : null}
+              <p style={{ fontSize: 12.5, color: "var(--muted)", margin: "10px 0 0" }}>
+                {upcomingOff.length > 0
+                  ? `Unavailable: ${upcomingOff
+                      .slice(0, 5)
+                      .map((d) => new Date(d).toLocaleDateString())
+                      .join(", ")}${upcomingOff.length > 5 ? ` +${upcomingOff.length - 5} more` : ""}`
+                  : "No upcoming unavailable dates"}
+              </p>
             </div>
           );
         })}

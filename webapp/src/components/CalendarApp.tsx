@@ -30,6 +30,7 @@ interface CalendarAppProps {
   initialBookings: Booking[];
   cleaners: Profile[];
   cleanerRatings: Record<string, CleanerRating>;
+  cleanerUnavailableDates: Record<string, string[]>;
 }
 
 type View = "week" | "month" | "year";
@@ -48,6 +49,7 @@ export default function CalendarApp({
   initialBookings,
   cleaners,
   cleanerRatings,
+  cleanerUnavailableDates,
 }: CalendarAppProps) {
   const router = useRouter();
   const [view, setView] = useState<View>("month");
@@ -196,6 +198,9 @@ export default function CalendarApp({
           <Link href="/history" className="signout-btn">
             History
           </Link>
+          <Link href="/availability" className="signout-btn">
+            Availability
+          </Link>
           <Link href="/profile" className="signout-btn">
             My Profile
           </Link>
@@ -291,6 +296,7 @@ export default function CalendarApp({
           properties={properties}
           cleaners={cleaners}
           cleanerRatings={cleanerRatings}
+          cleanerUnavailableDates={cleanerUnavailableDates}
           booking={modal.booking}
           presetPropertyId={modal.presetPropertyId}
           presetDate={modal.presetDate}

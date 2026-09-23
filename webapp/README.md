@@ -355,6 +355,26 @@ against that set (same "small dataset, aggregate in JS" approach as
 `/dashboard` and `/cleaners`), and the CSV is built and downloaded
 entirely in the browser via a `Blob`, no API route needed.
 
+## Cleaner availability (slice 11)
+
+`/availability` — a cleaner marks specific dates they're unavailable (a
+day off, vacation, whatever); everything else defaults to available.
+That matches how a small cleaning team actually plans better than
+requiring a recurring weekly pattern up front, and it reuses the same
+month-calendar UI paradigm as the rest of the app — click a day to
+toggle it, backed by a new `cleaner_unavailable_dates` table
+(`supabase/migrations/0012_cleaner_availability.sql`) with RLS scoped
+the same way as `update_own_profile`: a cleaner can only write rows
+where `cleaner_id = auth.uid()`, while Owner/Manager get read-only
+visibility into everyone's dates.
+
+Staff see each cleaner's upcoming unavailable dates on `/cleaners`, and
+get a warning in the booking modal when the cleaner they're about to
+assign has already marked the job's clean date unavailable — not a
+hard block, just a heads-up, since staff may still know something the
+cleaner's calendar doesn't (e.g. the cleaner already agreed to make an
+exception).
+
 ## Backlog
 
 Waiting on something outside this repo before there's anything to build:
@@ -381,8 +401,9 @@ In the Supabase dashboard, open **SQL Editor** and run, in order:
 `0003_ical_sync_and_access_instructions.sql`, `0004_booking_platform_label.sql`,
 `0005_booking_guests.sql`, `0006_cleaner_profiles_and_ratings.sql`,
 `0007_open_job_board.sql`, `0008_dispute_resolution.sql`,
-`0009_owner_manager_roles.sql`, `0010_ical_export.sql`, then
-`0011_decline_assigned_job.sql` (all under `supabase/migrations/`).
+`0009_owner_manager_roles.sql`, `0010_ical_export.sql`,
+`0011_decline_assigned_job.sql`, then
+`0012_cleaner_availability.sql` (all under `supabase/migrations/`).
 Optionally also run `supabase/seed.sql` to seed the same demo
 properties the prototype used.
 
@@ -446,6 +467,7 @@ src/
     history/              read-only completed-jobs log (own jobs, or everyone's if staff)
     dashboard/             staff-only stat tiles + "needs attention" summary
     reports/               staff-only filterable reporting + CSV export
+    availability/          self-service unavailable-dates calendar
     api/cron/sync-ical/   optional Vercel Cron target (service-role sync)
     api/ical/[token]/     public per-property .ics export feed
   components/
@@ -457,6 +479,7 @@ src/
     ProfileForm.tsx        self-service profile editor
     ReportsView.tsx        /reports filters, breakdowns, CSV export
     TeamRoles.tsx           Owner-only role management table
+    AvailabilityCalendar.tsx  self-service unavailable-dates toggle calendar
   lib/
     supabase/              browser/server/service-role client factories
     calendar-utils.ts      date math ported from the prototype
@@ -479,5 +502,6 @@ supabase/
     0009_owner_manager_roles.sql                 owner/manager/cleaner roles + RLS split
     0010_ical_export.sql                         per-property export tokens + regenerate RPC
     0011_decline_assigned_job.sql                decline_assigned_booking RPC
+    0012_cleaner_availability.sql                 cleaner_unavailable_dates table + self-service RLS
   seed.sql                                     optional demo properties
 ```

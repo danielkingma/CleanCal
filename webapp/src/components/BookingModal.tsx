@@ -44,6 +44,7 @@ interface BookingModalProps {
   properties: Property[];
   cleaners: Profile[];
   cleanerRatings: Record<string, CleanerRating>;
+  cleanerUnavailableDates: Record<string, string[]>;
   booking?: Booking;
   presetPropertyId?: string;
   presetDate?: string;
@@ -65,6 +66,7 @@ export default function BookingModal({
   properties,
   cleaners,
   cleanerRatings,
+  cleanerUnavailableDates,
   booking,
   presetPropertyId,
   presetDate,
@@ -393,6 +395,8 @@ export default function BookingModal({
   const oven = checklist.oven ?? { checked: false, outcome: null };
   const selectedProperty = properties.find((p) => p.id === propertyId);
   const platform = getPlatformBadge(booking?.platform_label);
+  const assignedCleanerUnavailable =
+    !!assignedCleanerId && (cleanerUnavailableDates[assignedCleanerId] ?? []).includes(checkoutStr);
 
   return (
     <div className="overlay open" onClick={(e) => e.target === e.currentTarget && onClose()}>
@@ -535,6 +539,13 @@ export default function BookingModal({
                 );
               })}
             </select>
+            {assignedCleanerUnavailable ? (
+              <p className="error-banner" style={{ marginTop: 8 }}>
+                {cleaners.find((c) => c.id === assignedCleanerId)?.name || "This cleaner"} marked
+                themselves unavailable on {new Date(checkoutStr).toLocaleDateString()} — the clean date
+                for this booking.
+              </p>
+            ) : null}
           </div>
         ) : null}
 
