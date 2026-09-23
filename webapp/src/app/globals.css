@@ -248,7 +248,7 @@ main {
   position: sticky;
   left: 0;
   z-index: 4;
-  flex: 1 0 auto;
+  flex: 0 0 auto;
   background: var(--paper-2);
   border-right: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
@@ -328,7 +328,7 @@ main {
   position: sticky;
   left: 0;
   z-index: 2;
-  flex: 1 0 auto;
+  flex: 0 0 auto;
   background: var(--white);
   border-right: 1px solid var(--line);
   display: flex;
@@ -339,6 +339,15 @@ main {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+/* Week only: the label column has room to grow into, so it fills the
+   row instead of leaving blank space past the last day column. Month's
+   day columns already use most of the width, so its label stays fixed
+   and ellipsis-truncates -- the `title` attribute above shows the full
+   name on hover. */
+.cal-outer.weekly .corner,
+.cal-outer.weekly .prop-label {
+  flex: 1 0 auto;
 }
 .prop-track {
   flex: 0 0 auto;

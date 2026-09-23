@@ -53,9 +53,12 @@ export default function Timeline({
 
   return (
     <div className={`cal-outer${weekly ? " weekly" : ""}`}>
-      <div className="cal-inner" style={{ minWidth: totalW }}>
-        <div className="cal-header" style={{ minWidth: totalW }}>
-          <div className="corner" style={{ minWidth: LABEL_W, height: headerH }}>
+      <div className="cal-inner" style={weekly ? { minWidth: totalW } : { width: totalW }}>
+        <div className="cal-header" style={weekly ? { minWidth: totalW } : { width: totalW }}>
+          <div
+            className="corner"
+            style={weekly ? { minWidth: LABEL_W, height: headerH } : { width: LABEL_W, height: headerH }}
+          >
             Property
           </div>
           {days.map((d) => (
@@ -79,7 +82,11 @@ export default function Timeline({
 
           return (
             <div className="prop-row" key={prop.id} style={{ height: rowH }}>
-              <div className="prop-label" style={{ minWidth: LABEL_W }} title={prop.name}>
+              <div
+                className="prop-label"
+                style={weekly ? { minWidth: LABEL_W } : { width: LABEL_W }}
+                title={prop.name}
+              >
                 {prop.name}
               </div>
               <div
