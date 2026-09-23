@@ -248,7 +248,7 @@ main {
   position: sticky;
   left: 0;
   z-index: 4;
-  flex: 0 0 auto;
+  flex: 1 0 auto;
   background: var(--paper-2);
   border-right: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
@@ -328,7 +328,7 @@ main {
   position: sticky;
   left: 0;
   z-index: 2;
-  flex: 0 0 auto;
+  flex: 1 0 auto;
   background: var(--white);
   border-right: 1px solid var(--line);
   display: flex;
