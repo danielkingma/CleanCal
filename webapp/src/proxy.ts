@@ -24,6 +24,12 @@ const PUBLIC_PATHS = [
   "/sw.js",
 ];
 
+// The marketing/landing page -- signed out, this is what a visitor to
+// the bare domain sees instead of bouncing straight to /login. Checked
+// with `===`, never `startsWith`, since "/" is a prefix of every path in
+// the app; treating it like the entries above would make everything
+// public.
+
 // A signed-in user with no organization yet (a brand-new sign-up -- see
 // handle_new_user in supabase/migrations/0001_init.sql, unchanged) needs
 // to land on /onboarding to create or join one before anything else
@@ -62,7 +68,7 @@ export async function proxy(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const path = request.nextUrl.pathname;
-  const isPublic = PUBLIC_PATHS.some((p) => path.startsWith(p));
+  const isPublic = path === "/" || PUBLIC_PATHS.some((p) => path.startsWith(p));
 
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();
@@ -70,7 +76,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (user && path === "/login") {
+  if (user && (path === "/login" || path === "/")) {
     const url = request.nextUrl.clone();
     url.pathname = "/calendar";
     return NextResponse.redirect(url);
