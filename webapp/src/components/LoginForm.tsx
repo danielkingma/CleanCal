@@ -12,7 +12,13 @@ const initialState: MagicLinkState = { status: "idle" };
 // constant in CalendarApp.tsx. Update both if the handbook ever moves.
 const HANDBOOK_URL = "https://claude.ai/artifact/DTYa9CziQcXdn6cGeYncAG";
 
-export default function LoginForm({ callbackFailed }: { callbackFailed: boolean }) {
+export default function LoginForm({
+  callbackFailed,
+  inviteToken,
+}: {
+  callbackFailed: boolean;
+  inviteToken: string | null;
+}) {
   const router = useRouter();
   const [state, formAction, pending] = useActionState(sendMagicLink, initialState);
   const [email, setEmail] = useState("");
@@ -29,7 +35,7 @@ export default function LoginForm({ callbackFailed }: { callbackFailed: boolean 
     setVerifyError(null);
     try {
       await verifyLoginCode(email, code.trim());
-      router.push("/calendar");
+      router.push(inviteToken ? `/onboarding?invite=${inviteToken}` : "/calendar");
       router.refresh();
     } catch (err) {
       setVerifyError(err instanceof Error ? err.message : "That code didn't work.");
@@ -53,6 +59,7 @@ export default function LoginForm({ callbackFailed }: { callbackFailed: boolean 
           </p>
         ) : null}
         <form action={formAction} className="auth-form">
+          {inviteToken ? <input type="hidden" name="invite" value={inviteToken} /> : null}
           <div className="field">
             <label htmlFor="email">Email</label>
             <input

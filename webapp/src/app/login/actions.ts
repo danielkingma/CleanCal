@@ -16,6 +16,7 @@ export async function sendMagicLink(
   if (!email) {
     return { status: "error", message: "Enter an email address." };
   }
+  const inviteToken = String(formData.get("invite") || "").trim();
 
   const supabase = await createClient();
   const origin =
@@ -23,9 +24,18 @@ export async function sendMagicLink(
     process.env.NEXT_PUBLIC_SITE_URL ??
     "http://localhost:3000";
 
+  // Without this, a brand-new cleaner clicking an invite link loses the
+  // invite token the moment they have to sign in -- /auth/callback
+  // defaults to /calendar, which for a user with no organization_id yet
+  // just bounces to plain /onboarding (see proxy.ts's ONBOARDING_EXEMPT_
+  // PATHS), landing them on "create a new business" instead of joining
+  // the one they were invited to. Carrying it through `next` closes that
+  // gap for both the emailed link and the typed-in code path below.
+  const next = inviteToken ? `/onboarding?invite=${encodeURIComponent(inviteToken)}` : "/calendar";
+
   const { error } = await supabase.auth.signInWithOtp({
     email,
-    options: { emailRedirectTo: `${origin}/auth/callback` },
+    options: { emailRedirectTo: `${origin}/auth/callback?next=${encodeURIComponent(next)}` },
   });
 
   if (error) {
