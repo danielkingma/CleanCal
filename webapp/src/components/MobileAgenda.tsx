@@ -21,13 +21,16 @@ export default function MobileAgenda({ days, properties, bookings, onBarClick }:
   const today = new Date();
   const propertyNameById = Object.fromEntries(properties.map((p) => [p.id, p.name]));
 
+  // One card per booking, on its checkout date -- that's the day the
+  // clean actually happens (see the same convention in BookingModal's
+  // availability check). The desktop grid draws a bar across the whole
+  // stay for occupancy context, but repeating an identical card on every
+  // night of a multi-night stay here would just look like the same job
+  // stuck on repeat.
   const daysWithBookings = days.map((d) => {
     const dIso = isoDate(d);
     const dayBookings = bookings
-      .filter((b) => {
-        const co = isoDate(checkoutDate(b));
-        return b.checkin_date <= dIso && co >= dIso;
-      })
+      .filter((b) => isoDate(checkoutDate(b)) === dIso)
       .sort((a, b) => (propertyNameById[a.property_id] ?? "").localeCompare(propertyNameById[b.property_id] ?? ""));
     return { date: d, dIso, dayBookings };
   });
