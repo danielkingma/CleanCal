@@ -3,14 +3,11 @@
 import { useState, type FormEvent } from "react";
 import { useActionState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { sendMagicLink, verifyLoginCode, type MagicLinkState } from "@/app/login/actions";
 import Logo from "@/components/Logo";
 
 const initialState: MagicLinkState = { status: "idle" };
-
-// Points at the published CleanCal Handbook artifact -- see the same
-// constant in CalendarApp.tsx. Update both if the handbook ever moves.
-const HANDBOOK_URL = "https://claude.ai/artifact/DTYa9CziQcXdn6cGeYncAG";
 
 export default function LoginForm({
   callbackFailed,
@@ -105,9 +102,9 @@ export default function LoginForm({
           </form>
         ) : null}
       </div>
-      <a href={HANDBOOK_URL} target="_blank" rel="noopener noreferrer" className="auth-footer-link">
+      <Link href="/handbook" className="auth-footer-link">
         New here? Read the CleanCal Handbook
-      </a>
+      </Link>
     </div>
   );
 }

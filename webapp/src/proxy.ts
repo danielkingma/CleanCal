@@ -14,6 +14,9 @@ import { NextResponse, type NextRequest } from "next/server";
 // is signed in -- gating them behind a session redirect breaks
 // installability on the login screen and silently breaks the service
 // worker's own update checks after a session expires.
+// /handbook is linked from the signed-out login and landing pages (and
+// shared with cleaners who may not have an account yet), so it has to
+// render without a session same as those do.
 const PUBLIC_PATHS = [
   "/login",
   "/auth",
@@ -22,6 +25,7 @@ const PUBLIC_PATHS = [
   "/api/ical",
   "/manifest.webmanifest",
   "/sw.js",
+  "/handbook",
 ];
 
 // The marketing/landing page -- signed out, this is what a visitor to

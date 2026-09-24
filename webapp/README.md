@@ -653,6 +653,25 @@ not a pricing one.
 
 Run `0019_linen_service.sql` in Supabase before this deploys.
 
+## Handbook moved in-app (slice 20)
+
+The Handbook was a standalone claude.ai artifact linked from the login
+page, landing page, and the in-app Menu dropdown. That worked fine for
+the account that owned the artifact, but anyone else who tapped the
+link -- a cleaner on their own phone, a manager who'd never signed into
+that Claude account -- landed on a generic claude.ai page instead of
+the actual content, since the artifact's sharing setting only covered
+the owner (and whoever it was explicitly shared with).
+
+It's now `/handbook` in this app (`src/app/handbook/page.tsx`), listed
+in `proxy.ts`'s `PUBLIC_PATHS` so it renders with no session same as
+`/login`. Every `HANDBOOK_URL` reference (LoginForm, CalendarApp,
+LandingPage) now points at it via a plain `Link`. Content and styling
+are ported 1:1 from the old artifact, scoped under a `.hb-page` class in
+`globals.css` so its `h1`/`table`/`code`/etc rules can't leak into any
+other page. Updating the handbook from here on means editing this file
+directly, not republishing an external artifact.
+
 ## Backlog
 
 Waiting on something outside this repo before there's anything to build:

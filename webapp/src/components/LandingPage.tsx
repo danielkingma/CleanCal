@@ -1,11 +1,6 @@
 import Link from "next/link";
 import Logo from "./Logo";
 
-// Points at the published CleanCal Handbook artifact -- see the same
-// constant in CalendarApp.tsx/LoginForm.tsx. Update all three if the
-// handbook ever moves.
-const HANDBOOK_URL = "https://claude.ai/artifact/DTYa9CziQcXdn6cGeYncAG";
-
 const FEATURES = [
   {
     title: "Every platform, one calendar",
@@ -65,9 +60,7 @@ export default function LandingPage() {
         <nav className="landing-nav-links">
           <a href="#features">Features</a>
           <a href="#pricing">Pricing</a>
-          <a href={HANDBOOK_URL} target="_blank" rel="noopener noreferrer">
-            Handbook
-          </a>
+          <Link href="/handbook">Handbook</Link>
         </nav>
         <Link href="/login" className="btn btn-primary landing-nav-cta">
           Sign in
@@ -87,14 +80,9 @@ export default function LandingPage() {
             <Link href="/login" className="btn btn-primary landing-cta-btn">
               Sign in to get started
             </Link>
-            <a
-              href={HANDBOOK_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn-secondary landing-cta-btn"
-            >
+            <Link href="/handbook" className="btn btn-secondary landing-cta-btn">
               Read the Handbook
-            </a>
+            </Link>
           </div>
           <p className="landing-hero-note">No credit card required to start.</p>
         </section>
@@ -159,9 +147,7 @@ export default function LandingPage() {
           <Logo size={20} />
           Clean<span>Cal</span>
         </div>
-        <a href={HANDBOOK_URL} target="_blank" rel="noopener noreferrer">
-          CleanCal Handbook
-        </a>
+        <Link href="/handbook">CleanCal Handbook</Link>
       </footer>
     </div>
   );
