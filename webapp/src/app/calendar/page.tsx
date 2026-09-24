@@ -26,7 +26,7 @@ export default async function CalendarPage() {
     role: "cleaner",
   };
 
-  const { data: allProperties } = await supabase
+  const { data: allProperties, error: propertiesError } = await supabase
     .from("properties")
     .select("id, name, access_instructions, payout_rate_cents")
     .order("name");
@@ -100,14 +100,30 @@ export default async function CalendarPage() {
   }
 
   return (
-    <CalendarApp
-      currentProfile={currentProfile}
-      currentUserEmail={user.email ?? ""}
-      properties={properties as Property[]}
-      initialBookings={(bookings ?? []) as Booking[]}
-      cleaners={cleaners}
-      cleanerRatings={cleanerRatings}
-      cleanerUnavailableDates={cleanerUnavailableDates}
-    />
+    <div>
+      {propertiesError ? (
+        <pre
+          style={{
+            background: "#fee2e2",
+            color: "#7f1d1d",
+            padding: 16,
+            margin: 0,
+            whiteSpace: "pre-wrap",
+            fontSize: 13,
+          }}
+        >
+          Couldn&apos;t load properties: {propertiesError.message}
+        </pre>
+      ) : null}
+      <CalendarApp
+        currentProfile={currentProfile}
+        currentUserEmail={user.email ?? ""}
+        properties={properties as Property[]}
+        initialBookings={(bookings ?? []) as Booking[]}
+        cleaners={cleaners}
+        cleanerRatings={cleanerRatings}
+        cleanerUnavailableDates={cleanerUnavailableDates}
+      />
+    </div>
   );
 }
