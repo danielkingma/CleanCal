@@ -241,7 +241,7 @@ export default function CalendarApp({
             </select>
           ) : null}
           {isStaffUser ? (
-            <Dropdown label="Manage" triggerClassName="today-btn">
+            <Dropdown label="Manage" triggerClassName="today-btn" align="left">
               <Link href="/dashboard" className="dropdown-item">
                 Dashboard
               </Link>
