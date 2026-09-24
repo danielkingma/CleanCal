@@ -199,6 +199,27 @@ export default function BookingModal({
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Desktop: hovering a thumbnail previews it large, and moving off
+  // closes it again. Touch has no hover, so tapping opens the same
+  // preview "pinned" -- it stays open (a hover-leave elsewhere can't
+  // close it) until the backdrop or close button is tapped.
+  const [lightboxPhoto, setLightboxPhoto] = useState<PhotoItem | null>(null);
+  const [lightboxPinned, setLightboxPinned] = useState(false);
+  function openLightboxOnHover(photo: PhotoItem) {
+    if (!lightboxPinned) setLightboxPhoto(photo);
+  }
+  function closeLightboxOnHoverEnd() {
+    if (!lightboxPinned) setLightboxPhoto(null);
+  }
+  function openLightboxPinned(photo: PhotoItem) {
+    setLightboxPhoto(photo);
+    setLightboxPinned(true);
+  }
+  function closeLightbox() {
+    setLightboxPhoto(null);
+    setLightboxPinned(false);
+  }
+
   const canSeeDispute = mode === "edit" && !!booking?.assigned_cleaner_id && (isStaffUser || isAssignedCleaner);
   const [disputeMessages, setDisputeMessages] = useState<DisputeMessage[]>([]);
   const [disputeLoading, setDisputeLoading] = useState(canSeeDispute);
@@ -717,7 +738,13 @@ export default function BookingModal({
                 {photos.map((p) => (
                   <div className="photo-thumb" key={p.id}>
                     {/* eslint-disable-next-line @next/next/no-img-element -- short-lived signed URLs, not a static asset */}
-                    <img src={p.url} alt="" />
+                    <img
+                      src={p.url}
+                      alt=""
+                      onMouseEnter={() => openLightboxOnHover(p)}
+                      onMouseLeave={closeLightboxOnHoverEnd}
+                      onClick={() => openLightboxPinned(p)}
+                    />
                     {canEditCleaning ? (
                       <button
                         type="button"
@@ -931,6 +958,29 @@ export default function BookingModal({
           </div>
         </div>
       </div>
+
+      {lightboxPhoto ? (
+        <div
+          className="photo-lightbox"
+          onClick={closeLightbox}
+          onMouseLeave={() => {
+            if (!lightboxPinned) closeLightbox();
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL, not a static asset */}
+          <img src={lightboxPhoto.url} alt="" />
+          {lightboxPinned ? (
+            <button
+              type="button"
+              className="photo-lightbox-close"
+              onClick={closeLightbox}
+              aria-label="Close photo preview"
+            >
+              ✕
+            </button>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }
