@@ -43,17 +43,14 @@ a {
   color: var(--teal);
 }
 
-/* ---- Topbar ----
-   Dark teal + coral, echoing the Logo mark (teal-deep body, coral
-   binding pegs, cream checkmark) instead of a plain white bar -- the
-   app's own "cover" rather than a generic admin-panel header. */
+/* ---- Topbar ---- */
 .topbar {
   display: flex;
   flex-direction: column;
   gap: 10px;
   padding: 16px 24px;
-  border-bottom: 4px solid var(--coral);
-  background: var(--teal-deep);
+  border-bottom: 1px solid var(--line);
+  background: var(--white);
 }
 .topbar-row {
   display: flex;
@@ -67,10 +64,9 @@ a {
   display: flex;
   align-items: center;
   gap: 9px;
-  color: var(--paper);
 }
 .brand span {
-  color: var(--coral);
+  color: var(--teal);
 }
 .nav-controls {
   display: flex;
@@ -94,7 +90,6 @@ a {
   min-width: 150px;
   text-align: center;
   font-size: 15.5px;
-  color: var(--paper);
 }
 .today-btn {
   border: 1px solid var(--line);
@@ -138,7 +133,7 @@ a {
   color: var(--ink);
 }
 .new-btn {
-  background: var(--coral);
+  background: var(--teal-deep);
   color: var(--white);
   border: none;
   border-radius: 7px;
@@ -154,7 +149,7 @@ a {
   align-items: center;
   gap: 10px;
   font-size: 13px;
-  color: rgba(246, 243, 236, 0.8);
+  color: var(--muted);
 }
 .role-pill {
   border-radius: 999px;
@@ -266,16 +261,6 @@ main {
   margin-left: auto;
   font-size: 12.5px;
   color: var(--muted);
-}
-
-/* The calendar view (grid, agenda, or month card) floats as one card on
-   the cream page background, echoing the Logo mark's shape -- a
-   contained frame rather than content running edge-to-edge. */
-.calendar-card {
-  background: var(--white);
-  border-radius: 16px;
-  box-shadow: 0 2px 14px rgba(20, 35, 31, 0.08);
-  padding: 16px;
 }
 
 /* ---- Property-row timeline (Month & Week share this) ---- */

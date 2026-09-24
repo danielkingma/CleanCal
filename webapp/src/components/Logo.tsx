@@ -11,7 +11,7 @@ export default function Logo({ size = 22 }: { size?: number }) {
       aria-hidden="true"
       style={{ flexShrink: 0 }}
     >
-      <rect x="10" y="16" width="76" height="70" rx="14" fill="#143F38" stroke="#F6F3EC" strokeWidth="3" />
+      <rect x="10" y="16" width="76" height="70" rx="14" fill="#143F38" />
       <rect x="24" y="4" width="8" height="20" rx="4" fill="#D9683B" />
       <rect x="64" y="4" width="8" height="20" rx="4" fill="#D9683B" />
       <rect x="10" y="30" width="76" height="10" fill="#0B211D" />

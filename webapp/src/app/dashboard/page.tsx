@@ -92,7 +92,7 @@ export default async function DashboardPage() {
           <Logo />
           Clean<span>Cal</span>
         </div>
-        <div style={{ color: "rgba(246, 243, 236, 0.8)", fontSize: 14 }}>Dashboard</div>
+        <div style={{ color: "var(--muted)", fontSize: 14 }}>Dashboard</div>
         <div style={{ marginLeft: "auto" }}>
           <Link href="/calendar" className="today-btn">
             ← Calendar
