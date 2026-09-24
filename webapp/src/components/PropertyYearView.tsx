@@ -26,6 +26,7 @@ export default function PropertyYearView({
           bookings={bookings}
           onSelectBooking={onSelectBooking}
           onSelectDate={onSelectDate}
+          showPlatformNames
         />
       ))}
     </div>

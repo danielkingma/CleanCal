@@ -22,6 +22,11 @@ interface MonthGridProps {
   onSelectBooking: (booking: Booking) => void;
   onSelectDate: (dateIso: string) => void;
   showTitle?: boolean;
+  // The Year view has room for a platform name (Airbnb, Vrbo, ...) on a
+  // long-enough bar; the mobile Month tab's bars are already tighter on
+  // their own and don't get it. Off by default so the standalone mobile
+  // usage doesn't have to opt out.
+  showPlatformNames?: boolean;
 }
 
 interface BarSegment {
@@ -102,6 +107,7 @@ export default function MonthGrid({
   onSelectBooking,
   onSelectDate,
   showTitle = true,
+  showPlatformNames = false,
 }: MonthGridProps) {
   const today = new Date();
   const first = new Date(year, month, 1);
@@ -153,7 +159,7 @@ export default function MonthGrid({
                   // so a 1-night stay already measures span 2 -- checking
                   // the booking's actual night count (not the grid span)
                   // is what "long enough to fit the word" really means.
-                  const showPlatformName = Boolean(platform) && seg.booking.nights >= 2;
+                  const showPlatformName = showPlatformNames && Boolean(platform) && seg.booking.nights >= 2;
                   return (
                     <button
                       type="button"
