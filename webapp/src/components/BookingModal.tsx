@@ -389,6 +389,15 @@ export default function BookingModal({
   function setOvenOutcome(outcome: "cleaned" | "attention") {
     setChecklist((prev) => ({ ...prev, oven: { checked: true, outcome } }));
   }
+  function toggleAttentionFlag(flagged: boolean) {
+    setChecklist((prev) => ({
+      ...prev,
+      attention: { flagged, note: flagged ? (prev.attention?.note ?? "") : "" },
+    }));
+  }
+  function setAttentionNote(note: string) {
+    setChecklist((prev) => ({ ...prev, attention: { flagged: true, note } }));
+  }
 
   async function handleSave() {
     setError(null);
@@ -437,6 +446,7 @@ export default function BookingModal({
   }
 
   const oven = checklist.oven ?? { checked: false, outcome: null };
+  const attention = checklist.attention ?? { flagged: false, note: "" };
   const selectedProperty = properties.find((p) => p.id === propertyId);
   const platform = getPlatformBadge(booking?.platform_label);
   const assignedCleanerUnavailable =
@@ -655,6 +665,29 @@ export default function BookingModal({
             onChange={(e) => setNotes(e.target.value)}
           />
         </div>
+
+        {mode === "edit" ? (
+          <div className="field">
+            <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <input
+                type="checkbox"
+                checked={attention.flagged}
+                disabled={!canEditCleaning}
+                onChange={(e) => toggleAttentionFlag(e.target.checked)}
+              />
+              Needs attention
+            </label>
+            {attention.flagged ? (
+              <textarea
+                value={attention.note}
+                disabled={!canEditCleaning}
+                placeholder="What does the host need to know about?"
+                onChange={(e) => setAttentionNote(e.target.value)}
+                style={{ marginTop: 8 }}
+              />
+            ) : null}
+          </div>
+        ) : null}
 
         {mode === "edit" ? (
           <div className="clean-section">

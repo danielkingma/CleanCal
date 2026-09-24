@@ -246,7 +246,8 @@ export default function HandbookPage() {
                   progress,{" "}
                   <span style={{ color: "var(--teal-deep)", fontWeight: 600 }}>teal</span> means
                   complete. A small red badge on a bar means <strong>Requires attention</strong> —
-                  usually the oven check on that booking&apos;s checklist was marked that way (see{" "}
+                  either the oven check on that booking&apos;s checklist was marked that way, or a
+                  cleaner ticked the general &quot;Needs attention&quot; box under Notes (see{" "}
                   <a href="#checklist">Cleaning checklist &amp; photos</a>).
                 </li>
                 <li>
@@ -322,6 +323,13 @@ export default function HandbookPage() {
                 <strong>Requires attention</strong> buttons. Marking it &quot;Requires
                 attention&quot; puts a red &quot;!&quot; badge on that booking right on the
                 calendar, visible to Owners and Managers at a glance.
+              </p>
+              <p>
+                For anything else worth flagging — not specific to one checklist item — there&apos;s
+                a general <strong>Needs attention</strong> checkbox right under the booking&apos;s
+                Notes field. Ticking it opens a text box for a quick note (e.g. &quot;broken lamp
+                in bedroom&quot;), and puts that same red &quot;!&quot; badge on the booking so
+                the host sees it without having to open every job.
               </p>
               <h3>Photos</h3>
               <p>

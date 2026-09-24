@@ -50,7 +50,7 @@ export function daysBetween(a: Date, b: Date): number {
 }
 
 export function hasAttention(b: Booking): boolean {
-  return b.checklist?.oven?.outcome === "attention";
+  return b.checklist?.oven?.outcome === "attention" || Boolean(b.checklist?.attention?.flagged);
 }
 
 export const STATUS_LABEL: Record<Booking["status"], string> = {

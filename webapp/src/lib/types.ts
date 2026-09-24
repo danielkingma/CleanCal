@@ -61,14 +61,22 @@ export interface OvenChecklistEntry {
   outcome: "cleaned" | "attention" | null;
 }
 
+export interface AttentionFlag {
+  flagged: boolean;
+  note: string;
+}
+
 // A flat bag of item-key -> checked, one key per CHECKLIST_SECTIONS item
 // (calendar-utils.ts) -- stored as-is in the `bookings.checklist` jsonb
 // column, so adding/renaming/removing an item there never needs a
-// migration. `oven` alone keeps a richer shape (see hasAttention()) so a
-// cleaner can flag it as needing follow-up rather than just checked/not.
+// migration. `oven` and `attention` alone keep a richer shape (see
+// hasAttention()) -- oven so a cleaner can flag it as needing follow-up
+// rather than just checked/not, and `attention` as a general "flag this
+// booking for the host" note independent of any specific checklist item.
 export interface Checklist {
   oven?: OvenChecklistEntry;
-  [itemKey: string]: boolean | OvenChecklistEntry | undefined;
+  attention?: AttentionFlag;
+  [itemKey: string]: boolean | OvenChecklistEntry | AttentionFlag | undefined;
 }
 
 export type BookingSource = "manual" | "ical";
