@@ -13,7 +13,7 @@ export default async function ProfilePage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, name, role, bio, phone, service_area, identity_status")
+    .select("id, name, role, bio, phone, service_area, identity_status, stripe_connect_status")
     .eq("id", user.id)
     .single();
 

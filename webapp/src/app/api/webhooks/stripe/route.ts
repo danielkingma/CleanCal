@@ -51,6 +51,17 @@ export async function POST(request: Request) {
         .eq("stripe_identity_session_id", session.id);
       break;
     }
+    case "account.updated": {
+      const account = event.data.object as Stripe.Account;
+      // payouts_enabled is the actual signal Connect onboarding is
+      // complete -- charges_enabled alone doesn't mean Stripe has
+      // verified enough to pay this account out yet.
+      await supabase
+        .from("profiles")
+        .update({ stripe_connect_status: account.payouts_enabled ? "active" : "pending" })
+        .eq("stripe_connect_account_id", account.id);
+      break;
+    }
     default:
       break;
   }

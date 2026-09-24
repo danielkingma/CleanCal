@@ -28,7 +28,7 @@ export default async function CalendarPage() {
 
   const { data: allProperties } = await supabase
     .from("properties")
-    .select("id, name, access_instructions")
+    .select("id, name, access_instructions, payout_rate_cents")
     .order("name");
 
   // Admins see every booking; cleaners are scoped to their own assignments
@@ -40,7 +40,7 @@ export default async function CalendarPage() {
   let bookingsQuery = supabase
     .from("bookings")
     .select(
-      "id, property_id, checkin_date, nights, status, notes, guests, checklist, assigned_cleaner_id, is_open_job, source, external_uid, ical_missing_since, platform_label, rating, rating_comment, dispute_status",
+      "id, property_id, checkin_date, nights, status, notes, guests, checklist, assigned_cleaner_id, is_open_job, source, external_uid, ical_missing_since, platform_label, rating, rating_comment, dispute_status, payout_status, stripe_transfer_id",
     )
     .order("checkin_date");
   if (!isStaff(currentProfile.role)) {
@@ -63,7 +63,7 @@ export default async function CalendarPage() {
   if (isStaff(currentProfile.role)) {
     const { data } = await supabase
       .from("profiles")
-      .select("id, name, role")
+      .select("id, name, role, stripe_connect_status")
       .eq("role", "cleaner")
       .order("name");
     cleaners = data ?? [];

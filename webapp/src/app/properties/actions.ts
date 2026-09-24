@@ -40,6 +40,17 @@ export async function updateAccessInstructions(propertyId: string, text: string)
   revalidatePath("/calendar");
 }
 
+export async function updatePayoutRate(propertyId: string, cents: number | null) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("properties")
+    .update({ payout_rate_cents: cents })
+    .eq("id", propertyId);
+  if (error) throw new Error(error.message);
+  revalidatePath("/properties");
+  revalidatePath("/calendar");
+}
+
 export async function addIcalFeed(propertyId: string, sourceLabel: string, icalUrl: string) {
   if (!sourceLabel.trim()) throw new Error("Give this feed a label.");
   try {

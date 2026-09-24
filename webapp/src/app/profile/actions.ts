@@ -49,3 +49,51 @@ export async function startIdentityVerification(returnUrl: string): Promise<stri
   revalidatePath("/profile");
   return session.url;
 }
+
+// Starts (or resumes) Stripe Connect Express onboarding for the
+// signed-in cleaner and returns the URL to redirect them to. Reuses an
+// existing account if onboarding was already started rather than
+// creating a new Express account every time this is called -- Stripe
+// treats a fresh account per attempt as a real (and confusing) separate
+// payee. Whether the account can actually receive a payout
+// (`stripe_connect_status = 'active'`) is set only by the
+// `account.updated` webhook, once Stripe confirms onboarding is done.
+export async function startConnectOnboarding(returnUrl: string): Promise<string> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not signed in.");
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("stripe_connect_account_id")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  const stripe = getStripe();
+  let accountId = profile?.stripe_connect_account_id as string | null | undefined;
+  if (!accountId) {
+    const account = await stripe.accounts.create({
+      type: "express",
+      email: user.email ?? undefined,
+      metadata: { supabase_user_id: user.id },
+      capabilities: { transfers: { requested: true } },
+    });
+    accountId = account.id;
+    const { error } = await supabase.rpc("start_own_connect_onboarding", {
+      p_account_id: accountId,
+    });
+    if (error) throw new Error(error.message);
+  }
+
+  const link = await stripe.accountLinks.create({
+    account: accountId,
+    refresh_url: returnUrl,
+    return_url: returnUrl,
+    type: "account_onboarding",
+  });
+
+  revalidatePath("/profile");
+  return link.url;
+}

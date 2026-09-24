@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { startIdentityVerification, updateOwnProfile } from "@/app/profile/actions";
+import { startConnectOnboarding, startIdentityVerification, updateOwnProfile } from "@/app/profile/actions";
 import Logo from "./Logo";
 import type { Profile } from "@/lib/types";
 
@@ -16,6 +16,8 @@ export default function ProfileForm({ profile, email }: { profile: Profile; emai
   const [error, setError] = useState<string | null>(null);
   const [verifying, setVerifying] = useState(false);
   const [verifyError, setVerifyError] = useState<string | null>(null);
+  const [onboarding, setOnboarding] = useState(false);
+  const [onboardError, setOnboardError] = useState<string | null>(null);
 
   async function handleSave() {
     setSaving(true);
@@ -40,6 +42,18 @@ export default function ProfileForm({ profile, email }: { profile: Profile; emai
     } catch (e) {
       setVerifyError(e instanceof Error ? e.message : "Couldn't start verification.");
       setVerifying(false);
+    }
+  }
+
+  async function handleSetUpPayouts() {
+    setOnboarding(true);
+    setOnboardError(null);
+    try {
+      const url = await startConnectOnboarding(`${window.location.origin}/profile`);
+      window.location.href = url;
+    } catch (e) {
+      setOnboardError(e instanceof Error ? e.message : "Couldn't start payout setup.");
+      setOnboarding(false);
     }
   }
 
@@ -142,6 +156,40 @@ export default function ProfileForm({ profile, email }: { profile: Profile; emai
               {verifyError ? (
                 <div className="error-banner" style={{ marginTop: 10 }}>
                   {verifyError}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
+
+        {profile.role === "cleaner" ? (
+          <div className="property-card" style={{ maxWidth: 480, marginTop: 16 }}>
+            <div className="field">
+              <label>Payouts</label>
+              <p className="access-note">
+                {profile.stripe_connect_status === "active"
+                  ? "Payout account connected ✓"
+                  : profile.stripe_connect_status === "pending"
+                    ? "Payout setup started — finish it to get paid for jobs."
+                    : "Not set up yet — connect a payout account to get paid for completed jobs."}
+              </p>
+              {profile.stripe_connect_status !== "active" ? (
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={handleSetUpPayouts}
+                  disabled={onboarding}
+                >
+                  {onboarding
+                    ? "Redirecting…"
+                    : profile.stripe_connect_status === "pending"
+                      ? "Finish payout setup"
+                      : "Set up payouts"}
+                </button>
+              ) : null}
+              {onboardError ? (
+                <div className="error-banner" style={{ marginTop: 10 }}>
+                  {onboardError}
                 </div>
               ) : null}
             </div>

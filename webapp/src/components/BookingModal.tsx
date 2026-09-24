@@ -6,6 +6,7 @@ import {
   createBooking,
   declineAssignedBooking,
   deleteBooking,
+  payCleanerForBooking,
   postDisputeMessage,
   rateBooking,
   releaseOpenBooking,
@@ -169,6 +170,26 @@ export default function BookingModal({
       setError(e instanceof Error ? e.message : "Couldn't save rating.");
     } finally {
       setSavingRating(false);
+    }
+  }
+
+  const [payingCleaner, setPayingCleaner] = useState(false);
+  const [payError, setPayError] = useState<string | null>(null);
+  const [justPaid, setJustPaid] = useState(false);
+  const property = properties.find((p) => p.id === propertyId);
+  const assignedCleaner = cleaners.find((c) => c.id === booking?.assigned_cleaner_id);
+
+  async function handlePayCleaner() {
+    if (!booking) return;
+    setPayingCleaner(true);
+    setPayError(null);
+    try {
+      await payCleanerForBooking(booking.id);
+      setJustPaid(true);
+    } catch (e) {
+      setPayError(e instanceof Error ? e.message : "Couldn't pay cleaner.");
+    } finally {
+      setPayingCleaner(false);
     }
   }
 
@@ -721,6 +742,35 @@ export default function BookingModal({
               </button>
               {ratingSaved ? <span style={{ fontSize: 12.5, color: "var(--teal-deep)" }}>Saved</span> : null}
             </div>
+          </div>
+        ) : null}
+
+        {mode === "edit" && isStaffUser && booking?.assigned_cleaner_id && status === "complete" ? (
+          <div className="clean-section">
+            <h3>Cleaner payout</h3>
+            {booking.payout_status === "paid" || justPaid ? (
+              <p className="photo-note">Paid ✓</p>
+            ) : !property?.payout_rate_cents ? (
+              <p className="photo-note">No payout rate set for this property — set one on the Properties page.</p>
+            ) : assignedCleaner?.stripe_connect_status !== "active" ? (
+              <p className="photo-note">This cleaner hasn&apos;t finished setting up payouts yet.</p>
+            ) : (
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={handlePayCleaner}
+                  disabled={payingCleaner}
+                >
+                  {payingCleaner ? "Paying…" : `Pay $${(property.payout_rate_cents / 100).toFixed(2)}`}
+                </button>
+              </div>
+            )}
+            {payError ? (
+              <div className="error-banner" style={{ marginTop: 10 }}>
+                {payError}
+              </div>
+            ) : null}
           </div>
         ) : null}
 

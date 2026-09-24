@@ -11,6 +11,7 @@ import {
   syncAllFeeds,
   syncIcalFeed,
   updateAccessInstructions,
+  updatePayoutRate,
 } from "@/app/properties/actions";
 import Logo from "./Logo";
 import type { IcalFeed, Property } from "@/lib/types";
@@ -155,6 +156,13 @@ function PropertyCard({
   const [savingInstructions, setSavingInstructions] = useState(false);
   const [instructionsSaved, setInstructionsSaved] = useState(false);
 
+  const [payoutRate, setPayoutRate] = useState(
+    property.payout_rate_cents != null ? (property.payout_rate_cents / 100).toString() : "",
+  );
+  const [savingPayoutRate, setSavingPayoutRate] = useState(false);
+  const [payoutRateSaved, setPayoutRateSaved] = useState(false);
+  const [payoutRateError, setPayoutRateError] = useState<string | null>(null);
+
   const [label, setLabel] = useState("");
   const [url, setUrl] = useState("");
   const [addError, setAddError] = useState<string | null>(null);
@@ -221,6 +229,26 @@ function PropertyCard({
       setInstructionsSaved(true);
     } finally {
       setSavingInstructions(false);
+    }
+  }
+
+  async function handleSavePayoutRate() {
+    setPayoutRateError(null);
+    const trimmed = payoutRate.trim();
+    const dollars = trimmed === "" ? null : Number(trimmed);
+    if (dollars != null && (Number.isNaN(dollars) || dollars < 0)) {
+      setPayoutRateError("Enter a valid amount, or leave blank.");
+      return;
+    }
+    setSavingPayoutRate(true);
+    setPayoutRateSaved(false);
+    try {
+      await updatePayoutRate(property.id, dollars == null ? null : Math.round(dollars * 100));
+      setPayoutRateSaved(true);
+    } catch (e) {
+      setPayoutRateError(e instanceof Error ? e.message : "Couldn't save payout rate.");
+    } finally {
+      setSavingPayoutRate(false);
     }
   }
 
@@ -301,6 +329,44 @@ function PropertyCard({
             <span style={{ fontSize: 12.5, color: "var(--teal-deep)" }}>Saved</span>
           ) : null}
         </div>
+      </div>
+
+      <div className="field">
+        <label htmlFor={`payout-${property.id}`}>
+          Cleaner payout rate for this property (paid via Stripe once a booking is marked complete)
+        </label>
+        <input
+          id={`payout-${property.id}`}
+          type="number"
+          min="0"
+          step="0.01"
+          inputMode="decimal"
+          value={payoutRate}
+          placeholder="e.g. 85.00"
+          onChange={(e) => {
+            setPayoutRate(e.target.value);
+            setPayoutRateSaved(false);
+          }}
+          style={{ maxWidth: 160 }}
+        />
+        <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 10 }}>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={handleSavePayoutRate}
+            disabled={savingPayoutRate}
+          >
+            {savingPayoutRate ? "Saving…" : "Save"}
+          </button>
+          {payoutRateSaved ? (
+            <span style={{ fontSize: 12.5, color: "var(--teal-deep)" }}>Saved</span>
+          ) : null}
+        </div>
+        {payoutRateError ? (
+          <div className="error-banner" style={{ marginTop: 10 }}>
+            {payoutRateError}
+          </div>
+        ) : null}
       </div>
 
       <div className="field">

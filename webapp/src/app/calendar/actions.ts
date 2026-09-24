@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { sendPushToUsers } from "@/lib/push";
+import { getStripe } from "@/lib/stripe";
 import type { BookingStatus, Checklist } from "@/lib/types";
 
 export interface BookingInput {
@@ -233,6 +234,61 @@ export async function resolveDispute(bookingId: string) {
     .update({ dispute_status: "resolved" })
     .eq("id", bookingId);
   if (error) throw new Error(error.message);
+  revalidatePath("/calendar");
+}
+
+// Staff-triggered, one booking at a time -- money movement here is
+// always an explicit action someone approves, never an automatic side
+// effect of marking a booking complete (same "you approve every step
+// that touches money" posture as the rest of the app's admin actions).
+// A failure (e.g. the platform's Stripe balance can't cover the
+// transfer yet) surfaces directly to whoever clicked the button, unlike
+// push notifications' deliberately-swallowed errors -- this is a real
+// financial action, not a best-effort convenience.
+export async function payCleanerForBooking(bookingId: string) {
+  const supabase = await createClient();
+  const { data: booking, error } = await supabase
+    .from("bookings")
+    .select("id, property_id, assigned_cleaner_id, status, payout_status")
+    .eq("id", bookingId)
+    .maybeSingle();
+  if (error || !booking) throw new Error(error?.message ?? "Booking not found.");
+  if (booking.status !== "complete") throw new Error("Booking isn't marked complete yet.");
+  if (!booking.assigned_cleaner_id) throw new Error("No cleaner assigned to this booking.");
+  if (booking.payout_status === "paid") throw new Error("This booking has already been paid out.");
+
+  const { data: property } = await supabase
+    .from("properties")
+    .select("payout_rate_cents")
+    .eq("id", booking.property_id)
+    .maybeSingle();
+  if (!property?.payout_rate_cents) {
+    throw new Error("This property has no payout rate set -- add one on the Properties page first.");
+  }
+
+  const { data: cleaner } = await supabase
+    .from("profiles")
+    .select("stripe_connect_account_id, stripe_connect_status")
+    .eq("id", booking.assigned_cleaner_id)
+    .maybeSingle();
+  if (!cleaner?.stripe_connect_account_id || cleaner.stripe_connect_status !== "active") {
+    throw new Error("This cleaner hasn't finished setting up payouts yet.");
+  }
+
+  const stripe = getStripe();
+  const transfer = await stripe.transfers.create({
+    amount: property.payout_rate_cents,
+    currency: "aud",
+    destination: cleaner.stripe_connect_account_id,
+    metadata: { booking_id: bookingId },
+  });
+
+  const { error: updateError } = await supabase
+    .from("bookings")
+    .update({ payout_status: "paid", stripe_transfer_id: transfer.id })
+    .eq("id", bookingId);
+  if (updateError) throw new Error(updateError.message);
+
   revalidatePath("/calendar");
 }
 

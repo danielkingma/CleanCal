@@ -14,6 +14,7 @@ export function isOwner(role: Role | undefined): boolean {
 export type BookingStatus = "to-clean" | "in-progress" | "complete";
 
 export type IdentityStatus = "unverified" | "pending" | "verified" | "failed";
+export type ConnectStatus = "not_started" | "pending" | "active";
 
 export interface Profile {
   id: string;
@@ -23,6 +24,7 @@ export interface Profile {
   phone?: string;
   service_area?: string;
   identity_status?: IdentityStatus;
+  stripe_connect_status?: ConnectStatus;
 }
 
 export interface CleanerRating {
@@ -34,6 +36,7 @@ export interface Property {
   id: string;
   name: string;
   access_instructions?: string;
+  payout_rate_cents?: number | null;
 }
 
 export type IcalSyncStatus = "never" | "ok" | "error";
@@ -93,4 +96,6 @@ export interface Booking {
   rating?: number | null;
   rating_comment?: string;
   dispute_status: DisputeStatus;
+  payout_status?: "none" | "paid";
+  stripe_transfer_id?: string | null;
 }

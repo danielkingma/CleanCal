@@ -457,6 +457,49 @@ Identity**'s hosted verification flow.
   / `STRIPE_WEBHOOK_SECRET` in `.env.local.example`. Without these set,
   the "Verify identity" button simply doesn't appear.
 
+## Cleaner payouts (slice 14)
+
+Cleaners get paid for completed jobs via **Stripe Connect** (Express
+accounts) — chosen over **Stripe Treasury** (a much heavier
+embedded-banking product with its own approval process, meant for
+holding balances/issuing cards, not needed just to pay someone for a
+job). Pay is **per property**, not per cleaner: whoever cleans a given
+property is paid that property's rate.
+
+- **`/properties`** (staff): each property card has a payout rate field
+  (dollars, converted to cents on save) — leave it blank and that
+  property just has no payout wired up yet.
+- **`/profile`** (cleaner role only): a "Set up payouts" button starts
+  Stripe Connect Express onboarding and redirects there; resuming later
+  reuses the same Connect account rather than creating a new one each
+  time. Whether the account can actually *receive* money
+  (`stripe_connect_status = 'active'`) is set only by the
+  `account.updated` webhook once Stripe confirms `payouts_enabled` —
+  same "the client never grants itself a status" pattern as Identity.
+- **In the booking modal**, once a booking is marked Complete and has an
+  assigned cleaner, staff see a "Pay $X" button (the property's rate) if
+  the cleaner's payout account is active, or a plain note explaining why
+  not yet (no rate set / cleaner not onboarded) if it isn't. Paying is
+  always a deliberate click, never an automatic side effect of marking a
+  booking complete — same "you approve every step that touches money"
+  posture as the rest of the app's staff actions. A failed transfer (e.g.
+  the platform's own Stripe balance can't cover it yet) surfaces the real
+  error to whoever clicked, rather than failing silently.
+- Staff see each cleaner's payout setup status as a badge on `/cleaners`,
+  next to their ID verification badge.
+- **Setup**: also add `account.updated` to the same webhook endpoint's
+  subscribed events (from the Identity section above) in the Stripe
+  dashboard. No extra env vars needed beyond `STRIPE_SECRET_KEY` /
+  `STRIPE_WEBHOOK_SECRET`.
+- **A funding note**: a Stripe Transfer moves money that's already in
+  *this platform's own* Stripe balance out to a connected account — it
+  doesn't pull money from the property owner or guest. Nothing in this
+  repo puts money into that balance yet (that's the still-open question
+  of how a clean actually gets paid for — see Backlog), so in a fresh
+  Stripe account a real payout attempt will fail with an
+  insufficient-balance error until the platform balance is funded some
+  other way (a manual top-up, or a future charge-to-host flow).
+
 ## Backlog
 
 Waiting on something outside this repo before there's anything to build:
@@ -466,11 +509,24 @@ Waiting on something outside this repo before there's anything to build:
   faked, since it involves legally regulated handling of background-check
   data (FCRA compliance in the US). Once you have an account and keys,
   say so and this gets wired up properly.
-- **Cleaner payouts (Stripe Connect)** and **subscription billing
-  (Stripe Billing/Invoicing)** — scoped and ready to build, waiting on
-  a couple of business-model specifics (how much a cleaner is paid per
-  job, and whether CleanCal will host multiple separate businesses or
-  stay scoped to this one) before the schema is designed around them.
+- **Subscription billing (Stripe Billing/Invoicing)** — waiting on
+  multi-tenancy (below) to actually mean anything: charging a property
+  owner a recurring fee only makes sense once each owner's business is
+  its own isolated account, not the one shared `properties`/`bookings`
+  set every user currently sees.
+- **Multi-tenancy** — turning CleanCal from "this one business's tool"
+  into something other rental-host businesses can sign up for
+  separately. This needs an `organizations` table, `organization_id` on
+  every table, and every RLS policy in the app rewritten to scope by org
+  as well as role — a schema-wide change to a live database with real
+  users and bookings in it, so it needs a migration plan and explicit
+  sign-off before it's run, not something to bundle into a smaller
+  feature.
+- **How a clean actually gets paid for** — the missing piece the payout
+  funding note above points at: some mechanism needs to put money into
+  the platform's Stripe balance before a cleaner payout can actually
+  succeed (charging the property owner per clean, funding it from
+  subscription revenue, or something else).
 
 ## Setup
 
@@ -488,8 +544,8 @@ In the Supabase dashboard, open **SQL Editor** and run, in order:
 `0007_open_job_board.sql`, `0008_dispute_resolution.sql`,
 `0009_owner_manager_roles.sql`, `0010_ical_export.sql`,
 `0011_decline_assigned_job.sql`, `0012_cleaner_availability.sql`,
-`0013_push_subscriptions.sql`, then `0014_identity_verification.sql`
-(all under `supabase/migrations/`).
+`0013_push_subscriptions.sql`, `0014_identity_verification.sql`, then
+`0015_cleaner_payouts.sql` (all under `supabase/migrations/`).
 Optionally also run `supabase/seed.sql` to seed the same demo
 properties the prototype used.
 
@@ -611,5 +667,6 @@ supabase/
     0012_cleaner_availability.sql                 cleaner_unavailable_dates table + self-service RLS
     0013_push_subscriptions.sql                   push_subscriptions table + staff_user_ids() RPC
     0014_identity_verification.sql                identity_status + start_own_identity_verification() RPC
+    0015_cleaner_payouts.sql                      payout_rate_cents + Connect account fields + start_own_connect_onboarding() RPC
   seed.sql                                     optional demo properties
 ```
