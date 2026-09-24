@@ -74,10 +74,10 @@ export default function PropertiesAdmin({
           <Logo />
           Clean<span>Cal</span>
         </div>
-        <div style={{ color: "var(--muted)", fontSize: 14 }}>Properties</div>
+        <div style={{ color: "rgba(246, 243, 236, 0.8)", fontSize: 14 }}>Properties</div>
         <div style={{ marginLeft: "auto", display: "flex", gap: 10, alignItems: "center" }}>
           {syncAllMessage ? (
-            <span style={{ fontSize: 13, color: "var(--muted)" }}>{syncAllMessage}</span>
+            <span style={{ fontSize: 13, color: "rgba(246, 243, 236, 0.8)" }}>{syncAllMessage}</span>
           ) : null}
           <button className="today-btn" onClick={handleSyncAll} disabled={syncingAll}>
             {syncingAll ? "Syncing…" : "Sync all feeds"}

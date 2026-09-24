@@ -36,7 +36,7 @@ export default function ProfileForm({ profile, email }: { profile: Profile; emai
           <Logo />
           Clean<span>Cal</span>
         </div>
-        <div style={{ color: "var(--muted)", fontSize: 14 }}>My Profile</div>
+        <div style={{ color: "rgba(246, 243, 236, 0.8)", fontSize: 14 }}>My Profile</div>
         <div style={{ marginLeft: "auto" }}>
           <Link href="/calendar" className="today-btn">
             ← Calendar

@@ -304,52 +304,54 @@ export default function CalendarApp({
           ) : null}
         </div>
 
-        {derivedView === "year" ? (
-          yearPropertyId ? (
-            <PropertyYearView
-              year={cursor.getFullYear()}
-              bookings={bookings.filter((b) => b.property_id === yearPropertyId)}
-              onSelectBooking={(booking) => setModal({ mode: "edit", booking })}
-              onSelectDate={(d) => {
-                setCursor(fromISO(d));
-                setView("month");
-              }}
+        <div className="calendar-card">
+          {derivedView === "year" ? (
+            yearPropertyId ? (
+              <PropertyYearView
+                year={cursor.getFullYear()}
+                bookings={bookings.filter((b) => b.property_id === yearPropertyId)}
+                onSelectBooking={(booking) => setModal({ mode: "edit", booking })}
+                onSelectDate={(d) => {
+                  setCursor(fromISO(d));
+                  setView("month");
+                }}
+              />
+            ) : (
+              <p className="photo-note">Add a property to see its year calendar here.</p>
+            )
+          ) : isMobile && derivedView === "month" ? (
+            yearPropertyId ? (
+              <MonthGrid
+                year={cursor.getFullYear()}
+                month={cursor.getMonth()}
+                bookings={bookings.filter((b) => b.property_id === yearPropertyId)}
+                onSelectBooking={(booking) => setModal({ mode: "edit", booking })}
+                onSelectDate={handleMobileMonthDayTap}
+                showTitle={false}
+              />
+            ) : (
+              <p className="photo-note">Add a property to see its month calendar here.</p>
+            )
+          ) : isMobile ? (
+            <MobileAgenda
+              days={days}
+              properties={properties}
+              bookings={bookings}
+              onBarClick={(booking) => setModal({ mode: "edit", booking })}
             />
           ) : (
-            <p className="photo-note">Add a property to see its year calendar here.</p>
-          )
-        ) : isMobile && derivedView === "month" ? (
-          yearPropertyId ? (
-            <MonthGrid
-              year={cursor.getFullYear()}
-              month={cursor.getMonth()}
-              bookings={bookings.filter((b) => b.property_id === yearPropertyId)}
-              onSelectBooking={(booking) => setModal({ mode: "edit", booking })}
-              onSelectDate={handleMobileMonthDayTap}
-              showTitle={false}
+            <Timeline
+              days={days}
+              dayW={derivedView === "week" ? DAY_W_WEEK : DAY_W_MONTH}
+              weekly={derivedView === "week"}
+              properties={properties}
+              bookings={bookings}
+              onBarClick={(booking) => setModal({ mode: "edit", booking })}
+              onTrackClick={(propertyId, dateIso) => openNewModal(propertyId, dateIso)}
+              canCreate={isStaffUser}
             />
-          ) : (
-            <p className="photo-note">Add a property to see its month calendar here.</p>
-          )
-        ) : isMobile ? (
-          <MobileAgenda
-            days={days}
-            properties={properties}
-            bookings={bookings}
-            onBarClick={(booking) => setModal({ mode: "edit", booking })}
-          />
-        ) : (
-          <Timeline
-            days={days}
-            dayW={derivedView === "week" ? DAY_W_WEEK : DAY_W_MONTH}
-            weekly={derivedView === "week"}
-            properties={properties}
-            bookings={bookings}
-            onBarClick={(booking) => setModal({ mode: "edit", booking })}
-            onTrackClick={(propertyId, dateIso) => openNewModal(propertyId, dateIso)}
-            canCreate={isStaffUser}
-          />
-        )}
+          )}
+        </div>
       </main>
 
       {modal ? (
