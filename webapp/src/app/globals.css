@@ -46,13 +46,18 @@ a {
 /* ---- Topbar ---- */
 .topbar {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 10px;
   padding: 16px 24px;
   border-bottom: 1px solid var(--line);
+  background: var(--white);
+}
+.topbar-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   flex-wrap: wrap;
   gap: 12px;
-  background: var(--white);
 }
 .brand {
   font-size: 21px;

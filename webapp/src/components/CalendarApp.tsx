@@ -174,104 +174,112 @@ export default function CalendarApp({
   return (
     <div>
       <div className="topbar">
-        <div className="brand">
-          <Logo />
-          Clean<span>Cal</span>
+        <div className="topbar-row">
+          <div className="brand">
+            <Logo />
+            Clean<span>Cal</span>
+          </div>
         </div>
-        <div className="nav-controls">
-          <button className="nav-btn" onClick={() => navigate(-1)} aria-label="Previous">
-            ‹
-          </button>
-          <div className="period-label">{periodLabel}</div>
-          <button className="nav-btn" onClick={() => navigate(1)} aria-label="Next">
-            ›
-          </button>
-          <button className="today-btn" onClick={() => setCursor(new Date())}>
-            Today
-          </button>
-        </div>
-        <div className="view-tabs">
-          {(isMobile
-            ? ([
-                { key: "week", label: "Cleaning List" },
-                { key: "month", label: "Month" },
-              ] as const)
-            : ([
-                { key: "week", label: "Week" },
-                { key: "month", label: "Month" },
-                { key: "year", label: "Year" },
-              ] as const)
-          ).map(({ key, label }) => (
-            <button
-              key={key}
-              className={`view-tab${derivedView === key ? " active" : ""}`}
-              onClick={() => setView(key)}
-            >
-              {label}
+
+        <div className="topbar-row">
+          <div className="user-badge">
+            <span className="role-pill">{currentProfile.role}</span>
+            <span>{currentUserEmail}</span>
+          </div>
+          <form action="/logout" method="post">
+            <button type="submit" className="signout-btn">
+              Sign out
             </button>
-          ))}
+          </form>
         </div>
-        {(derivedView === "year" || (isMobile && derivedView === "month")) && properties.length > 0 ? (
-          <select
-            className="year-property-select"
-            value={yearPropertyId}
-            onChange={(e) => setYearPropertyId(e.target.value)}
-          >
-            {properties.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
+
+        <div className="topbar-row">
+          <div className="nav-controls">
+            <button className="nav-btn" onClick={() => navigate(-1)} aria-label="Previous">
+              ‹
+            </button>
+            <div className="period-label">{periodLabel}</div>
+            <button className="nav-btn" onClick={() => navigate(1)} aria-label="Next">
+              ›
+            </button>
+            <button className="today-btn" onClick={() => setCursor(new Date())}>
+              Today
+            </button>
+          </div>
+          <div className="view-tabs">
+            {(isMobile
+              ? ([
+                  { key: "week", label: "Cleaning List" },
+                  { key: "month", label: "Month" },
+                ] as const)
+              : ([
+                  { key: "week", label: "Week" },
+                  { key: "month", label: "Month" },
+                  { key: "year", label: "Year" },
+                ] as const)
+            ).map(({ key, label }) => (
+              <button
+                key={key}
+                className={`view-tab${derivedView === key ? " active" : ""}`}
+                onClick={() => setView(key)}
+              >
+                {label}
+              </button>
             ))}
-          </select>
-        ) : null}
-        <div className="user-badge">
-          <span className="role-pill">{currentProfile.role}</span>
-          <span>{currentUserEmail}</span>
-        </div>
-        {isStaffUser ? (
-          <Dropdown label="Manage" triggerClassName="today-btn">
-            <Link href="/dashboard" className="dropdown-item">
-              Dashboard
+          </div>
+          {(derivedView === "year" || (isMobile && derivedView === "month")) && properties.length > 0 ? (
+            <select
+              className="year-property-select"
+              value={yearPropertyId}
+              onChange={(e) => setYearPropertyId(e.target.value)}
+            >
+              {properties.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          ) : null}
+          {isStaffUser ? (
+            <Dropdown label="Manage" triggerClassName="today-btn">
+              <Link href="/dashboard" className="dropdown-item">
+                Dashboard
+              </Link>
+              <Link href="/reports" className="dropdown-item">
+                Reports
+              </Link>
+              <Link href="/properties" className="dropdown-item">
+                Properties
+              </Link>
+              <Link href="/cleaners" className="dropdown-item">
+                Cleaners
+              </Link>
+            </Dropdown>
+          ) : null}
+          {isStaffUser ? (
+            <button
+              className="new-btn"
+              onClick={() => openNewModal(properties[0]?.id, isoDate(cursor))}
+            >
+              + New booking
+            </button>
+          ) : null}
+          <Dropdown label="Menu" triggerClassName="signout-btn">
+            <a href={HANDBOOK_URL} target="_blank" rel="noopener noreferrer" className="dropdown-item">
+              Handbook
+            </a>
+            <Link href="/history" className="dropdown-item">
+              History
             </Link>
-            <Link href="/reports" className="dropdown-item">
-              Reports
+            <Link href="/availability" className="dropdown-item">
+              Availability
             </Link>
-            <Link href="/properties" className="dropdown-item">
-              Properties
+            <Link href="/profile" className="dropdown-item">
+              My Profile
             </Link>
-            <Link href="/cleaners" className="dropdown-item">
-              Cleaners
-            </Link>
+            <NotificationsToggle className="dropdown-item" />
           </Dropdown>
-        ) : null}
-        {isStaffUser ? (
-          <button
-            className="new-btn"
-            onClick={() => openNewModal(properties[0]?.id, isoDate(cursor))}
-          >
-            + New booking
-          </button>
-        ) : null}
-        <Dropdown label="Menu" triggerClassName="signout-btn">
-          <a href={HANDBOOK_URL} target="_blank" rel="noopener noreferrer" className="dropdown-item">
-            Handbook
-          </a>
-          <Link href="/history" className="dropdown-item">
-            History
-          </Link>
-          <Link href="/availability" className="dropdown-item">
-            Availability
-          </Link>
-          <Link href="/profile" className="dropdown-item">
-            My Profile
-          </Link>
-          <NotificationsToggle className="dropdown-item" />
-        </Dropdown>
-        <form action="/logout" method="post" style={{ marginLeft: "auto" }}>
-          <button type="submit" className="signout-btn">
-            Sign out
-          </button>
-        </form>
+        </div>
       </div>
 
       <main>
