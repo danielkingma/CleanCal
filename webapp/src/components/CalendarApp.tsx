@@ -267,7 +267,7 @@ export default function CalendarApp({
           </Link>
           <NotificationsToggle className="dropdown-item" />
         </Dropdown>
-        <form action="/logout" method="post">
+        <form action="/logout" method="post" style={{ marginLeft: "auto" }}>
           <button type="submit" className="signout-btn">
             Sign out
           </button>
