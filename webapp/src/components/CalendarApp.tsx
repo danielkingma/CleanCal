@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import Logo from "./Logo";
 import NotificationsToggle from "./NotificationsToggle";
 import Timeline from "./Timeline";
+import MobileAgenda from "./MobileAgenda";
 import PropertyYearView from "./PropertyYearView";
 import BookingModal from "./BookingModal";
 import {
@@ -17,6 +18,7 @@ import {
   fromISO,
   isoDate,
 } from "@/lib/calendar-utils";
+import { useMediaQuery } from "@/lib/useMediaQuery";
 import { isStaff, type Booking, type CleanerRating, type Profile, type Property } from "@/lib/types";
 
 // Points at the published CleanCal Handbook artifact. Not part of this
@@ -53,6 +55,7 @@ export default function CalendarApp({
   cleanerUnavailableDates,
 }: CalendarAppProps) {
   const router = useRouter();
+  const isMobile = useMediaQuery("(max-width: 720px)");
   const [view, setView] = useState<View>("month");
   const [yearPropertyId, setYearPropertyId] = useState(() => properties[0]?.id ?? "");
   const [cursor, setCursor] = useState(() => new Date());
@@ -276,6 +279,13 @@ export default function CalendarApp({
           ) : (
             <p className="photo-note">Add a property to see its year calendar here.</p>
           )
+        ) : isMobile ? (
+          <MobileAgenda
+            days={days}
+            properties={properties}
+            bookings={bookings}
+            onBarClick={(booking) => setModal({ mode: "edit", booking })}
+          />
         ) : (
           <Timeline
             days={days}
