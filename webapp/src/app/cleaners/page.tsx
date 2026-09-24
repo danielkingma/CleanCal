@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import InviteLink from "@/components/InviteLink";
 import Logo from "@/components/Logo";
 import TeamRoles from "@/components/TeamRoles";
 import { isStaff, type Profile } from "@/lib/types";
@@ -73,12 +74,13 @@ export default async function CleanersPage() {
       </div>
 
       <main>
+        <InviteLink isOwner={isOwner} />
+
         {isOwner ? <TeamRoles profiles={allProfiles} currentUserId={user.id} /> : null}
 
         {(cleaners ?? []).length === 0 ? (
           <p className="photo-note" style={{ maxWidth: 760 }}>
-            No cleaners have signed up yet. Anyone who signs in gets the cleaner role by
-            default, so they&apos;ll show up here as soon as they do.
+            No cleaners yet — generate an invite link above to bring one onto your team.
           </p>
         ) : null}
 

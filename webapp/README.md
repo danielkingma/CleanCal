@@ -500,6 +500,50 @@ property is paid that property's rate.
   insufficient-balance error until the platform balance is funded some
   other way (a manual top-up, or a future charge-to-host flow).
 
+## Multi-tenancy (slice 15)
+
+CleanCal stopped being "this one business's shared tool" -- it's now
+something any number of separate rental-host businesses can sign up for,
+each with its own fully isolated data.
+
+- **`organizations`** is the new top-level table. `profiles` and
+  `properties` carry an `organization_id`; `bookings`, `ical_feeds`, and
+  `dispute_messages` have theirs derived automatically by a trigger from
+  the property/booking they belong to (never trusted from the client),
+  so it's never possible for a row to disagree with its own parent about
+  which business it's in. Every RLS policy across every table now checks
+  the caller's own organization (`my_org_id()`) in addition to role --
+  see `supabase/migrations/0016_organizations.sql` for the full audit;
+  it was verified against a real local Postgres instance (seeded with
+  two organizations' worth of data) before shipping, not just read
+  through, given the stakes of getting this wrong.
+- **Existing data**: everything that existed before this migration
+  became one organization ("CleanCal", id
+  `00000000-0000-0000-0000-000000000001`) -- nothing changes for
+  existing users day to day.
+- **A brand-new sign-up** has no organization at all
+  (`profiles.organization_id` is null, the one place that column is
+  nullable) until they land on `/onboarding` and either create their own
+  business (`create_organization` RPC, becoming its Owner) or redeem an
+  invite link from an existing business (`redeem_invite` RPC). `proxy.ts`
+  redirects any signed-in, not-yet-onboarded user there automatically.
+- **Inviting someone**: staff generate a one-time link from `/cleaners`
+  ("Invite someone to your team") for a specific role. A Manager can only
+  invite at the Cleaner level; only an Owner can invite another
+  Owner/Manager -- the same boundary as changing an existing member's
+  role. `preview_invite` lets the not-yet-onboarded invitee see which
+  business they're about to join before confirming, without granting
+  them any broader read access.
+- **A profile's organization is immutable once set** (a trigger blocks
+  changing it, not just an RLS policy) -- closes a real gap where an
+  Owner could otherwise pull another user into their business by editing
+  a row, not just by inviting them.
+- Fixed along the way: `/api/webhooks/stripe` and `/api/ical/[token]`
+  were missing from `proxy.ts`'s public-paths list, so both were
+  actually being redirected to `/login` this whole time (no session
+  cookie ever reaches either) -- neither had been exercised by a real
+  Stripe event or OTA poll yet, which is how that went unnoticed.
+
 ## Backlog
 
 Waiting on something outside this repo before there's anything to build:
@@ -509,19 +553,10 @@ Waiting on something outside this repo before there's anything to build:
   faked, since it involves legally regulated handling of background-check
   data (FCRA compliance in the US). Once you have an account and keys,
   say so and this gets wired up properly.
-- **Subscription billing (Stripe Billing/Invoicing)** — waiting on
-  multi-tenancy (below) to actually mean anything: charging a property
-  owner a recurring fee only makes sense once each owner's business is
-  its own isolated account, not the one shared `properties`/`bookings`
-  set every user currently sees.
-- **Multi-tenancy** — turning CleanCal from "this one business's tool"
-  into something other rental-host businesses can sign up for
-  separately. This needs an `organizations` table, `organization_id` on
-  every table, and every RLS policy in the app rewritten to scope by org
-  as well as role — a schema-wide change to a live database with real
-  users and bookings in it, so it needs a migration plan and explicit
-  sign-off before it's run, not something to bundle into a smaller
-  feature.
+- **Subscription billing (Stripe Billing/Invoicing)** — now that
+  multi-tenancy exists, this is the next real step: a Stripe Customer +
+  subscription per organization, computed from the property-count tiers
+  you specified, with a read-only lockout when a subscription lapses.
 - **How a clean actually gets paid for** — the missing piece the payout
   funding note above points at: some mechanism needs to put money into
   the platform's Stripe balance before a cleaner payout can actually
@@ -544,8 +579,9 @@ In the Supabase dashboard, open **SQL Editor** and run, in order:
 `0007_open_job_board.sql`, `0008_dispute_resolution.sql`,
 `0009_owner_manager_roles.sql`, `0010_ical_export.sql`,
 `0011_decline_assigned_job.sql`, `0012_cleaner_availability.sql`,
-`0013_push_subscriptions.sql`, `0014_identity_verification.sql`, then
-`0015_cleaner_payouts.sql` (all under `supabase/migrations/`).
+`0013_push_subscriptions.sql`, `0014_identity_verification.sql`,
+`0015_cleaner_payouts.sql`, then `0016_organizations.sql` (all under
+`supabase/migrations/`).
 Optionally also run `supabase/seed.sql` to seed the same demo
 properties the prototype used.
 
@@ -565,19 +601,13 @@ optional — see the commented-out `VAPID_*` block in
 `.env.local.example` if you want the "Enable notifications" button to
 appear.
 
-### 4. Bootstrap your first owner
+### 4. Sign in and create your business
 
-Every new sign-up defaults to the `cleaner` role (least privilege). To
-make yourself the owner, sign in once through the app, then in the SQL
-Editor run:
-
-```sql
-update public.profiles set role = 'owner' where id =
-  (select id from auth.users where email = 'you@example.com');
-```
-
-From there, promote anyone else to `owner`, `manager`, or back to
-`cleaner` from the Team roles section on `/cleaners`.
+Sign in once through the app -- with no organization yet, you'll land on
+`/onboarding` automatically. Create your business there and you become
+its Owner. From there, invite cleaners/managers from `/cleaners`
+("Invite someone to your team"), and promote/demote anyone already on
+your team from the Team roles section on the same page.
 
 ### 5. Run it
 
@@ -621,6 +651,7 @@ src/
     reports/               staff-only filterable reporting + CSV export
     availability/          self-service unavailable-dates calendar
     notifications/          push-subscription save/delete server actions
+    onboarding/             create-a-business / redeem-an-invite gate for a not-yet-onboarded sign-up
     api/cron/sync-ical/   optional Vercel Cron target (service-role sync)
     api/ical/[token]/     public per-property .ics export feed
     api/webhooks/stripe/  Stripe webhook endpoint (Identity today; Connect/Billing land here too)
@@ -633,6 +664,8 @@ src/
     ProfileForm.tsx        self-service profile editor
     ReportsView.tsx        /reports filters, breakdowns, CSV export
     TeamRoles.tsx           Owner-only role management table
+    InviteLink.tsx          staff generates a one-time invite link to bring someone into their org
+    OnboardingForm.tsx      create-a-business / accept-an-invite UI
     AvailabilityCalendar.tsx  self-service unavailable-dates toggle calendar
     ServiceWorkerRegistration.tsx  registers public/sw.js on load
     NotificationsToggle.tsx  Enable/disable push notifications button
@@ -668,5 +701,6 @@ supabase/
     0013_push_subscriptions.sql                   push_subscriptions table + staff_user_ids() RPC
     0014_identity_verification.sql                identity_status + start_own_identity_verification() RPC
     0015_cleaner_payouts.sql                      payout_rate_cents + Connect account fields + start_own_connect_onboarding() RPC
+    0016_organizations.sql                        organizations table, organization_id everywhere, org-scoped RLS rewrite, invites
   seed.sql                                     optional demo properties
 ```

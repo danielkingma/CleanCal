@@ -21,3 +21,31 @@ export async function updateUserRole(userId: string, newRole: Role) {
   revalidatePath("/cleaners");
   revalidatePath("/calendar");
 }
+
+// Generates a one-time invite link for someone to join this organization.
+// Enforcement lives in `organization_invites_insert_staff` RLS
+// (0016_organizations.sql): a Manager can only invite at the cleaner
+// role, only an Owner can invite Owner/Manager -- same boundary as
+// changing an existing member's role.
+export async function createInvite(role: Role): Promise<string> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not signed in.");
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("organization_id")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (!profile?.organization_id) throw new Error("No organization found.");
+
+  const { data, error } = await supabase
+    .from("organization_invites")
+    .insert({ organization_id: profile.organization_id, role, created_by: user.id })
+    .select("token")
+    .single();
+  if (error) throw new Error(error.message);
+  return data.token as string;
+}
