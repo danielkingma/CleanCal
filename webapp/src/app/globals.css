@@ -13,22 +13,6 @@
   --slate: #4b5563;
   --today-tint: rgba(217, 104, 59, 0.07);
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --ink: #ede8da;
-    --paper: #10201b;
-    --paper-2: #16281f;
-    --teal: #4faf9c;
-    --teal-deep: #7fcbb8;
-    --coral: #e8895e;
-    --line: #2c3d33;
-    --muted: #9caaa1;
-    --white: #16281f;
-    --slate: #6b7680;
-    --today-tint: rgba(232, 137, 94, 0.1);
-  }
-}
-
 * {
   box-sizing: border-box;
 }
