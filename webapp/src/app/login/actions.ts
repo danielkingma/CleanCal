@@ -33,11 +33,11 @@ export async function sendMagicLink(
   }
   return {
     status: "sent",
-    message: `Check ${email} — tap the link, or enter the 6-digit code from that email below.`,
+    message: `Check ${email} — tap the link, or enter the sign-in code from that email below.`,
   };
 }
 
-// Verifies the 6-digit code from the same email signInWithOtp sent above.
+// Verifies the numeric code from the same email signInWithOtp sent above.
 // This exists alongside the clickable link (handled by /auth/callback)
 // because some email providers (Gmail in particular) automatically
 // "click" links to scan them for safety before the user ever taps one,

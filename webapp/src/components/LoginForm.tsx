@@ -49,7 +49,7 @@ export default function LoginForm({ callbackFailed }: { callbackFailed: boolean 
           <p className="auth-error">
             That sign-in link didn&apos;t work — this is common with Gmail, which automatically
             scans links and can use up a one-time link before you tap it. Request a new code below
-            and enter the 6-digit number instead of tapping the link.
+            and enter the number from that email instead of tapping the link.
           </p>
         ) : null}
         <form action={formAction} className="auth-form">
@@ -78,7 +78,7 @@ export default function LoginForm({ callbackFailed }: { callbackFailed: boolean 
         {showCodeStep ? (
           <form onSubmit={handleVerify} className="auth-form" style={{ marginTop: 14 }}>
             <div className="field">
-              <label htmlFor="code">6-digit code</label>
+              <label htmlFor="code">Sign-in code</label>
               <input
                 id="code"
                 name="code"
@@ -86,7 +86,7 @@ export default function LoginForm({ callbackFailed }: { callbackFailed: boolean 
                 inputMode="numeric"
                 autoComplete="one-time-code"
                 required
-                placeholder="123456"
+                placeholder="Enter the code from your email"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
               />
