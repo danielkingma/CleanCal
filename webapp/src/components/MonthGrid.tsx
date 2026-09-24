@@ -147,12 +147,13 @@ export default function MonthGrid({
                 {segments.map((seg) => {
                   const platform = getPlatformBadge(seg.booking.platform_label);
                   const isOpenUnclaimed = seg.booking.is_open_job && !seg.booking.assigned_cleaner_id;
+                  const isStale = Boolean(seg.booking.ical_missing_since);
                   const label = isOpenUnclaimed ? "Open" : seg.booking.guests || "Reserved";
                   return (
                     <button
                       type="button"
                       key={seg.booking.id}
-                      className={`py-bar${seg.roundLeft ? " round-left" : ""}${seg.roundRight ? " round-right" : ""}${isOpenUnclaimed ? " open-job" : ""}`}
+                      className={`py-bar${seg.roundLeft ? " round-left" : ""}${seg.roundRight ? " round-right" : ""}${isOpenUnclaimed ? " open-job" : ""}${isStale ? " ical-stale" : ""}`}
                       style={{
                         gridColumn: `${seg.startCol + 1} / span ${seg.span}`,
                         gridRow: seg.lane + 1,
@@ -160,7 +161,11 @@ export default function MonthGrid({
                         marginRight: `${seg.marginRightPct}%`,
                         background: platform?.color ?? NEUTRAL_BAR_COLOR,
                       }}
-                      title={`${seg.booking.guests || "Reserved"} — ${seg.booking.checkin_date}, ${seg.booking.nights}n`}
+                      title={
+                        isStale
+                          ? "No longer in source calendar — may be cancelled"
+                          : `${seg.booking.guests || "Reserved"} — ${seg.booking.checkin_date}, ${seg.booking.nights}n`
+                      }
                       onClick={(e) => {
                         e.stopPropagation();
                         onSelectBooking(seg.booking);

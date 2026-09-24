@@ -763,6 +763,11 @@ main {
   outline-offset: -1.5px;
   font-style: italic;
 }
+.py-bar.ical-stale {
+  opacity: 0.55;
+  outline: 1.5px dashed var(--coral);
+  outline-offset: -1.5px;
+}
 
 /* ---- Modal ---- */
 .overlay {

@@ -13,7 +13,13 @@ interface FeedRow {
 // their calendar export feeds -- this is what's left in SUMMARY instead.
 // A direct-booking site's feed might contain a real name, though, so
 // still worth checking rather than assuming every feed is generic.
-const GENERIC_SUMMARY = /^(reserved|not available|blocked|closed|unavailable)$/i;
+//
+// Matched by substring/word-boundary, not an exact full-string match --
+// Airbnb's actual placeholder text is "Airbnb (Not available)", not the
+// bare word "unavailable" the old exact-match regex expected. Missing
+// that meant the whole literal string got stored as the "guest name" and
+// shown on every calendar view instead of the neutral "Reserved" label.
+const GENERIC_SUMMARY = /\b(reserved|not available|blocked|closed|unavailable)\b/i;
 
 function isUsableGuestName(summary: string): boolean {
   const t = summary.trim();
