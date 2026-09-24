@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import Logo from "@/components/Logo";
 
 // Ported from the standalone claude.ai Handbook artifact into the app
@@ -14,6 +15,9 @@ export default function HandbookPage() {
 
   return (
     <div className="hb-page">
+      <Link href="/calendar" className="hb-back-toggle">
+        ← Calendar
+      </Link>
       <button
         type="button"
         className="hb-nav-toggle"
@@ -28,6 +32,9 @@ export default function HandbookPage() {
             Clean<span>Cal</span>
           </div>
           <div className="hb-side-sub">HANDBOOK</div>
+          <Link href="/calendar" className="hb-side-back">
+            ← Back to Calendar
+          </Link>
 
           <div className="hb-side-group-title">Getting started</div>
           <a className="hb-side-link" href="#welcome">Welcome</a>

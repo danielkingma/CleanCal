@@ -1873,6 +1873,17 @@ main {
   font-family: "IBM Plex Mono", monospace;
   letter-spacing: 0.03em;
 }
+.hb-side-back {
+  display: inline-block;
+  font-size: 12.5px;
+  color: var(--teal-deep);
+  text-decoration: none;
+  font-weight: 600;
+  margin-bottom: 22px;
+}
+.hb-side-back:hover {
+  text-decoration: underline;
+}
 .hb-side-group-title {
   font-size: 10.5px;
   text-transform: uppercase;
@@ -1907,6 +1918,25 @@ main {
   font-family: "IBM Plex Sans", sans-serif;
   font-size: 13px;
   font-weight: 600;
+}
+/* Mirrors .hb-nav-toggle on the opposite corner -- on mobile the sidebar
+   (and its own back link) starts collapsed off-screen, so this is the
+   only way back to the calendar without first opening the menu. */
+.hb-back-toggle {
+  display: none;
+  position: fixed;
+  top: max(14px, env(safe-area-inset-top, 0px));
+  left: 14px;
+  z-index: 20;
+  background: var(--white);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 9px 13px;
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
 }
 .hb-main {
   flex: 1 1 auto;
@@ -2115,6 +2145,9 @@ main {
     box-shadow: 20px 0 40px -10px rgba(0, 0, 0, 0.25);
   }
   .hb-nav-toggle {
+    display: block;
+  }
+  .hb-back-toggle {
     display: block;
   }
   .hb-content {
