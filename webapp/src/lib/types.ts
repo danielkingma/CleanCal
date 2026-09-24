@@ -37,6 +37,9 @@ export interface Property {
   name: string;
   access_instructions?: string;
   payout_rate_cents?: number | null;
+  bedroom_count?: number;
+  bathroom_count?: number;
+  has_outdoor_area?: boolean;
 }
 
 export type IcalSyncStatus = "never" | "ok" | "error";

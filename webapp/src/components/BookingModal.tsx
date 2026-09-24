@@ -16,7 +16,7 @@ import {
   type BookingInput,
 } from "@/app/calendar/actions";
 import { createClient } from "@/lib/supabase/client";
-import { CHECKLIST_SECTIONS, addDays, daysBetween, fromISO, isoDate } from "@/lib/calendar-utils";
+import { buildChecklistSections, addDays, daysBetween, fromISO, isoDate } from "@/lib/calendar-utils";
 import { getPlatformBadge } from "@/lib/platform-badge";
 import {
   isStaff,
@@ -611,7 +611,7 @@ export default function BookingModal({
         {mode === "edit" ? (
           <div className="clean-section">
             <h3>Cleaning checklist</h3>
-            {CHECKLIST_SECTIONS.map((sec) => {
+            {buildChecklistSections(selectedProperty).map((sec) => {
               // The oven is the one appliance worth flagging for a
               // host's attention rather than just ticking off (see its
               // outcome buttons below), so it's tallied and rendered

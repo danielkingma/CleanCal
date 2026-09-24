@@ -12,6 +12,7 @@ import {
   syncIcalFeed,
   updateAccessInstructions,
   updatePayoutRate,
+  updatePropertyProfile,
 } from "@/app/properties/actions";
 import Logo from "./Logo";
 import type { IcalFeed, Property } from "@/lib/types";
@@ -163,6 +164,12 @@ function PropertyCard({
   const [payoutRateSaved, setPayoutRateSaved] = useState(false);
   const [payoutRateError, setPayoutRateError] = useState<string | null>(null);
 
+  const [bedroomCount, setBedroomCount] = useState((property.bedroom_count ?? 1).toString());
+  const [bathroomCount, setBathroomCount] = useState((property.bathroom_count ?? 1).toString());
+  const [hasOutdoorArea, setHasOutdoorArea] = useState(property.has_outdoor_area ?? false);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [profileSaved, setProfileSaved] = useState(false);
+
   const [label, setLabel] = useState("");
   const [url, setUrl] = useState("");
   const [addError, setAddError] = useState<string | null>(null);
@@ -252,6 +259,22 @@ function PropertyCard({
     }
   }
 
+  async function handleSaveProfile() {
+    setSavingProfile(true);
+    setProfileSaved(false);
+    try {
+      await updatePropertyProfile(
+        property.id,
+        Math.max(1, parseInt(bedroomCount, 10) || 1),
+        Math.max(1, parseInt(bathroomCount, 10) || 1),
+        hasOutdoorArea,
+      );
+      setProfileSaved(true);
+    } finally {
+      setSavingProfile(false);
+    }
+  }
+
   async function handleAddFeed() {
     setAddError(null);
     setAdding(true);
@@ -328,6 +351,66 @@ function PropertyCard({
           {instructionsSaved ? (
             <span style={{ fontSize: 12.5, color: "var(--teal-deep)" }}>Saved</span>
           ) : null}
+        </div>
+      </div>
+
+      <div className="field">
+        <label>Property profile (scales the cleaning checklist to this property&apos;s actual rooms)</label>
+        <div style={{ display: "flex", gap: 16, alignItems: "flex-end", flexWrap: "wrap" }}>
+          <div>
+            <label htmlFor={`bed-${property.id}`} style={{ fontSize: 12.5, color: "var(--muted)" }}>
+              Bedrooms
+            </label>
+            <input
+              id={`bed-${property.id}`}
+              type="number"
+              min="1"
+              value={bedroomCount}
+              onChange={(e) => {
+                setBedroomCount(e.target.value);
+                setProfileSaved(false);
+              }}
+              style={{ maxWidth: 90, display: "block" }}
+            />
+          </div>
+          <div>
+            <label htmlFor={`bath-${property.id}`} style={{ fontSize: 12.5, color: "var(--muted)" }}>
+              Bathrooms
+            </label>
+            <input
+              id={`bath-${property.id}`}
+              type="number"
+              min="1"
+              value={bathroomCount}
+              onChange={(e) => {
+                setBathroomCount(e.target.value);
+                setProfileSaved(false);
+              }}
+              style={{ maxWidth: 90, display: "block" }}
+            />
+          </div>
+          <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 14, whiteSpace: "nowrap" }}>
+            <input
+              type="checkbox"
+              checked={hasOutdoorArea}
+              onChange={(e) => {
+                setHasOutdoorArea(e.target.checked);
+                setProfileSaved(false);
+              }}
+            />
+            Has outdoor area
+          </label>
+        </div>
+        <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 10 }}>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={handleSaveProfile}
+            disabled={savingProfile}
+          >
+            {savingProfile ? "Saving…" : "Save"}
+          </button>
+          {profileSaved ? <span style={{ fontSize: 12.5, color: "var(--teal-deep)" }}>Saved</span> : null}
         </div>
       </div>
 

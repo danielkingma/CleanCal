@@ -51,6 +51,26 @@ export async function updatePayoutRate(propertyId: string, cents: number | null)
   revalidatePath("/calendar");
 }
 
+export async function updatePropertyProfile(
+  propertyId: string,
+  bedroomCount: number,
+  bathroomCount: number,
+  hasOutdoorArea: boolean,
+) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("properties")
+    .update({
+      bedroom_count: Math.max(1, bedroomCount || 1),
+      bathroom_count: Math.max(1, bathroomCount || 1),
+      has_outdoor_area: hasOutdoorArea,
+    })
+    .eq("id", propertyId);
+  if (error) throw new Error(error.message);
+  revalidatePath("/properties");
+  revalidatePath("/calendar");
+}
+
 export async function addIcalFeed(propertyId: string, sourceLabel: string, icalUrl: string) {
   if (!sourceLabel.trim()) throw new Error("Give this feed a label.");
   try {

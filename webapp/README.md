@@ -592,6 +592,35 @@ so it renders as an unstarted checklist rather than migrated progress --
 acceptable since old checklist state stops being useful as soon as the
 item wording it was tracking changes anyway.
 
+## Checklist scales to each property's profile (slice 18)
+
+The room-by-room checklist from slice 17 showed the same fixed section
+list on every booking regardless of the property. A studio and a 5-bed
+house got identical Bedroom/Bathroom sections, so a cleaner working a
+larger property had to reuse one Bedroom section for multiple rooms (or
+just skip tracking the extras), and a property with no yard still showed
+an Outdoor Areas section to check off.
+
+Each property now has a profile: `bedroom_count`, `bathroom_count`, and
+`has_outdoor_area` (`0018_property_profile.sql`, edited on the Properties
+page under a new "Property profile" field alongside the existing payout
+rate/access instructions). `buildChecklistSections()` in
+`calendar-utils.ts` replaces the old static `CHECKLIST_SECTIONS` export --
+it takes the booking's property and returns one Bedroom section per
+`bedroom_count` and one Bathroom section per `bathroom_count` (labeled
+"Bedroom 1" / "Bedroom 2" / ... once there's more than one), with an
+Outdoor Areas section only when `has_outdoor_area` is set. A property that
+never had these fields set defaults to 1 bedroom / 1 bathroom / no
+outdoor area, matching the old fixed checklist's shape. Toilets and
+Bathrooms also merged into a single per-bathroom template while this was
+rebuilt, since a toilet and its bathroom are the same physical room a
+cleaner cleans together, not two rooms tracked in parallel.
+
+Run `0018_property_profile.sql` in Supabase before this deploys (additive
+columns with defaults, so it's safe to run ahead of or behind the app
+code either way, but the profile fields obviously won't do anything until
+it's run).
+
 ## Backlog
 
 Waiting on something outside this repo before there's anything to build:

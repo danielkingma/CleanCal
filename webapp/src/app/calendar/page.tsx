@@ -28,7 +28,7 @@ export default async function CalendarPage() {
 
   const { data: allProperties, error: propertiesError } = await supabase
     .from("properties")
-    .select("id, name, access_instructions, payout_rate_cents")
+    .select("id, name, access_instructions, payout_rate_cents, bedroom_count, bathroom_count, has_outdoor_area")
     .order("name");
 
   // Admins see every booking; cleaners are scoped to their own assignments
