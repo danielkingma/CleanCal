@@ -544,6 +544,30 @@ each with its own fully isolated data.
   cookie ever reaches either) -- neither had been exercised by a real
   Stripe event or OTA poll yet, which is how that went unnoticed.
 
+## Landing page + free trial countdown (slice 16)
+
+The bare domain (`/`) is now a real marketing page instead of an
+immediate redirect into the app -- hero, feature grid, how-it-works,
+the property-count pricing tiers, and a "Sign in" CTA throughout.
+Already-signed-in visitors still skip straight to `/calendar`, both at
+the `proxy.ts` middleware level and in the page itself. Opening `/` up
+in `proxy.ts`'s public-path check uses an exact `===` match, not
+`startsWith` -- `"/"` is a prefix of every route in the app, so treating
+it like the other public-path entries would make everything public.
+
+Every new organization now gets a real 6-month free trial
+(`organizations.trial_ends_at`, set in `create_organization()` --
+`0017_trial_period.sql`); the one organization that already existed
+before this migration got the same 6 months starting from when the
+migration ran, rather than backdated. Once an organization is within 30
+days of that date, Owners and Managers (never cleaners) see a dismissible
+banner at the top of the calendar reminding them billing is coming --
+dismissing it only silences it until the next calendar day, so a real
+deadline doesn't get permanently waved away by one click. The banner is
+explicit that nothing is actually charged automatically yet, since
+subscription billing itself isn't built (see Backlog) -- it's a heads-up,
+not an enforcement mechanism.
+
 ## Backlog
 
 Waiting on something outside this repo before there's anything to build:
@@ -580,7 +604,8 @@ In the Supabase dashboard, open **SQL Editor** and run, in order:
 `0009_owner_manager_roles.sql`, `0010_ical_export.sql`,
 `0011_decline_assigned_job.sql`, `0012_cleaner_availability.sql`,
 `0013_push_subscriptions.sql`, `0014_identity_verification.sql`,
-`0015_cleaner_payouts.sql`, then `0016_organizations.sql` (all under
+`0015_cleaner_payouts.sql`, `0016_organizations.sql`, then
+`0017_trial_period.sql` (all under
 `supabase/migrations/`).
 Optionally also run `supabase/seed.sql` to seed the same demo
 properties the prototype used.
@@ -666,6 +691,8 @@ src/
     TeamRoles.tsx           Owner-only role management table
     InviteLink.tsx          staff generates a one-time invite link to bring someone into their org
     OnboardingForm.tsx      create-a-business / accept-an-invite UI
+    LandingPage.tsx          the signed-out "/" marketing page
+    TrialNotice.tsx          dismissible free-trial-ending banner, staff only
     AvailabilityCalendar.tsx  self-service unavailable-dates toggle calendar
     ServiceWorkerRegistration.tsx  registers public/sw.js on load
     NotificationsToggle.tsx  Enable/disable push notifications button
@@ -702,5 +729,6 @@ supabase/
     0014_identity_verification.sql                identity_status + start_own_identity_verification() RPC
     0015_cleaner_payouts.sql                      payout_rate_cents + Connect account fields + start_own_connect_onboarding() RPC
     0016_organizations.sql                        organizations table, organization_id everywhere, org-scoped RLS rewrite, invites
+    0017_trial_period.sql                         sets trial_ends_at on org creation + backfill
   seed.sql                                     optional demo properties
 ```

@@ -13,6 +13,7 @@ import MonthGrid from "./MonthGrid";
 import DayPickerSheet from "./DayPickerSheet";
 import PropertyYearView from "./PropertyYearView";
 import BookingModal from "./BookingModal";
+import TrialNotice from "./TrialNotice";
 import {
   DAY_W_MONTH,
   DAY_W_WEEK,
@@ -38,6 +39,7 @@ interface CalendarAppProps {
   cleaners: Profile[];
   cleanerRatings: Record<string, CleanerRating>;
   cleanerUnavailableDates: Record<string, string[]>;
+  trialEndsAt: string | null;
 }
 
 type View = "week" | "month" | "year";
@@ -57,6 +59,7 @@ export default function CalendarApp({
   cleaners,
   cleanerRatings,
   cleanerUnavailableDates,
+  trialEndsAt,
 }: CalendarAppProps) {
   const router = useRouter();
   const isMobile = useMediaQuery("(max-width: 720px)");
@@ -287,6 +290,8 @@ export default function CalendarApp({
           </Dropdown>
         </div>
       </div>
+
+      {isStaffUser ? <TrialNotice trialEndsAt={trialEndsAt} /> : null}
 
       <main>
         <div className="legend">

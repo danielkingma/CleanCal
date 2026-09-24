@@ -60,6 +60,7 @@ export default async function CalendarPage() {
   let cleaners: Profile[] = [];
   let cleanerRatings: Record<string, CleanerRating> = {};
   let cleanerUnavailableDates: Record<string, string[]> = {};
+  let trialEndsAt: string | null = null;
   if (isStaff(currentProfile.role)) {
     const { data } = await supabase
       .from("profiles")
@@ -67,6 +68,12 @@ export default async function CalendarPage() {
       .eq("role", "cleaner")
       .order("name");
     cleaners = data ?? [];
+
+    // Staff-only: a cleaner has no reason to see the business's own
+    // billing countdown. `organizations_select_own` RLS (0016) already
+    // narrows this to exactly the caller's own org row.
+    const { data: org } = await supabase.from("organizations").select("trial_ends_at").maybeSingle();
+    trialEndsAt = org?.trial_ends_at ?? null;
 
     const { data: ratedBookings } = await supabase
       .from("bookings")
@@ -123,6 +130,7 @@ export default async function CalendarPage() {
         cleaners={cleaners}
         cleanerRatings={cleanerRatings}
         cleanerUnavailableDates={cleanerUnavailableDates}
+        trialEndsAt={trialEndsAt}
       />
     </div>
   );
