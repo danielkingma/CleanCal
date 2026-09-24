@@ -107,8 +107,14 @@ export default function CalendarApp({
     };
   }, []);
 
+  // On mobile the "week" tab is relabelled "Cleaning List" and shows a
+  // month's worth of days as a vertical agenda instead of a literal week --
+  // it should move and label itself exactly like the Month tab, just
+  // rendered as a list (MobileAgenda) rather than a grid (MonthGrid).
+  const isCleaningList = isMobile && derivedView === "week";
+
   const days = useMemo(() => {
-    if (derivedView === "month") {
+    if (derivedView === "month" || isCleaningList) {
       const year = cursor.getFullYear();
       const month = cursor.getMonth();
       const numDays = new Date(year, month + 1, 0).getDate();
@@ -119,22 +125,22 @@ export default function CalendarApp({
       return Array.from({ length: 7 }, (_, i) => addDays(start, i));
     }
     return [];
-  }, [derivedView, cursor]);
+  }, [derivedView, isCleaningList, cursor]);
 
   const periodLabel = useMemo(() => {
-    if (derivedView === "month") return `${MONTH_NAMES[cursor.getMonth()]} ${cursor.getFullYear()}`;
+    if (derivedView === "month" || isCleaningList) return `${MONTH_NAMES[cursor.getMonth()]} ${cursor.getFullYear()}`;
     if (derivedView === "week") {
       const start = addDays(cursor, -cursor.getDay());
       const end = addDays(start, 6);
       return `${MONTH_NAMES[start.getMonth()].slice(0, 3)} ${start.getDate()} – ${MONTH_NAMES[end.getMonth()].slice(0, 3)} ${end.getDate()}`;
     }
     return `${cursor.getFullYear()}`;
-  }, [derivedView, cursor]);
+  }, [derivedView, isCleaningList, cursor]);
 
   function navigate(dir: number) {
     setCursor((prev) => {
       const next = new Date(prev);
-      if (derivedView === "month") next.setMonth(next.getMonth() + dir);
+      if (derivedView === "month" || isCleaningList) next.setMonth(next.getMonth() + dir);
       else if (derivedView === "week") next.setDate(next.getDate() + dir * 7);
       else next.setFullYear(next.getFullYear() + dir);
       return next;
