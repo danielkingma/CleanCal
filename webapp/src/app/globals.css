@@ -914,6 +914,38 @@ main {
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
+.checklist-section {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+.checklist-section summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--paper-2);
+  list-style: none;
+}
+.checklist-section summary::-webkit-details-marker {
+  display: none;
+}
+.checklist-count {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.checklist-section[open] .checklist-count {
+  color: var(--teal-deep);
+}
+.checklist-section-body {
+  padding: 4px 14px 10px;
+}
 .checklist-item {
   display: flex;
   align-items: center;

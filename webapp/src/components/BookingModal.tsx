@@ -16,7 +16,7 @@ import {
   type BookingInput,
 } from "@/app/calendar/actions";
 import { createClient } from "@/lib/supabase/client";
-import { CHECKLIST_ITEMS, addDays, daysBetween, fromISO, isoDate } from "@/lib/calendar-utils";
+import { CHECKLIST_SECTIONS, addDays, daysBetween, fromISO, isoDate } from "@/lib/calendar-utils";
 import { getPlatformBadge } from "@/lib/platform-badge";
 import {
   isStaff,
@@ -611,50 +611,76 @@ export default function BookingModal({
         {mode === "edit" ? (
           <div className="clean-section">
             <h3>Cleaning checklist</h3>
-            <div>
-              {CHECKLIST_ITEMS.map((item) => (
-                <label className="checklist-item" key={item.key}>
-                  <input
-                    type="checkbox"
-                    disabled={!canEditCleaning}
-                    checked={Boolean(checklist[item.key])}
-                    onChange={(e) => toggleChecklistItem(item.key, e.target.checked)}
-                  />
-                  {item.label}
-                </label>
-              ))}
-            </div>
-            <label className="checklist-item">
-              <input
-                type="checkbox"
-                disabled={!canEditCleaning}
-                checked={oven.checked}
-                onChange={(e) => toggleOvenChecked(e.target.checked)}
-              />
-              Oven checked
-            </label>
-            {oven.checked ? (
-              <div className="oven-sub">
-                <button
-                  type="button"
-                  className={`oven-opt${oven.outcome === "cleaned" ? " sel" : ""}`}
-                  data-outcome="cleaned"
-                  disabled={!canEditCleaning}
-                  onClick={() => setOvenOutcome("cleaned")}
-                >
-                  Cleaned
-                </button>
-                <button
-                  type="button"
-                  className={`oven-opt${oven.outcome === "attention" ? " sel" : ""}`}
-                  data-outcome="attention"
-                  disabled={!canEditCleaning}
-                  onClick={() => setOvenOutcome("attention")}
-                >
-                  Requires attention
-                </button>
-              </div>
-            ) : null}
+            {CHECKLIST_SECTIONS.map((sec) => {
+              // The oven is the one appliance worth flagging for a
+              // host's attention rather than just ticking off (see its
+              // outcome buttons below), so it's tallied and rendered
+              // alongside Kitchen's other items rather than as its own
+              // section.
+              const isKitchen = sec.section === "Kitchen";
+              const totalCount = sec.items.length + (isKitchen ? 1 : 0);
+              const doneCount =
+                sec.items.filter((item) => Boolean(checklist[item.key])).length +
+                (isKitchen && oven.checked ? 1 : 0);
+              return (
+                <details className="checklist-section" key={sec.section}>
+                  <summary>
+                    <span>{sec.section}</span>
+                    <span className="checklist-count">
+                      {doneCount}/{totalCount}
+                    </span>
+                  </summary>
+                  <div className="checklist-section-body">
+                    {sec.items.map((item) => (
+                      <label className="checklist-item" key={item.key}>
+                        <input
+                          type="checkbox"
+                          disabled={!canEditCleaning}
+                          checked={Boolean(checklist[item.key])}
+                          onChange={(e) => toggleChecklistItem(item.key, e.target.checked)}
+                        />
+                        {item.label}
+                      </label>
+                    ))}
+                    {isKitchen ? (
+                      <>
+                        <label className="checklist-item">
+                          <input
+                            type="checkbox"
+                            disabled={!canEditCleaning}
+                            checked={oven.checked}
+                            onChange={(e) => toggleOvenChecked(e.target.checked)}
+                          />
+                          Oven checked
+                        </label>
+                        {oven.checked ? (
+                          <div className="oven-sub">
+                            <button
+                              type="button"
+                              className={`oven-opt${oven.outcome === "cleaned" ? " sel" : ""}`}
+                              data-outcome="cleaned"
+                              disabled={!canEditCleaning}
+                              onClick={() => setOvenOutcome("cleaned")}
+                            >
+                              Cleaned
+                            </button>
+                            <button
+                              type="button"
+                              className={`oven-opt${oven.outcome === "attention" ? " sel" : ""}`}
+                              data-outcome="attention"
+                              disabled={!canEditCleaning}
+                              onClick={() => setOvenOutcome("attention")}
+                            >
+                              Requires attention
+                            </button>
+                          </div>
+                        ) : null}
+                      </>
+                    ) : null}
+                  </div>
+                </details>
+              );
+            })}
 
             <h3 style={{ marginTop: 14 }}>Photos</h3>
             {photosLoading ? (

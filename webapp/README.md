@@ -568,6 +568,30 @@ explicit that nothing is actually charged automatically yet, since
 subscription billing itself isn't built (see Backlog) -- it's a heads-up,
 not an enforcement mechanism.
 
+## Cleaning checklist, room by room (slice 17)
+
+The booking modal's cleaning checklist was a flat list of ~7 generic
+items (`Kitchen cleaned`, `Bathrooms cleaned`, ...) -- replaced with a
+full room-by-room checklist (`CHECKLIST_SECTIONS` in
+`calendar-utils.ts`) modeled on a real professional Airbnb turnover
+checklist: Bedrooms, Toilets, Bathrooms, Kitchen, Dining/Living Room,
+Floors & Carpets, Outdoor Areas, and Locking Up, ~40 items total. Each
+section is a collapsible `<details>` showing a live `done/total` count,
+so a cleaner works through one room at a time on their phone instead of
+scrolling a 40-item wall. The Oven keeps its existing checked-plus-outcome
+flagging (`Cleaned` / `Requires attention`, which drives the "!" badge
+elsewhere) inside the Kitchen section, since it's the one appliance the
+original checklist specifically calls out as needing a heads-up if it
+needs real attention.
+
+No migration needed -- `bookings.checklist` is a schemaless jsonb column,
+so this is just a different set of keys stored in it. Any booking with
+progress against the old flat keys (`kitchen`, `bathrooms`, `beds`, ...)
+keeps that data in the database, but the new UI doesn't read those keys,
+so it renders as an unstarted checklist rather than migrated progress --
+acceptable since old checklist state stops being useful as soon as the
+item wording it was tracking changes anyway.
+
 ## Backlog
 
 Waiting on something outside this repo before there's anything to build:

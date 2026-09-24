@@ -56,15 +56,14 @@ export interface OvenChecklistEntry {
   outcome: "cleaned" | "attention" | null;
 }
 
+// A flat bag of item-key -> checked, one key per CHECKLIST_SECTIONS item
+// (calendar-utils.ts) -- stored as-is in the `bookings.checklist` jsonb
+// column, so adding/renaming/removing an item there never needs a
+// migration. `oven` alone keeps a richer shape (see hasAttention()) so a
+// cleaner can flag it as needing follow-up rather than just checked/not.
 export interface Checklist {
-  kitchen?: boolean;
-  bathrooms?: boolean;
-  beds?: boolean;
-  trash?: boolean;
-  inventory?: boolean;
-  floors?: boolean;
-  cupboards?: boolean;
   oven?: OvenChecklistEntry;
+  [itemKey: string]: boolean | OvenChecklistEntry | undefined;
 }
 
 export type BookingSource = "manual" | "ical";
