@@ -16,6 +16,7 @@ export interface BookingInput {
   checklist: Checklist;
   assigned_cleaner_id: string | null;
   is_open_job: boolean;
+  linen_pickup: boolean;
 }
 
 type SupabaseServer = Awaited<ReturnType<typeof createClient>>;
@@ -249,7 +250,7 @@ export async function payCleanerForBooking(bookingId: string) {
   const supabase = await createClient();
   const { data: booking, error } = await supabase
     .from("bookings")
-    .select("id, property_id, assigned_cleaner_id, status, payout_status")
+    .select("id, property_id, assigned_cleaner_id, status, payout_status, linen_pickup")
     .eq("id", bookingId)
     .maybeSingle();
   if (error || !booking) throw new Error(error?.message ?? "Booking not found.");
@@ -259,12 +260,22 @@ export async function payCleanerForBooking(bookingId: string) {
 
   const { data: property } = await supabase
     .from("properties")
-    .select("payout_rate_cents")
+    .select("payout_rate_cents, linen_box_count, linen_fee_cents")
     .eq("id", booking.property_id)
     .maybeSingle();
   if (!property?.payout_rate_cents) {
     throw new Error("This property has no payout rate set -- add one on the Properties page first.");
   }
+
+  // The linen fee (box count and per-box rate, both set per property
+  // since different host businesses charge different amounts) is
+  // computed from the property/booking rows read here, never trusted
+  // from the client, since this is what actually gets transferred via
+  // Stripe.
+  const linenFeeCents = booking.linen_pickup
+    ? (property.linen_box_count ?? 0) * (property.linen_fee_cents ?? 0)
+    : 0;
+  const totalCents = property.payout_rate_cents + linenFeeCents;
 
   const { data: cleaner } = await supabase
     .from("profiles")
@@ -277,7 +288,7 @@ export async function payCleanerForBooking(bookingId: string) {
 
   const stripe = getStripe();
   const transfer = await stripe.transfers.create({
-    amount: property.payout_rate_cents,
+    amount: totalCents,
     currency: "aud",
     destination: cleaner.stripe_connect_account_id,
     metadata: { booking_id: bookingId },

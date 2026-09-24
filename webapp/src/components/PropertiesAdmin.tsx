@@ -11,6 +11,7 @@ import {
   syncAllFeeds,
   syncIcalFeed,
   updateAccessInstructions,
+  updateLinenService,
   updatePayoutRate,
   updatePropertyProfile,
 } from "@/app/properties/actions";
@@ -170,6 +171,12 @@ function PropertyCard({
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileSaved, setProfileSaved] = useState(false);
 
+  const [linenBoxCount, setLinenBoxCount] = useState((property.linen_box_count ?? 1).toString());
+  const [linenFeeRate, setLinenFeeRate] = useState(((property.linen_fee_cents ?? 2000) / 100).toString());
+  const [savingLinenService, setSavingLinenService] = useState(false);
+  const [linenServiceSaved, setLinenServiceSaved] = useState(false);
+  const [linenServiceError, setLinenServiceError] = useState<string | null>(null);
+
   const [label, setLabel] = useState("");
   const [url, setUrl] = useState("");
   const [addError, setAddError] = useState<string | null>(null);
@@ -272,6 +279,30 @@ function PropertyCard({
       setProfileSaved(true);
     } finally {
       setSavingProfile(false);
+    }
+  }
+
+  async function handleSaveLinenService() {
+    setLinenServiceError(null);
+    const boxes = parseInt(linenBoxCount, 10);
+    const rate = Number(linenFeeRate.trim());
+    if (Number.isNaN(boxes) || boxes < 0) {
+      setLinenServiceError("Enter a valid number of linen boxes.");
+      return;
+    }
+    if (Number.isNaN(rate) || rate < 0) {
+      setLinenServiceError("Enter a valid fee per box.");
+      return;
+    }
+    setSavingLinenService(true);
+    setLinenServiceSaved(false);
+    try {
+      await updateLinenService(property.id, boxes, Math.round(rate * 100));
+      setLinenServiceSaved(true);
+    } catch (e) {
+      setLinenServiceError(e instanceof Error ? e.message : "Couldn't save linen service.");
+    } finally {
+      setSavingLinenService(false);
     }
   }
 
@@ -416,40 +447,122 @@ function PropertyCard({
 
       <div className="field">
         <label htmlFor={`payout-${property.id}`}>
-          Cleaner payout rate for this property (paid via Stripe once a booking is marked complete)
+          Cleaner payout rate for this property (paid via Stripe once a booking is marked complete) —
+          owner only
         </label>
-        <input
-          id={`payout-${property.id}`}
-          type="number"
-          min="0"
-          step="0.01"
-          inputMode="decimal"
-          value={payoutRate}
-          placeholder="e.g. 85.00"
-          onChange={(e) => {
-            setPayoutRate(e.target.value);
-            setPayoutRateSaved(false);
-          }}
-          style={{ maxWidth: 160 }}
-        />
-        <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 10 }}>
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={handleSavePayoutRate}
-            disabled={savingPayoutRate}
-          >
-            {savingPayoutRate ? "Saving…" : "Save"}
-          </button>
-          {payoutRateSaved ? (
-            <span style={{ fontSize: 12.5, color: "var(--teal-deep)" }}>Saved</span>
-          ) : null}
-        </div>
-        {payoutRateError ? (
-          <div className="error-banner" style={{ marginTop: 10 }}>
-            {payoutRateError}
-          </div>
-        ) : null}
+        {isOwner ? (
+          <>
+            <input
+              id={`payout-${property.id}`}
+              type="number"
+              min="0"
+              step="0.01"
+              inputMode="decimal"
+              value={payoutRate}
+              placeholder="e.g. 85.00"
+              onChange={(e) => {
+                setPayoutRate(e.target.value);
+                setPayoutRateSaved(false);
+              }}
+              style={{ maxWidth: 160 }}
+            />
+            <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 10 }}>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={handleSavePayoutRate}
+                disabled={savingPayoutRate}
+              >
+                {savingPayoutRate ? "Saving…" : "Save"}
+              </button>
+              {payoutRateSaved ? (
+                <span style={{ fontSize: 12.5, color: "var(--teal-deep)" }}>Saved</span>
+              ) : null}
+            </div>
+            {payoutRateError ? (
+              <div className="error-banner" style={{ marginTop: 10 }}>
+                {payoutRateError}
+              </div>
+            ) : null}
+          </>
+        ) : (
+          <p className="photo-note">
+            {property.payout_rate_cents
+              ? `$${(property.payout_rate_cents / 100).toFixed(2)}`
+              : "Not set yet"}{" "}
+            — only the owner can change this.
+          </p>
+        )}
+      </div>
+
+      <div className="field">
+        <label>
+          Linen service — the fee added to a cleaner&apos;s payout when they&apos;re instructed to take
+          this property&apos;s linen off-site to clean — owner only
+        </label>
+        {isOwner ? (
+          <>
+            <div style={{ display: "flex", gap: 16, alignItems: "flex-end", flexWrap: "wrap" }}>
+              <div>
+                <label htmlFor={`linenboxes-${property.id}`} style={{ fontSize: 12.5, color: "var(--muted)" }}>
+                  Linen boxes
+                </label>
+                <input
+                  id={`linenboxes-${property.id}`}
+                  type="number"
+                  min="0"
+                  value={linenBoxCount}
+                  onChange={(e) => {
+                    setLinenBoxCount(e.target.value);
+                    setLinenServiceSaved(false);
+                  }}
+                  style={{ maxWidth: 90, display: "block" }}
+                />
+              </div>
+              <div>
+                <label htmlFor={`linenfee-${property.id}`} style={{ fontSize: 12.5, color: "var(--muted)" }}>
+                  Fee per box ($)
+                </label>
+                <input
+                  id={`linenfee-${property.id}`}
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  inputMode="decimal"
+                  value={linenFeeRate}
+                  onChange={(e) => {
+                    setLinenFeeRate(e.target.value);
+                    setLinenServiceSaved(false);
+                  }}
+                  style={{ maxWidth: 120, display: "block" }}
+                />
+              </div>
+            </div>
+            <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 10 }}>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={handleSaveLinenService}
+                disabled={savingLinenService}
+              >
+                {savingLinenService ? "Saving…" : "Save"}
+              </button>
+              {linenServiceSaved ? (
+                <span style={{ fontSize: 12.5, color: "var(--teal-deep)" }}>Saved</span>
+              ) : null}
+            </div>
+            {linenServiceError ? (
+              <div className="error-banner" style={{ marginTop: 10 }}>
+                {linenServiceError}
+              </div>
+            ) : null}
+          </>
+        ) : (
+          <p className="photo-note">
+            {property.linen_box_count ?? 0} box{(property.linen_box_count ?? 0) === 1 ? "" : "es"} × $
+            {((property.linen_fee_cents ?? 0) / 100).toFixed(2)} each — only the owner can change this.
+          </p>
+        )}
       </div>
 
       <div className="field">

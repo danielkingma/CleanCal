@@ -107,6 +107,7 @@ export default function BookingModal({
     booking?.assigned_cleaner_id ?? null,
   );
   const [isOpenJob, setIsOpenJob] = useState(booking?.is_open_job ?? false);
+  const [linenPickup, setLinenPickup] = useState(booking?.linen_pickup ?? false);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [claiming, setClaiming] = useState(false);
@@ -383,6 +384,7 @@ export default function BookingModal({
           checklist,
           assigned_cleaner_id: assignedCleanerId,
           is_open_job: isOpenJob,
+          linen_pickup: linenPickup,
         };
         if (mode === "new") {
           await createBooking(input);
@@ -538,6 +540,31 @@ export default function BookingModal({
                 Open — any cleaner can claim
               </button>
             </div>
+          </div>
+        ) : null}
+
+        {isStaffUser ? (
+          <div className="field">
+            <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <input
+                type="checkbox"
+                checked={linenPickup}
+                onChange={(e) => setLinenPickup(e.target.checked)}
+              />
+              Cleaner takes linen off-site to clean
+            </label>
+            {linenPickup ? (
+              <p className="access-note">
+                Adds $
+                {(
+                  ((selectedProperty?.linen_box_count ?? 0) * (selectedProperty?.linen_fee_cents ?? 0)) /
+                  100
+                ).toFixed(2)}{" "}
+                to this cleaner&apos;s payout ({selectedProperty?.linen_box_count ?? 0} linen box
+                {(selectedProperty?.linen_box_count ?? 0) === 1 ? "" : "es"} × $
+                {((selectedProperty?.linen_fee_cents ?? 0) / 100).toFixed(2)}).
+              </p>
+            ) : null}
           </div>
         ) : null}
 
@@ -788,7 +815,13 @@ export default function BookingModal({
                   onClick={handlePayCleaner}
                   disabled={payingCleaner}
                 >
-                  {payingCleaner ? "Paying…" : `Pay $${(property.payout_rate_cents / 100).toFixed(2)}`}
+                  {payingCleaner
+                    ? "Paying…"
+                    : `Pay $${(
+                        (property.payout_rate_cents +
+                          (linenPickup ? (property.linen_box_count ?? 0) * (property.linen_fee_cents ?? 0) : 0)) /
+                        100
+                      ).toFixed(2)}`}
                 </button>
               </div>
             )}

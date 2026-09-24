@@ -22,7 +22,9 @@ export default async function PropertiesPage() {
 
   const { data: properties } = await supabase
     .from("properties")
-    .select("id, name, access_instructions, payout_rate_cents, bedroom_count, bathroom_count, has_outdoor_area")
+    .select(
+      "id, name, access_instructions, payout_rate_cents, bedroom_count, bathroom_count, has_outdoor_area, linen_box_count",
+    )
     .order("name");
 
   const { data: feeds } = await supabase

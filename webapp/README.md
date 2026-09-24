@@ -621,6 +621,38 @@ columns with defaults, so it's safe to run ahead of or behind the app
 code either way, but the profile fields obviously won't do anything until
 it's run).
 
+## Linen service fee (slice 19)
+
+Some properties have the cleaner take used linen off-site to launder and
+bring back, billed per linen box on top of the property's flat payout
+rate. Each property now has `linen_box_count` and `linen_fee_cents`
+(`0019_linen_service.sql`) — a per-box rate, not a fixed constant, since
+different host businesses (and different properties for the same host)
+charge different amounts. Staff mark a per-booking `linen_pickup` flag
+(in the booking modal, next to Assignment) when the cleaner is
+instructed to take this booking's linen away; when that booking is
+marked complete, "Pay $X" and the actual Stripe transfer both include
+`payout_rate_cents + linen_box_count × linen_fee_cents`, computed
+server-side from the DB rows in `payCleanerForBooking`
+(`calendar/actions.ts`) — never trusted from the client.
+
+Both dollar figures — the payout rate and the linen fee — are owner-only
+to change, per the "never financials" line `0009_owner_manager_roles.sql`
+drew between Owner and Manager before there was anything financial to
+gate. RLS is row-level, not column-level, so this is enforced with a
+`before update` trigger on `properties` that blocks the write if
+`payout_rate_cents`, `linen_box_count`, or `linen_fee_cents` actually
+changed and the caller isn't the owner — a manager still edits
+everything else about a property (access instructions, room profile,
+calendar feeds) freely. The Properties page shows managers a read-only
+line ("$85.00 — only the owner can change this.") in place of the input,
+so every role reads the same one number off the same row instead of
+each seeing something different. Whether a given booking needs linen
+picked up stays editable by any staff, since that's an operational call,
+not a pricing one.
+
+Run `0019_linen_service.sql` in Supabase before this deploys.
+
 ## Backlog
 
 Waiting on something outside this repo before there's anything to build:

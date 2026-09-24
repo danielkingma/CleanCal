@@ -40,6 +40,8 @@ export interface Property {
   bedroom_count?: number;
   bathroom_count?: number;
   has_outdoor_area?: boolean;
+  linen_box_count?: number;
+  linen_fee_cents?: number;
 }
 
 export type IcalSyncStatus = "never" | "ok" | "error";
@@ -100,4 +102,5 @@ export interface Booking {
   dispute_status: DisputeStatus;
   payout_status?: "none" | "paid";
   stripe_transfer_id?: string | null;
+  linen_pickup?: boolean;
 }

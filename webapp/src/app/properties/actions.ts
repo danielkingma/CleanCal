@@ -40,6 +40,9 @@ export async function updateAccessInstructions(propertyId: string, text: string)
   revalidatePath("/calendar");
 }
 
+// Owner-only in practice: enforced by the properties_financials_owner_only
+// trigger (0019_linen_service.sql) -- a manager calling this just gets
+// that trigger's error back from Supabase.
 export async function updatePayoutRate(propertyId: string, cents: number | null) {
   const supabase = await createClient();
   const { error } = await supabase
@@ -64,6 +67,24 @@ export async function updatePropertyProfile(
       bedroom_count: Math.max(1, bedroomCount || 1),
       bathroom_count: Math.max(1, bathroomCount || 1),
       has_outdoor_area: hasOutdoorArea,
+    })
+    .eq("id", propertyId);
+  if (error) throw new Error(error.message);
+  revalidatePath("/properties");
+  revalidatePath("/calendar");
+}
+
+// Owner-only in practice: enforced by the properties_financials_owner_only
+// trigger (0019_linen_service.sql), not by anything here -- a manager
+// calling this just gets that trigger's error back from Supabase, same
+// pattern as updatePayoutRate below.
+export async function updateLinenService(propertyId: string, linenBoxCount: number, linenFeeCents: number) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("properties")
+    .update({
+      linen_box_count: Math.max(0, linenBoxCount || 0),
+      linen_fee_cents: Math.max(0, linenFeeCents || 0),
     })
     .eq("id", propertyId);
   if (error) throw new Error(error.message);

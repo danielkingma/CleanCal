@@ -28,7 +28,9 @@ export default async function CalendarPage() {
 
   const { data: allProperties, error: propertiesError } = await supabase
     .from("properties")
-    .select("id, name, access_instructions, payout_rate_cents, bedroom_count, bathroom_count, has_outdoor_area")
+    .select(
+      "id, name, access_instructions, payout_rate_cents, bedroom_count, bathroom_count, has_outdoor_area, linen_box_count",
+    )
     .order("name");
 
   // Admins see every booking; cleaners are scoped to their own assignments
@@ -40,7 +42,7 @@ export default async function CalendarPage() {
   let bookingsQuery = supabase
     .from("bookings")
     .select(
-      "id, property_id, checkin_date, nights, status, notes, guests, checklist, assigned_cleaner_id, is_open_job, source, external_uid, ical_missing_since, platform_label, rating, rating_comment, dispute_status, payout_status, stripe_transfer_id",
+      "id, property_id, checkin_date, nights, status, notes, guests, checklist, assigned_cleaner_id, is_open_job, source, external_uid, ical_missing_since, platform_label, rating, rating_comment, dispute_status, payout_status, stripe_transfer_id, linen_pickup",
     )
     .order("checkin_date");
   if (!isStaff(currentProfile.role)) {
