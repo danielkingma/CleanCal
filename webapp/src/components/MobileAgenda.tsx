@@ -1,8 +1,8 @@
 "use client";
 
-import { MONTH_NAMES, STATUS_LABEL, WD, checkoutDate, hasAttention, isoDate, sameDay } from "@/lib/calendar-utils";
-import { getPlatformBadge } from "@/lib/platform-badge";
+import { MONTH_NAMES, WD, checkoutDate, isoDate, sameDay } from "@/lib/calendar-utils";
 import type { Booking, Property } from "@/lib/types";
+import AgendaCard from "./AgendaCard";
 
 interface MobileAgendaProps {
   days: Date[];
@@ -51,39 +51,14 @@ export default function MobileAgenda({ days, properties, bookings, onBarClick }:
               </span>
             </div>
             <div className="agenda-cards">
-              {dayBookings.map((b) => {
-                const platform = getPlatformBadge(b.platform_label);
-                const isOpenUnclaimed = b.is_open_job && !b.assigned_cleaner_id;
-                return (
-                  <button
-                    type="button"
-                    key={b.id}
-                    className={`agenda-card ${b.status}${isOpenUnclaimed ? " open-job" : ""}`}
-                    onClick={() => onBarClick(b)}
-                  >
-                    <div className="agenda-card-top">
-                      <span className="agenda-prop-name">
-                        {propertyNameById[b.property_id] ?? "—"}
-                      </span>
-                      {platform ? (
-                        <span className="source-pill" style={{ background: platform.color }}>
-                          {platform.name}
-                        </span>
-                      ) : null}
-                    </div>
-                    <div className="agenda-card-bottom">
-                      <span className={`agenda-status-chip ${b.status}`}>
-                        {isOpenUnclaimed ? "Open job" : STATUS_LABEL[b.status]}
-                      </span>
-                      {b.guests ? <span className="agenda-guests">{b.guests}</span> : null}
-                      {hasAttention(b) ? <span className="attn-marker agenda-inline-marker">!</span> : null}
-                      {b.dispute_status === "open" ? (
-                        <span className="dispute-marker agenda-inline-marker">!</span>
-                      ) : null}
-                    </div>
-                  </button>
-                );
-              })}
+              {dayBookings.map((b) => (
+                <AgendaCard
+                  key={b.id}
+                  booking={b}
+                  propertyName={propertyNameById[b.property_id] ?? "—"}
+                  onClick={() => onBarClick(b)}
+                />
+              ))}
             </div>
           </div>
         );

@@ -8,6 +8,8 @@ import Logo from "./Logo";
 import NotificationsToggle from "./NotificationsToggle";
 import Timeline from "./Timeline";
 import MobileAgenda from "./MobileAgenda";
+import MonthGrid from "./MonthGrid";
+import DayPickerSheet from "./DayPickerSheet";
 import PropertyYearView from "./PropertyYearView";
 import BookingModal from "./BookingModal";
 import {
@@ -15,6 +17,7 @@ import {
   DAY_W_WEEK,
   MONTH_NAMES,
   addDays,
+  checkoutDate,
   fromISO,
   isoDate,
 } from "@/lib/calendar-utils";
@@ -61,6 +64,12 @@ export default function CalendarApp({
   const [cursor, setCursor] = useState(() => new Date());
   const [bookings, setBookings] = useState<Booking[]>(initialBookings);
   const [modal, setModal] = useState<ModalState | null>(null);
+  const [dayPicker, setDayPicker] = useState<{ dateIso: string; bookings: Booking[] } | null>(null);
+
+  // Mobile has no Year tab (see the view-tabs below) -- if someone picked
+  // Year on desktop and then narrowed the window, fall back to Month
+  // everywhere below rather than rendering a tab that isn't offered.
+  const derivedView: View = isMobile && view === "year" ? "month" : view;
 
   // Re-sync local state when the server component re-fetches (see
   // router.refresh() in handleDone) -- updating state during render here,
@@ -98,37 +107,53 @@ export default function CalendarApp({
   }, []);
 
   const days = useMemo(() => {
-    if (view === "month") {
+    if (derivedView === "month") {
       const year = cursor.getFullYear();
       const month = cursor.getMonth();
       const numDays = new Date(year, month + 1, 0).getDate();
       return Array.from({ length: numDays }, (_, i) => new Date(year, month, i + 1));
     }
-    if (view === "week") {
+    if (derivedView === "week") {
       const start = addDays(cursor, -cursor.getDay());
       return Array.from({ length: 7 }, (_, i) => addDays(start, i));
     }
     return [];
-  }, [view, cursor]);
+  }, [derivedView, cursor]);
 
   const periodLabel = useMemo(() => {
-    if (view === "month") return `${MONTH_NAMES[cursor.getMonth()]} ${cursor.getFullYear()}`;
-    if (view === "week") {
+    if (derivedView === "month") return `${MONTH_NAMES[cursor.getMonth()]} ${cursor.getFullYear()}`;
+    if (derivedView === "week") {
       const start = addDays(cursor, -cursor.getDay());
       const end = addDays(start, 6);
       return `${MONTH_NAMES[start.getMonth()].slice(0, 3)} ${start.getDate()} – ${MONTH_NAMES[end.getMonth()].slice(0, 3)} ${end.getDate()}`;
     }
     return `${cursor.getFullYear()}`;
-  }, [view, cursor]);
+  }, [derivedView, cursor]);
 
   function navigate(dir: number) {
     setCursor((prev) => {
       const next = new Date(prev);
-      if (view === "month") next.setMonth(next.getMonth() + dir);
-      else if (view === "week") next.setDate(next.getDate() + dir * 7);
+      if (derivedView === "month") next.setMonth(next.getMonth() + dir);
+      else if (derivedView === "week") next.setDate(next.getDate() + dir * 7);
       else next.setFullYear(next.getFullYear() + dir);
       return next;
     });
+  }
+
+  // Tapping a day on the mobile Month grid: MonthGrid's bars are already
+  // individually tappable (opens that booking directly), but two
+  // same-day-turnover bars can be hard to hit precisely on a phone, so
+  // tapping the day itself is a reliable fallback -- straight to the
+  // booking if there's exactly one, a small picker if there's more.
+  function handleMobileMonthDayTap(dateIso: string) {
+    const dayBookings = bookings.filter(
+      (b) => b.property_id === yearPropertyId && isoDate(checkoutDate(b)) === dateIso,
+    );
+    if (dayBookings.length === 1) {
+      setModal({ mode: "edit", booking: dayBookings[0] });
+    } else if (dayBookings.length > 1) {
+      setDayPicker({ dateIso, bookings: dayBookings });
+    }
   }
 
   function openNewModal(propertyId?: string, dateIso?: string) {
@@ -165,17 +190,27 @@ export default function CalendarApp({
           </button>
         </div>
         <div className="view-tabs">
-          {(["week", "month", "year"] as const).map((v) => (
+          {(isMobile
+            ? ([
+                { key: "week", label: "Cleaning List" },
+                { key: "month", label: "Month" },
+              ] as const)
+            : ([
+                { key: "week", label: "Week" },
+                { key: "month", label: "Month" },
+                { key: "year", label: "Year" },
+              ] as const)
+          ).map(({ key, label }) => (
             <button
-              key={v}
-              className={`view-tab${view === v ? " active" : ""}`}
-              onClick={() => setView(v)}
+              key={key}
+              className={`view-tab${derivedView === key ? " active" : ""}`}
+              onClick={() => setView(key)}
             >
-              {v[0].toUpperCase() + v.slice(1)}
+              {label}
             </button>
           ))}
         </div>
-        {view === "year" && properties.length > 0 ? (
+        {(derivedView === "year" || (isMobile && derivedView === "month")) && properties.length > 0 ? (
           <select
             className="year-property-select"
             value={yearPropertyId}
@@ -262,10 +297,12 @@ export default function CalendarApp({
             </span>{" "}
             Requires attention
           </div>
-          {view !== "year" ? <div className="prop-count">{properties.length} properties</div> : null}
+          {derivedView !== "year" && !(isMobile && derivedView === "month") ? (
+            <div className="prop-count">{properties.length} properties</div>
+          ) : null}
         </div>
 
-        {view === "year" ? (
+        {derivedView === "year" ? (
           yearPropertyId ? (
             <PropertyYearView
               year={cursor.getFullYear()}
@@ -279,6 +316,19 @@ export default function CalendarApp({
           ) : (
             <p className="photo-note">Add a property to see its year calendar here.</p>
           )
+        ) : isMobile && derivedView === "month" ? (
+          yearPropertyId ? (
+            <MonthGrid
+              year={cursor.getFullYear()}
+              month={cursor.getMonth()}
+              bookings={bookings.filter((b) => b.property_id === yearPropertyId)}
+              onSelectBooking={(booking) => setModal({ mode: "edit", booking })}
+              onSelectDate={handleMobileMonthDayTap}
+              showTitle={false}
+            />
+          ) : (
+            <p className="photo-note">Add a property to see its month calendar here.</p>
+          )
         ) : isMobile ? (
           <MobileAgenda
             days={days}
@@ -289,8 +339,8 @@ export default function CalendarApp({
         ) : (
           <Timeline
             days={days}
-            dayW={view === "week" ? DAY_W_WEEK : DAY_W_MONTH}
-            weekly={view === "week"}
+            dayW={derivedView === "week" ? DAY_W_WEEK : DAY_W_MONTH}
+            weekly={derivedView === "week"}
             properties={properties}
             bookings={bookings}
             onBarClick={(booking) => setModal({ mode: "edit", booking })}
@@ -314,6 +364,23 @@ export default function CalendarApp({
           presetDate={modal.presetDate}
           onClose={closeModal}
           onDone={handleDone}
+        />
+      ) : null}
+
+      {dayPicker ? (
+        <DayPickerSheet
+          dateLabel={fromISO(dayPicker.dateIso).toLocaleDateString(undefined, {
+            weekday: "long",
+            month: "long",
+            day: "numeric",
+          })}
+          bookings={dayPicker.bookings}
+          propertyNameById={Object.fromEntries(properties.map((p) => [p.id, p.name]))}
+          onSelect={(booking) => {
+            setDayPicker(null);
+            setModal({ mode: "edit", booking });
+          }}
+          onClose={() => setDayPicker(null)}
         />
       ) : null}
     </div>
