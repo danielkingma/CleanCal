@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import Logo from "./Logo";
+import Dropdown from "./Dropdown";
 import NotificationsToggle from "./NotificationsToggle";
 import Timeline from "./Timeline";
 import MobileAgenda from "./MobileAgenda";
@@ -226,49 +227,22 @@ export default function CalendarApp({
         <div className="user-badge">
           <span className="role-pill">{currentProfile.role}</span>
           <span>{currentUserEmail}</span>
-          <a
-            href={HANDBOOK_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="signout-btn"
-          >
-            Handbook
-          </a>
-          <Link href="/history" className="signout-btn">
-            History
-          </Link>
-          <Link href="/availability" className="signout-btn">
-            Availability
-          </Link>
-          <Link href="/profile" className="signout-btn">
-            My Profile
-          </Link>
-          <NotificationsToggle />
-          <form action="/logout" method="post">
-            <button type="submit" className="signout-btn">
-              Sign out
-            </button>
-          </form>
         </div>
         {isStaffUser ? (
-          <Link href="/dashboard" className="today-btn">
-            Dashboard
-          </Link>
-        ) : null}
-        {isStaffUser ? (
-          <Link href="/reports" className="today-btn">
-            Reports
-          </Link>
-        ) : null}
-        {isStaffUser ? (
-          <Link href="/properties" className="today-btn">
-            Properties
-          </Link>
-        ) : null}
-        {isStaffUser ? (
-          <Link href="/cleaners" className="today-btn">
-            Cleaners
-          </Link>
+          <Dropdown label="Manage" triggerClassName="today-btn">
+            <Link href="/dashboard" className="dropdown-item">
+              Dashboard
+            </Link>
+            <Link href="/reports" className="dropdown-item">
+              Reports
+            </Link>
+            <Link href="/properties" className="dropdown-item">
+              Properties
+            </Link>
+            <Link href="/cleaners" className="dropdown-item">
+              Cleaners
+            </Link>
+          </Dropdown>
         ) : null}
         {isStaffUser ? (
           <button
@@ -278,6 +252,26 @@ export default function CalendarApp({
             + New booking
           </button>
         ) : null}
+        <Dropdown label="Menu" triggerClassName="signout-btn">
+          <a href={HANDBOOK_URL} target="_blank" rel="noopener noreferrer" className="dropdown-item">
+            Handbook
+          </a>
+          <Link href="/history" className="dropdown-item">
+            History
+          </Link>
+          <Link href="/availability" className="dropdown-item">
+            Availability
+          </Link>
+          <Link href="/profile" className="dropdown-item">
+            My Profile
+          </Link>
+          <NotificationsToggle className="dropdown-item" />
+        </Dropdown>
+        <form action="/logout" method="post">
+          <button type="submit" className="signout-btn">
+            Sign out
+          </button>
+        </form>
       </div>
 
       <main>

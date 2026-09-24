@@ -26,7 +26,11 @@ function isPushSupported(): boolean {
   );
 }
 
-export default function NotificationsToggle() {
+interface NotificationsToggleProps {
+  className?: string;
+}
+
+export default function NotificationsToggle({ className = "signout-btn" }: NotificationsToggleProps) {
   const [state, setState] = useState<State>("checking");
   const [busy, setBusy] = useState(false);
 
@@ -103,7 +107,7 @@ export default function NotificationsToggle() {
   if (state === "denied") {
     return (
       <span
-        className="signout-btn"
+        className={className}
         style={{ opacity: 0.6, cursor: "default" }}
         title="Notifications are blocked in your browser's site settings."
       >
@@ -113,12 +117,7 @@ export default function NotificationsToggle() {
   }
 
   return (
-    <button
-      type="button"
-      className="signout-btn"
-      disabled={busy}
-      onClick={state === "subscribed" ? handleDisable : handleEnable}
-    >
+    <button type="button" className={className} disabled={busy} onClick={state === "subscribed" ? handleDisable : handleEnable}>
       {state === "subscribed" ? "Notifications on" : "Enable notifications"}
     </button>
   );
