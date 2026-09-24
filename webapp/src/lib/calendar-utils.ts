@@ -6,7 +6,7 @@ export const DAY_W_MONTH = 40;
 export const DAY_W_WEEK = 130;
 export const ROW_H = 42;
 export const HEADER_H = 40;
-export const LABEL_W = 168;
+export const LABEL_W = 240;
 
 export const WD = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 export const MONTH_NAMES = [
