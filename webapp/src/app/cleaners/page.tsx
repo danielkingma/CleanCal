@@ -14,9 +14,23 @@ export default async function CleanersPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role, organization_id")
+    .eq("id", user.id)
+    .maybeSingle();
   if (!isStaff(profile?.role)) redirect("/calendar");
   const isOwner = profile?.role === "owner";
+
+  let organizationName = "our team";
+  if (profile?.organization_id) {
+    const { data: org } = await supabase
+      .from("organizations")
+      .select("name")
+      .eq("id", profile.organization_id)
+      .maybeSingle();
+    if (org?.name) organizationName = org.name;
+  }
 
   const { data: cleaners } = await supabase
     .from("profiles")
@@ -74,7 +88,7 @@ export default async function CleanersPage() {
       </div>
 
       <main>
-        <InviteLink isOwner={isOwner} />
+        <InviteLink isOwner={isOwner} organizationName={organizationName} />
 
         {isOwner ? <TeamRoles profiles={allProfiles} currentUserId={user.id} /> : null}
 

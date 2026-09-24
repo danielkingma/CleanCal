@@ -4,12 +4,32 @@ import { useState } from "react";
 import { createInvite } from "@/app/cleaners/actions";
 import type { Role } from "@/lib/types";
 
-export default function InviteLink({ isOwner }: { isOwner: boolean }) {
+const ROLE_LABEL: Record<Role, string> = {
+  cleaner: "cleaner",
+  manager: "manager",
+  owner: "co-owner",
+};
+
+export default function InviteLink({
+  isOwner,
+  organizationName,
+}: {
+  isOwner: boolean;
+  organizationName: string;
+}) {
   const [role, setRole] = useState<Role>("cleaner");
   const [link, setLink] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [messageCopied, setMessageCopied] = useState(false);
+
+  const message = link
+    ? `Hi! I'd like to add you as a ${ROLE_LABEL[role]} on ${organizationName}'s CleanCal — our cleaning schedule app. Tap this link to join, it takes about a minute: ${link}`
+    : null;
+  const mailtoHref = message
+    ? `mailto:?subject=${encodeURIComponent(`Join ${organizationName} on CleanCal`)}&body=${encodeURIComponent(message)}`
+    : null;
 
   async function handleGenerate() {
     setGenerating(true);
@@ -36,6 +56,17 @@ export default function InviteLink({ isOwner }: { isOwner: boolean }) {
     }
   }
 
+  async function handleCopyMessage() {
+    if (!message) return;
+    try {
+      await navigator.clipboard.writeText(message);
+      setMessageCopied(true);
+      setTimeout(() => setMessageCopied(false), 2000);
+    } catch {
+      // clipboard access can be blocked; the message is still selectable in the textarea
+    }
+  }
+
   return (
     <div className="property-card">
       <h2 style={{ fontSize: 18, margin: 0 }}>Invite someone to your team</h2>
@@ -59,6 +90,28 @@ export default function InviteLink({ isOwner }: { isOwner: boolean }) {
           <button type="button" className="btn btn-secondary" onClick={handleCopy}>
             {copied ? "Copied" : "Copy"}
           </button>
+        </div>
+      ) : null}
+      {message ? (
+        <div className="field" style={{ marginTop: 14 }}>
+          <label htmlFor="inviteMessage">Suggested message — ready to paste into a text or email</label>
+          <textarea
+            id="inviteMessage"
+            readOnly
+            value={message}
+            onFocus={(e) => e.target.select()}
+            rows={3}
+          />
+          <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
+            <button type="button" className="btn btn-secondary" onClick={handleCopyMessage}>
+              {messageCopied ? "Copied" : "Copy message"}
+            </button>
+            {mailtoHref ? (
+              <a href={mailtoHref} className="btn btn-secondary" style={{ textDecoration: "none" }}>
+                Open in email
+              </a>
+            ) : null}
+          </div>
         </div>
       ) : null}
       {error ? (
