@@ -745,10 +745,24 @@ main {
   font-weight: 600;
   padding: 0 4px;
   overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
   text-align: left;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+.py-bar-label {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.py-bar-platform {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  opacity: 0.85;
+  font-weight: 500;
 }
 .py-bar.round-left {
   border-top-left-radius: 8px;

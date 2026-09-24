@@ -149,6 +149,11 @@ export default function MonthGrid({
                   const isOpenUnclaimed = seg.booking.is_open_job && !seg.booking.assigned_cleaner_id;
                   const isStale = Boolean(seg.booking.ical_missing_since);
                   const label = isOpenUnclaimed ? "Open" : seg.booking.guests || "Reserved";
+                  // seg.span always includes a checkout-day sliver column,
+                  // so a 1-night stay already measures span 2 -- checking
+                  // the booking's actual night count (not the grid span)
+                  // is what "long enough to fit the word" really means.
+                  const showPlatformName = Boolean(platform) && seg.booking.nights >= 2;
                   return (
                     <button
                       type="button"
@@ -171,7 +176,12 @@ export default function MonthGrid({
                         onSelectBooking(seg.booking);
                       }}
                     >
-                      {label}
+                      <span className="py-bar-label">{label}</span>
+                      {/* Only when the segment has at least two day-columns
+                          to work with -- on a single day there's no room
+                          for a second word without either one getting
+                          clipped. */}
+                      {showPlatformName ? <span className="py-bar-platform">{platform!.name}</span> : null}
                     </button>
                   );
                 })}
