@@ -179,6 +179,11 @@ export default function CalendarApp({
             <Logo />
             Clean<span>Cal</span>
           </div>
+          <form action="/logout" method="post">
+            <button type="submit" className="signout-btn">
+              Sign out
+            </button>
+          </form>
         </div>
 
         <div className="topbar-row">
@@ -186,11 +191,6 @@ export default function CalendarApp({
             <span className="role-pill">{currentProfile.role}</span>
             <span>{currentUserEmail}</span>
           </div>
-          <form action="/logout" method="post">
-            <button type="submit" className="signout-btn">
-              Sign out
-            </button>
-          </form>
         </div>
 
         <div className="topbar-row">
