@@ -1884,6 +1884,24 @@ main {
 .hb-side-back:hover {
   text-decoration: underline;
 }
+/* Privacy/Terms pages reuse .hb-page's typography but skip its sidebar
+   shell entirely -- just this one small back link at the top instead. */
+.legal-back {
+  display: inline-block;
+  font-size: 13px;
+  color: var(--teal-deep);
+  text-decoration: none;
+  font-weight: 600;
+}
+.legal-back:hover {
+  text-decoration: underline;
+}
+.legal-meta {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: -6px;
+}
 .hb-side-group-title {
   font-size: 10.5px;
   text-transform: uppercase;

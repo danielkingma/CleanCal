@@ -147,7 +147,11 @@ export default function LandingPage() {
           <Logo size={20} />
           Clean<span>Cal</span>
         </div>
-        <Link href="/handbook">CleanCal Handbook</Link>
+        <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+          <Link href="/handbook">CleanCal Handbook</Link>
+          <Link href="/privacy">Privacy Policy</Link>
+          <Link href="/terms">Terms of Service</Link>
+        </div>
       </footer>
     </div>
   );

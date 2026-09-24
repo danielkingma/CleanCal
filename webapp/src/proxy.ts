@@ -26,6 +26,8 @@ const PUBLIC_PATHS = [
   "/manifest.webmanifest",
   "/sw.js",
   "/handbook",
+  "/privacy",
+  "/terms",
 ];
 
 // The marketing/landing page -- signed out, this is what a visitor to
