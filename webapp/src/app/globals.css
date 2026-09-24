@@ -365,7 +365,11 @@ main {
 .prop-label {
   position: sticky;
   left: 0;
-  z-index: 2;
+  /* Above the per-booking badges (platform/attention/dispute markers,
+     z-index 3), which are deliberately positioned half outside their
+     bar and would otherwise show through this sticky column when a
+     bar's badge scrolls to sit underneath it. */
+  z-index: 4;
   flex: 0 0 auto;
   background: var(--white);
   border-right: 1px solid var(--line);
