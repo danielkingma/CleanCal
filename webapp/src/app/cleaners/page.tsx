@@ -19,7 +19,7 @@ export default async function CleanersPage() {
 
   const { data: cleaners } = await supabase
     .from("profiles")
-    .select("id, name, bio, phone, service_area")
+    .select("id, name, bio, phone, service_area, identity_status")
     .eq("role", "cleaner")
     .order("name");
 
@@ -90,7 +90,16 @@ export default async function CleanersPage() {
           return (
             <div className="property-card" key={cleaner.id}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <h2 style={{ fontSize: 18, margin: 0 }}>{cleaner.name || "(no name set)"}</h2>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <h2 style={{ fontSize: 18, margin: 0 }}>{cleaner.name || "(no name set)"}</h2>
+                  {cleaner.identity_status === "verified" ? (
+                    <span className="sync-pill ok">ID verified</span>
+                  ) : cleaner.identity_status === "pending" ? (
+                    <span className="sync-pill never">ID pending</span>
+                  ) : (
+                    <span className="sync-pill error">ID not verified</span>
+                  )}
+                </div>
                 <span className="rating-summary">
                   {average != null ? `★ ${average.toFixed(1)} (${rating!.count})` : "No ratings yet"}
                 </span>

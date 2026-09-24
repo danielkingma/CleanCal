@@ -424,17 +424,53 @@ set (see `.env.local.example`), the "Enable notifications" button simply
 never appears and the app works exactly as before. To generate your own
 key pair: `npx web-push generate-vapid-keys`.
 
+## Cleaner ID verification (slice 13)
+
+The first piece of Stripe integration: a cleaner verifies their identity
+with a government ID + selfie before taking on jobs, via **Stripe
+Identity**'s hosted verification flow.
+
+- **`/profile`** (cleaner role only): a "Verify identity" button starts
+  a Stripe-hosted verification session and redirects there; Stripe
+  redirects back to `/profile` when done. The page shows the current
+  status — not verified / pending / verified / failed — read from
+  `profiles.identity_status`.
+- **The result only ever comes from Stripe**, never the client: starting
+  a session just records that one's in progress
+  (`start_own_identity_verification` RPC, self-service like
+  `update_own_profile`); moving status to `verified` or `failed` happens
+  exclusively in `/api/webhooks/stripe`, which verifies Stripe's webhook
+  signature and writes via the service-role client (the same reasoning
+  as `push_subscriptions`' cross-user writes — there's no user session
+  to scope an update to `identity_status` under RLS, since nothing
+  client-writable should ever be able to mark itself "verified").
+- Staff see each cleaner's verification status as a badge on `/cleaners`.
+- `src/lib/stripe.ts` is the shared server-side Stripe client every
+  Stripe feature uses; `/api/webhooks/stripe` is a single endpoint that
+  every Stripe feature's events land on (Identity today, more as they're
+  added), the same "one shared entry point" shape as
+  `/api/cron/sync-ical`.
+- **Setup**: in the Stripe dashboard, enable **Identity** and add a
+  webhook endpoint at `https://your-app.vercel.app/api/webhooks/stripe`
+  listening for `identity.verification_session.verified` and
+  `identity.verification_session.requires_input`. See `STRIPE_SECRET_KEY`
+  / `STRIPE_WEBHOOK_SECRET` in `.env.local.example`. Without these set,
+  the "Verify identity" button simply doesn't appear.
+
 ## Backlog
 
 Waiting on something outside this repo before there's anything to build:
 
-- **Background checks (Checkr)** and **ID verification (Stripe Identity
-  or Persona)** — the last two pieces of the cleaner marketplace. Both
-  need you to sign up with the provider and get real API credentials
-  first; not something that can be stubbed or faked, since they involve
-  legally regulated handling of background-check data (FCRA compliance
-  in the US) and government ID documents. Once you have an account and
-  keys for either one, say so and this gets wired up properly.
+- **Background checks (Checkr)** — needs you to sign up with Checkr and
+  get real API credentials first; not something that can be stubbed or
+  faked, since it involves legally regulated handling of background-check
+  data (FCRA compliance in the US). Once you have an account and keys,
+  say so and this gets wired up properly.
+- **Cleaner payouts (Stripe Connect)** and **subscription billing
+  (Stripe Billing/Invoicing)** — scoped and ready to build, waiting on
+  a couple of business-model specifics (how much a cleaner is paid per
+  job, and whether CleanCal will host multiple separate businesses or
+  stay scoped to this one) before the schema is designed around them.
 
 ## Setup
 
@@ -451,8 +487,9 @@ In the Supabase dashboard, open **SQL Editor** and run, in order:
 `0005_booking_guests.sql`, `0006_cleaner_profiles_and_ratings.sql`,
 `0007_open_job_board.sql`, `0008_dispute_resolution.sql`,
 `0009_owner_manager_roles.sql`, `0010_ical_export.sql`,
-`0011_decline_assigned_job.sql`, `0012_cleaner_availability.sql`, then
-`0013_push_subscriptions.sql` (all under `supabase/migrations/`).
+`0011_decline_assigned_job.sql`, `0012_cleaner_availability.sql`,
+`0013_push_subscriptions.sql`, then `0014_identity_verification.sql`
+(all under `supabase/migrations/`).
 Optionally also run `supabase/seed.sql` to seed the same demo
 properties the prototype used.
 
@@ -505,7 +542,11 @@ URLs** (`https://your-app.vercel.app/auth/callback`) so the magic-link
 flow works in production. If you want push notifications, also add the
 four `VAPID_*` / `NEXT_PUBLIC_VAPID_PUBLIC_KEY` env vars from
 `.env.local.example` to the Vercel project settings — push only works
-over HTTPS, which Vercel gives you by default.
+over HTTPS, which Vercel gives you by default. If you want Stripe-backed
+features (cleaner ID verification today), add `STRIPE_SECRET_KEY` and
+`STRIPE_WEBHOOK_SECRET` too, and point a webhook endpoint at
+`https://your-app.vercel.app/api/webhooks/stripe` — see "Cleaner ID
+verification" above.
 
 ## Project structure
 
@@ -526,6 +567,7 @@ src/
     notifications/          push-subscription save/delete server actions
     api/cron/sync-ical/   optional Vercel Cron target (service-role sync)
     api/ical/[token]/     public per-property .ics export feed
+    api/webhooks/stripe/  Stripe webhook endpoint (Identity today; Connect/Billing land here too)
   components/
     CalendarApp.tsx       topbar, view state, realtime subscription
     Timeline.tsx           Month/Week property-row rendering
@@ -546,6 +588,7 @@ src/
     ical-export.ts         builds the outbound .ics feed for api/ical/[token]
     platform-badge.ts      Airbnb/Vrbo/Booking.com/other badge color + letter
     push.ts                 sends Web Push notifications via the service-role client
+    stripe.ts               shared server-side Stripe client
     types.ts               shared domain types
   proxy.ts                 auth guard (Next.js 16 renamed middleware -> proxy)
 public/
@@ -567,5 +610,6 @@ supabase/
     0011_decline_assigned_job.sql                decline_assigned_booking RPC
     0012_cleaner_availability.sql                 cleaner_unavailable_dates table + self-service RLS
     0013_push_subscriptions.sql                   push_subscriptions table + staff_user_ids() RPC
+    0014_identity_verification.sql                identity_status + start_own_identity_verification() RPC
   seed.sql                                     optional demo properties
 ```

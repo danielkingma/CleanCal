@@ -13,6 +13,8 @@ export function isOwner(role: Role | undefined): boolean {
 
 export type BookingStatus = "to-clean" | "in-progress" | "complete";
 
+export type IdentityStatus = "unverified" | "pending" | "verified" | "failed";
+
 export interface Profile {
   id: string;
   name: string;
@@ -20,6 +22,7 @@ export interface Profile {
   bio?: string;
   phone?: string;
   service_area?: string;
+  identity_status?: IdentityStatus;
 }
 
 export interface CleanerRating {
