@@ -28,6 +28,10 @@ const PUBLIC_PATHS = [
   "/handbook",
   "/privacy",
   "/terms",
+  // Requested by social-media link-preview crawlers (no session cookie),
+  // not by a browser -- without this it 307-redirects to /login, and the
+  // "preview" every share shows is a picture of the sign-in page.
+  "/opengraph-image",
 ];
 
 // The marketing/landing page -- signed out, this is what a visitor to
