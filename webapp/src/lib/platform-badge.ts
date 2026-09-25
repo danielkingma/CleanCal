@@ -27,6 +27,13 @@ const KNOWN_PLATFORMS: Array<{ match: RegExp; badge: PlatformBadge }> = [
   { match: /plum\s?guide/i, badge: { code: "P", color: "#8E4585", name: "Plum Guide" } },
   { match: /furnished\s?finder/i, badge: { code: "F", color: "#2E7D32", name: "Furnished Finder" } },
   { match: /houfy/i, badge: { code: "Ho", color: "#17A2B8", name: "Houfy" } },
+  { match: /trip\s?advisor|flipkey/i, badge: { code: "Tr", color: "#C1440E", name: "Tripadvisor Rentals" } },
+  { match: /sonder/i, badge: { code: "Sn", color: "#9F1239", name: "Sonder" } },
+  { match: /vacasa/i, badge: { code: "Vc", color: "#059669", name: "Vacasa" } },
+  { match: /marriott/i, badge: { code: "M", color: "#8A6D3B", name: "Marriott Homes & Villas" } },
+  { match: /onefinestay|one\s?fine\s?stay/i, badge: { code: "Of", color: "#4C1D3D", name: "onefinestay" } },
+  { match: /turnkey/i, badge: { code: "Tk", color: "#0F766E", name: "TurnKey" } },
+  { match: /wimdu/i, badge: { code: "W", color: "#D97706", name: "Wimdu" } },
 ];
 
 export function getPlatformBadge(label: string | null | undefined): PlatformBadge | null {
