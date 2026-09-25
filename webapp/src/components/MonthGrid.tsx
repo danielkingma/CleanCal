@@ -159,7 +159,13 @@ export default function MonthGrid({
                   // so a 1-night stay already measures span 2 -- checking
                   // the booking's actual night count (not the grid span)
                   // is what "long enough to fit the word" really means.
-                  const showPlatformName = showPlatformNames && Boolean(platform) && seg.booking.nights >= 2;
+                  // seg.roundRight restricts this to the row that actually
+                  // contains the checkout: a stay spanning multiple weeks
+                  // gets one BarSegment per row it crosses, and without this
+                  // check the platform name was repeated on every one of
+                  // those rows instead of once at the real end of the stay.
+                  const showPlatformName =
+                    showPlatformNames && Boolean(platform) && seg.booking.nights >= 2 && seg.roundRight;
                   return (
                     <button
                       type="button"
