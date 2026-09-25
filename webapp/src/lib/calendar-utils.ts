@@ -45,8 +45,19 @@ export function checkoutDate(b: Pick<Booking, "checkin_date" | "nights">): Date 
   return addDays(fromISO(b.checkin_date), b.nights);
 }
 
+// Normalizes both dates to midnight (via a same-Y/M/D UTC timestamp) before
+// diffing, so this is a pure calendar-day count regardless of either
+// argument's actual time-of-day. That matters because `cursor` (and `today`,
+// used for the "today" marker) are real `new Date()` values carrying
+// whatever wall-clock time they were created at, while `checkin_date` is
+// always parsed via fromISO() as exact midnight -- diffing raw timestamps
+// between a midnight date and an afternoon/evening one could round down a
+// full day, which is what made the Week view's bookings render a day
+// earlier than their actual dates.
 export function daysBetween(a: Date, b: Date): number {
-  return Math.round((b.getTime() - a.getTime()) / 86400000);
+  const utcA = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
+  const utcB = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate());
+  return Math.round((utcB - utcA) / 86400000);
 }
 
 export function hasAttention(b: Booking): boolean {
