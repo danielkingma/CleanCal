@@ -266,6 +266,19 @@ export default function HandbookPage() {
                 correctly instead of looking like a gap or a double-booking.
               </p>
               <p>Click any bar to open it. Click empty space on the calendar to start a new booking (Owner/Manager only).</p>
+              <figure className="hb-figure">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/handbook/calendar-example.png"
+                  alt="Month view of the CleanCal calendar showing twelve properties as rows, with colored booking bars for each cleaning status, a small circular platform badge on each bar (A for Airbnb, V for Vrbo, B for Booking.com, and so on), and a red &quot;!&quot; marker on one bar showing it requires attention."
+                />
+                <figcaption>
+                  Month view with a full portfolio of properties. Each bar&apos;s color is the
+                  cleaning status; the small circular badge is which platform the booking came
+                  from; the red &quot;!&quot; on The Fitzroy Nook&apos;s booking means it needs
+                  attention.
+                </figcaption>
+              </figure>
             </section>
 
             <section className="hb-section" id="sync">
