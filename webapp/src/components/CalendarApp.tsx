@@ -24,7 +24,15 @@ import {
   isoDate,
 } from "@/lib/calendar-utils";
 import { useMediaQuery } from "@/lib/useMediaQuery";
+import { getPlatformBadge } from "@/lib/platform-badge";
 import { isStaff, type Booking, type CleanerRating, type Profile, type Property } from "@/lib/types";
+
+// Well-known platforms worth calling out by name in the legend; anything
+// else still gets its own badge on the calendar (see platform-badge.ts),
+// just grouped here under one generic "Other" swatch rather than listing
+// every platform getPlatformBadge() knows about.
+const LEGEND_PLATFORMS = ["Airbnb", "Vrbo", "Booking.com"];
+const OTHER_PLATFORM_COLOR = "#5B6560";
 
 interface CalendarAppProps {
   currentProfile: Profile;
@@ -305,9 +313,29 @@ export default function CalendarApp({
             </span>{" "}
             Requires attention
           </div>
-          {derivedView !== "year" && !(isMobile && derivedView === "month") ? (
-            <div className="prop-count">{properties.length} properties</div>
-          ) : null}
+          <div className="legend-group">
+            {LEGEND_PLATFORMS.map((name) => {
+              const badge = getPlatformBadge(name);
+              if (!badge) return null;
+              return (
+                <div className="legend-item" key={name}>
+                  <span className="legend-badge" style={{ background: badge.color }}>
+                    {badge.code}
+                  </span>
+                  {badge.name}
+                </div>
+              );
+            })}
+            <div className="legend-item">
+              <span className="legend-badge" style={{ background: OTHER_PLATFORM_COLOR }}>
+                •
+              </span>
+              Other
+            </div>
+            {derivedView !== "year" && !(isMobile && derivedView === "month") ? (
+              <div className="prop-count">{properties.length} properties</div>
+            ) : null}
+          </div>
         </div>
 
         {derivedView === "year" ? (

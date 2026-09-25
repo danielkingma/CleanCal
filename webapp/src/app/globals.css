@@ -258,9 +258,18 @@ main {
   background: var(--teal-deep);
 }
 .prop-count {
-  margin-left: auto;
   font-size: 12.5px;
   color: var(--muted);
+}
+/* The platform-color key: pushed to the opposite end of the legend row
+   (margin-left: auto) from the cleaning-status items, so it reads as its
+   own separate category instead of one continuous run of items. */
+.legend-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-left: auto;
 }
 
 /* ---- Property-row timeline (Month & Week share this) ---- */
@@ -524,6 +533,21 @@ main {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   z-index: 3;
   line-height: 1;
+}
+/* Same badge look as .platform-badge, but inline (not absolutely
+   positioned) for use in the legend row above the calendar. */
+.legend-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  color: white;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  flex-shrink: 0;
 }
 .source-pill {
   display: inline-block;
