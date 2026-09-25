@@ -108,6 +108,7 @@ export default function BookingModal({
   );
   const [isOpenJob, setIsOpenJob] = useState(booking?.is_open_job ?? false);
   const [linenPickup, setLinenPickup] = useState(booking?.linen_pickup ?? false);
+  const [platformLabel, setPlatformLabel] = useState(booking?.platform_label ?? "");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [claiming, setClaiming] = useState(false);
@@ -415,6 +416,7 @@ export default function BookingModal({
           assigned_cleaner_id: assignedCleanerId,
           is_open_job: isOpenJob,
           linen_pickup: linenPickup,
+          platform_label: platformLabel.trim() || null,
         };
         if (mode === "new") {
           await createBooking(input);
@@ -448,7 +450,7 @@ export default function BookingModal({
   const oven = checklist.oven ?? { checked: false, outcome: null };
   const attention = checklist.attention ?? { flagged: false, note: "" };
   const selectedProperty = properties.find((p) => p.id === propertyId);
-  const platform = getPlatformBadge(booking?.platform_label);
+  const platform = getPlatformBadge(platformLabel);
   const assignedCleanerUnavailable =
     !!assignedCleanerId && (cleanerUnavailableDates[assignedCleanerId] ?? []).includes(checkoutStr);
 
@@ -504,6 +506,26 @@ export default function BookingModal({
             placeholder="Guest name(s)"
             onChange={(e) => setGuests(e.target.value)}
           />
+        </div>
+
+        <div className="field">
+          <label htmlFor="fPlatform">Booking platform</label>
+          <input
+            id="fPlatform"
+            type="text"
+            list="platformSuggestions"
+            value={platformLabel}
+            disabled={!canEditCore}
+            placeholder="e.g. Airbnb, Vrbo, Booking.com, Direct"
+            onChange={(e) => setPlatformLabel(e.target.value)}
+          />
+          <datalist id="platformSuggestions">
+            <option value="Airbnb" />
+            <option value="Vrbo" />
+            <option value="Booking.com" />
+            <option value="Expedia" />
+            <option value="Direct" />
+          </datalist>
         </div>
 
         {selectedProperty?.access_instructions ? (

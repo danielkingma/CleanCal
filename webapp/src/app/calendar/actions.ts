@@ -17,6 +17,7 @@ export interface BookingInput {
   assigned_cleaner_id: string | null;
   is_open_job: boolean;
   linen_pickup: boolean;
+  platform_label: string | null;
 }
 
 type SupabaseServer = Awaited<ReturnType<typeof createClient>>;
