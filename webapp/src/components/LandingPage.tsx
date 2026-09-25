@@ -40,8 +40,8 @@ const STEPS = [
 ];
 
 const PRICING = [
-  { tier: "1 property", price: "Free for 6 months, then $5/mo" },
-  { tier: "2 – 15 properties", price: "$5 per property / mo" },
+  { tier: "1 – 3 properties", price: "Free for 6 months, then $5/property/mo" },
+  { tier: "4 – 15 properties", price: "$5 per property / mo" },
   { tier: "16 – 50 properties", price: "$150 / mo flat" },
   { tier: "51 – 100 properties", price: "$250 / mo flat" },
   { tier: "101 – 200 properties", price: "$350 / mo flat" },
@@ -69,7 +69,7 @@ export default function LandingPage() {
 
       <main>
         <section className="landing-hero">
-          <span className="landing-badge">✦ Free for your first 6 months</span>
+          <span className="landing-badge">✦ Your first 3 properties, free for 6 months</span>
           <h1>Every turnover, tracked, cleaned, and paid.</h1>
           <p className="landing-hero-sub">
             The cleaning-operations calendar for short-term rental hosts. Sync every booking from
@@ -118,11 +118,11 @@ export default function LandingPage() {
 
         <section className="landing-pricing" id="pricing">
           <span className="landing-section-eyebrow">Pricing</span>
-          <h2 className="landing-section-title">Free for your first 6 months</h2>
+          <h2 className="landing-section-title">Your first 3 properties, free for 6 months</h2>
           <p className="landing-pricing-sub">
-            Sign up today and use CleanCal free for 6 months while we finish rolling out billing.
-            After that, pricing scales with how many properties you run -- never per booking, never
-            per cleaner.
+            No credit card required to start. After your first 3 properties, pricing scales with
+            how many properties you run -- never per booking, never per cleaner. (We&apos;re still
+            finishing our billing rollout, so nothing is charged automatically yet.)
           </p>
           <div className="landing-pricing-table">
             {PRICING.map((row) => (
