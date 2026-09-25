@@ -6,7 +6,9 @@ import Logo from "@/components/Logo";
 // (Australian Privacy Principles apply given the AUD-denominated Stripe
 // payouts in src/lib/stripe.ts; add GDPR/CCPA language too if you expect
 // EU/California users) before relying on this for real signups,
-// especially given Stripe Identity handles biometric ID data.
+// especially given Stripe Identity handles biometric ID data. Operating
+// entity is Kingma Labs -- confirm that's the exact legal name (and any
+// ABN/ACN, if incorporated) before this goes live.
 const LAST_UPDATED = "24 September 2026";
 const CONTACT_EMAIL = "support@cleancal.net"; // placeholder -- make sure this inbox exists before publishing
 
@@ -26,10 +28,10 @@ export default function PrivacyPage() {
         <p className="legal-meta">Last updated: {LAST_UPDATED}</p>
 
         <p>
-          This policy explains what information CleanCal (&quot;we,&quot; &quot;us,&quot;
-          &quot;our&quot;) collects when you use the CleanCal app, why we collect it, and
-          who we share it with. It applies to everyone who uses CleanCal — property owners,
-          managers, and cleaners.
+          This policy explains what information Kingma Labs, the operator of CleanCal
+          (&quot;we,&quot; &quot;us,&quot; &quot;our&quot;), collects when you use the CleanCal
+          app, why we collect it, and who we share it with. It applies to everyone who uses
+          CleanCal — property owners, managers, and cleaners.
         </p>
 
         <h2>Information we collect</h2>
@@ -148,6 +150,9 @@ export default function PrivacyPage() {
 
         <p style={{ marginTop: 40 }}>
           <Link href="/terms">Terms of Service</Link> · <Link href="/handbook">CleanCal Handbook</Link>
+        </p>
+        <p className="legal-meta" style={{ marginTop: 24 }}>
+          © {new Date().getFullYear()} Kingma Labs. CleanCal is a trading name of Kingma Labs.
         </p>
       </div>
     </div>

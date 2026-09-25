@@ -2,8 +2,9 @@ import Link from "next/link";
 import Logo from "@/components/Logo";
 
 // FIRST-DRAFT LEGAL TEXT -- see the same note in src/app/privacy/page.tsx.
-// Not reviewed by a lawyer. Review and fill in the business/jurisdiction
-// details below before relying on this for real signups.
+// Not reviewed by a lawyer. Operating entity is Kingma Labs -- confirm
+// that's the exact legal name (and any ABN/ACN, if incorporated) and
+// the jurisdiction below before relying on this for real signups.
 const LAST_UPDATED = "24 September 2026";
 const CONTACT_EMAIL = "support@cleancal.net"; // placeholder -- make sure this inbox exists before publishing
 const GOVERNING_LAW = "Australia"; // placeholder -- confirm your actual operating jurisdiction
@@ -24,10 +25,10 @@ export default function TermsPage() {
         <p className="legal-meta">Last updated: {LAST_UPDATED}</p>
 
         <p>
-          These terms govern your use of CleanCal (&quot;we,&quot; &quot;us,&quot;
-          &quot;our&quot;). By creating an account or using CleanCal, you agree to them. If
-          you&apos;re using CleanCal on behalf of a business, you&apos;re confirming you have
-          authority to accept these terms for that business.
+          These terms govern your use of CleanCal, operated by Kingma Labs (&quot;we,&quot;
+          &quot;us,&quot; &quot;our&quot;). By creating an account or using CleanCal, you agree
+          to them. If you&apos;re using CleanCal on behalf of a business, you&apos;re confirming
+          you have authority to accept these terms for that business.
         </p>
 
         <h2>What CleanCal is</h2>
@@ -131,6 +132,9 @@ export default function TermsPage() {
 
         <p style={{ marginTop: 40 }}>
           <Link href="/privacy">Privacy Policy</Link> · <Link href="/handbook">CleanCal Handbook</Link>
+        </p>
+        <p className="legal-meta" style={{ marginTop: 24 }}>
+          © {new Date().getFullYear()} Kingma Labs. CleanCal is a trading name of Kingma Labs.
         </p>
       </div>
     </div>
