@@ -24,13 +24,13 @@ import {
   isoDate,
 } from "@/lib/calendar-utils";
 import { useMediaQuery } from "@/lib/useMediaQuery";
-import { getPlatformBadge } from "@/lib/platform-badge";
+import { ALL_PLATFORM_BADGES, getPlatformBadge } from "@/lib/platform-badge";
 import { isStaff, type Booking, type CleanerRating, type Profile, type Property } from "@/lib/types";
 
-// Well-known platforms worth calling out by name in the legend; anything
-// else still gets its own badge on the calendar (see platform-badge.ts),
-// just grouped here under one generic "Other" swatch rather than listing
-// every platform getPlatformBadge() knows about.
+// Well-known platforms worth calling out by name directly in the legend;
+// anything else still gets its own badge on the calendar (see
+// platform-badge.ts) -- the full color key, including these three, is
+// also listed in the "For more" dropdown below.
 const LEGEND_PLATFORMS = ["Airbnb", "Vrbo", "Booking.com"];
 const OTHER_PLATFORM_COLOR = "#5B6560";
 
@@ -326,12 +326,24 @@ export default function CalendarApp({
                 </div>
               );
             })}
-            <div className="legend-item">
-              <span className="legend-badge" style={{ background: OTHER_PLATFORM_COLOR }}>
-                •
-              </span>
-              Other
-            </div>
+            <Dropdown label="For more" triggerClassName="legend-more-btn" align="right">
+              <div className="legend-platform-panel">
+                {ALL_PLATFORM_BADGES.map((badge) => (
+                  <div className="legend-item" key={badge.name}>
+                    <span className="legend-badge" style={{ background: badge.color }}>
+                      {badge.code}
+                    </span>
+                    {badge.name}
+                  </div>
+                ))}
+                <div className="legend-item">
+                  <span className="legend-badge" style={{ background: OTHER_PLATFORM_COLOR }}>
+                    •
+                  </span>
+                  Other (anything else you connect)
+                </div>
+              </div>
+            </Dropdown>
             {derivedView !== "year" && !(isMobile && derivedView === "month") ? (
               <div className="prop-count">{properties.length} properties</div>
             ) : null}
