@@ -377,6 +377,16 @@ export default function CalendarApp({
           ) : (
             <p className="photo-note">Add a property to see its month calendar here.</p>
           )
+        ) : properties.length === 0 ? (
+          // A cleaner only ever sees properties tied to a booking that's
+          // assigned to them or posted Open (see calendar/page.tsx) -- an
+          // empty grid with no explanation here reads as broken rather
+          // than "nothing's been assigned to you yet."
+          <p className="photo-note">
+            {isStaffUser
+              ? "Add a property to see your calendar here."
+              : "You don't have any jobs assigned yet. Ask an owner or manager to assign you a booking, or check the open job board."}
+          </p>
         ) : isMobile ? (
           <MobileAgenda
             days={days}
