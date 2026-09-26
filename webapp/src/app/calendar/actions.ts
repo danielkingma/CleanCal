@@ -178,6 +178,37 @@ export async function declineAssignedBooking(id: string) {
   }
 }
 
+// Cleaner accepts a job an Owner/Manager assigned directly to them --
+// the "yes" counterpart to declineAssignedBooking above. Until this
+// runs, the booking's assignment_confirmed stays false and
+// cleaner_update_booking refuses status/checklist writes on it (see
+// supabase/migrations/0020_cleaner_full_calendar.sql).
+export async function confirmAssignedBooking(id: string) {
+  const supabase = await createClient();
+  const { data: booking } = await supabase
+    .from("bookings")
+    .select("property_id, checkin_date")
+    .eq("id", id)
+    .maybeSingle();
+  const { error } = await supabase.rpc("confirm_assigned_booking", { p_booking_id: id });
+  if (error) throw new Error(error.message);
+  revalidatePath("/calendar");
+
+  if (booking) {
+    const { data: staffIds } = await supabase.rpc("staff_user_ids");
+    const { data: property } = await supabase
+      .from("properties")
+      .select("name")
+      .eq("id", booking.property_id)
+      .maybeSingle();
+    await sendPushToUsers((staffIds as string[] | null) ?? [], {
+      title: "Job confirmed",
+      body: `${property?.name ?? "A booking"} — check-in ${new Date(booking.checkin_date).toLocaleDateString()} was confirmed by the assigned cleaner.`,
+      url: "/calendar",
+    });
+  }
+}
+
 // Post a message in a booking's dispute thread. Works for admin or the
 // assigned cleaner -- RLS (`dispute_messages_insert_admin` /
 // `dispute_messages_insert_assigned_cleaner`) decides which applies, and

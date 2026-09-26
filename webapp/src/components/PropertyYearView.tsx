@@ -8,6 +8,7 @@ interface PropertyYearViewProps {
   bookings: Booking[]; // already scoped to the selected property
   onSelectBooking: (booking: Booking) => void;
   onSelectDate: (dateIso: string) => void;
+  viewerId?: string;
 }
 
 export default function PropertyYearView({
@@ -15,6 +16,7 @@ export default function PropertyYearView({
   bookings,
   onSelectBooking,
   onSelectDate,
+  viewerId,
 }: PropertyYearViewProps) {
   return (
     <div className="py-year-grid">
@@ -27,6 +29,7 @@ export default function PropertyYearView({
           onSelectBooking={onSelectBooking}
           onSelectDate={onSelectDate}
           showPlatformNames
+          viewerId={viewerId}
         />
       ))}
     </div>

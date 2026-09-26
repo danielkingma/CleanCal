@@ -535,6 +535,23 @@ main {
   z-index: 3;
   line-height: 1;
 }
+.confirm-marker {
+  position: absolute;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: var(--teal);
+  color: white;
+  font-size: 10.5px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--white);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  z-index: 3;
+  line-height: 1;
+}
 
 /* ---- Booking source (platform) indicators ---- */
 .platform-stripe {
@@ -648,6 +665,16 @@ main {
   border-left-style: dashed;
   border-left-color: var(--teal-deep);
   font-style: italic;
+}
+/* A cleaner now sees every job on the shared schedule -- .mine picks
+   their own assignments out from everyone else's; .needs-confirmation
+   (always a subset of .mine) overrides it once a directly-assigned job
+   still needs their active confirm/decline. */
+.agenda-card.mine {
+  box-shadow: 0 0 0 2px var(--teal-deep) inset;
+}
+.agenda-card.needs-confirmation {
+  box-shadow: 0 0 0 2px var(--amber) inset;
 }
 .agenda-card-top {
   display: flex;
@@ -827,6 +854,12 @@ main {
   outline: 1.5px dashed var(--teal-deep);
   outline-offset: -1.5px;
   font-style: italic;
+}
+.py-bar.mine {
+  box-shadow: 0 0 0 2px var(--teal-deep) inset;
+}
+.py-bar.needs-confirmation {
+  box-shadow: 0 0 0 2px var(--amber) inset;
 }
 .py-bar.ical-stale {
   opacity: 0.55;
@@ -1431,6 +1464,12 @@ main {
   outline: 2px dashed var(--teal-deep);
   outline-offset: -2px;
   font-style: italic;
+}
+.booking-bar.mine {
+  box-shadow: 0 0 0 2px var(--teal-deep) inset;
+}
+.booking-bar.needs-confirmation {
+  box-shadow: 0 0 0 2px var(--amber) inset;
 }
 
 /* ---- Auth ---- */

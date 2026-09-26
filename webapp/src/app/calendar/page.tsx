@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import CalendarApp from "@/components/CalendarApp";
+import { scopeBookingForViewer } from "@/lib/calendar-utils";
 import { isStaff, type Booking, type CleanerRating, type Profile, type Property } from "@/lib/types";
 
 export default async function CalendarPage() {
@@ -26,38 +27,31 @@ export default async function CalendarPage() {
     role: "cleaner",
   };
 
+  // Every org member sees every property -- matches properties_select_own_org
+  // RLS (0016), which already allows this.
   const { data: allProperties, error: propertiesError } = await supabase
     .from("properties")
     .select(
       "id, name, access_instructions, payout_rate_cents, bedroom_count, bathroom_count, has_outdoor_area, linen_box_count",
     )
     .order("name");
+  const properties = allProperties ?? [];
 
-  // Admins see every booking; cleaners are scoped to their own assignments
-  // plus any open, unclaimed job (also enforced in Postgres -- see
-  // `bookings_select_own_open_or_admin` in
-  // supabase/migrations/0007_open_job_board.sql -- this filter is just so
-  // the calendar doesn't render a bunch of rows a cleaner has nothing to
-  // do on).
-  let bookingsQuery = supabase
+  // A cleaner now sees the full portfolio schedule too (see
+  // bookings_select_own_org in supabase/migrations/0020_cleaner_full_calendar.sql,
+  // which permits this at the RLS level for every org member) -- but the
+  // guest-facing and cleaner-internal detail on a booking that isn't
+  // theirs and isn't open still doesn't belong on their screen, so that's
+  // stripped out below before this ever reaches the client.
+  const { data: rawBookings } = await supabase
     .from("bookings")
     .select(
-      "id, property_id, checkin_date, nights, status, notes, guests, checklist, assigned_cleaner_id, is_open_job, source, external_uid, ical_missing_since, platform_label, rating, rating_comment, dispute_status, payout_status, stripe_transfer_id, linen_pickup",
+      "id, property_id, checkin_date, nights, status, notes, guests, checklist, assigned_cleaner_id, is_open_job, assignment_confirmed, source, external_uid, ical_missing_since, platform_label, rating, rating_comment, dispute_status, payout_status, stripe_transfer_id, linen_pickup",
     )
     .order("checkin_date");
-  if (!isStaff(currentProfile.role)) {
-    bookingsQuery = bookingsQuery.or(
-      `assigned_cleaner_id.eq.${user.id},and(is_open_job.eq.true,assigned_cleaner_id.is.null)`,
-    );
-  }
-  const { data: bookings } = await bookingsQuery;
 
-  const properties =
-    isStaff(currentProfile.role)
-      ? (allProperties ?? [])
-      : (allProperties ?? []).filter((p) =>
-          (bookings ?? []).some((b) => b.property_id === p.id),
-        );
+  const staffUser = isStaff(currentProfile.role);
+  const bookings = (rawBookings ?? []).map((b) => scopeBookingForViewer(b as Booking, user.id, staffUser));
 
   let cleaners: Profile[] = [];
   let cleanerRatings: Record<string, CleanerRating> = {};

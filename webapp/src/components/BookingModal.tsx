@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   claimOpenBooking,
+  confirmAssignedBooking,
   createBooking,
   declineAssignedBooking,
   deleteBooking,
@@ -79,15 +80,47 @@ export default function BookingModal({
   const isUnclaimedOpenJob =
     role === "cleaner" && !!booking && booking.is_open_job && !booking.assigned_cleaner_id;
   const isClaimedFromOpen = role === "cleaner" && !!booking && booking.is_open_job && isAssignedCleaner;
+  // Excludes a still-pending assignment -- that one offers Confirm/Decline
+  // together in the banner above instead of a lone Decline button down here.
   const isDeclinableAssigned =
     role === "cleaner" &&
     !!booking &&
     !booking.is_open_job &&
     isAssignedCleaner &&
-    booking.status === "to-clean";
+    booking.status === "to-clean" &&
+    booking.assignment_confirmed;
+  // An Owner/Manager assigning a cleaner directly doesn't count as
+  // accepted until that cleaner actively confirms it (see
+  // supabase/migrations/0020_cleaner_full_calendar.sql) -- claiming an
+  // open job is its own confirmation, so this never applies there.
+  const isPendingConfirmation =
+    role === "cleaner" && !!booking && isAssignedCleaner && !booking.is_open_job && !booking.assignment_confirmed;
+  // A cleaner now sees every booking in the portfolio for schedule
+  // awareness, but one assigned to someone else (not open, not theirs)
+  // isn't theirs to view in detail -- calendar/page.tsx and the realtime
+  // handler already strip guest/notes/checklist/rating/dispute data from
+  // it before it ever reaches this component, so render a minimal,
+  // read-only summary instead of the full form.
+  const isForeignAssignedJob =
+    role === "cleaner" && !!booking && !isAssignedCleaner && !isUnclaimedOpenJob && !!booking.assigned_cleaner_id;
   const canEditCore = isStaffUser;
-  const canEditCleaning = isStaffUser || isAssignedCleaner;
+  const canEditCleaning = (isStaffUser || isAssignedCleaner) && !isPendingConfirmation;
   const canSave = mode === "new" ? isStaffUser : canEditCleaning;
+
+  const [confirming, setConfirming] = useState(false);
+
+  async function handleConfirm() {
+    if (!booking) return;
+    setError(null);
+    setConfirming(true);
+    try {
+      await confirmAssignedBooking(booking.id);
+      onDone();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn't confirm this job.");
+      setConfirming(false);
+    }
+  }
 
   const [propertyId, setPropertyId] = useState(
     booking?.property_id ?? presetPropertyId ?? properties[0]?.id ?? "",
@@ -467,11 +500,39 @@ export default function BookingModal({
         </h2>
 
         {error ? <div className="error-banner">{error}</div> : null}
-        {mode === "edit" && role === "cleaner" && !isAssignedCleaner && !isUnclaimedOpenJob ? (
-          <div className="error-banner">This booking isn&apos;t assigned to you — view only.</div>
+        {isForeignAssignedJob ? (
+          <div className="error-banner">
+            This job is assigned to another cleaner — you can see it&apos;s on the schedule, but not its
+            details.
+          </div>
         ) : null}
         {isUnclaimedOpenJob ? (
           <div className="info-banner">This job is open — claim it below to take it on.</div>
+        ) : null}
+        {isPendingConfirmation ? (
+          <div className="info-banner" style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+            <span style={{ flex: 1, minWidth: 200 }}>
+              You&apos;ve been assigned this job — confirm you&apos;ll do it before working on it.
+            </span>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button
+                type="button"
+                className="btn btn-primary"
+                disabled={confirming || claiming}
+                onClick={handleConfirm}
+              >
+                {confirming ? "Confirming…" : "Confirm"}
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                disabled={confirming || claiming}
+                onClick={handleDecline}
+              >
+                Decline
+              </button>
+            </div>
+          </div>
         ) : null}
         {mode === "edit" && booking?.ical_missing_since ? (
           <div className="error-banner">

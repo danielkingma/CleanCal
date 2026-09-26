@@ -92,8 +92,9 @@ export default function HandbookPage() {
                   owner, minus role changes, property deletion, and pay-rate changes.
                 </li>
                 <li>
-                  <strong>Cleaners</strong> — see their own assignments, the open job board,
-                  their ratings, and manage their own ID verification and payout setup.
+                  <strong>Cleaners</strong> — see the full portfolio schedule (so they can plan
+                  around other jobs), but only full detail on their own assignments and the open
+                  job board; manage their own ratings, ID verification, and payout setup.
                 </li>
               </ul>
             </section>
@@ -156,10 +157,12 @@ export default function HandbookPage() {
                       <th><span className="hb-role-chip hb-role-cleaner">Cleaner</span></th>
                     </tr>
                     <tr>
-                      <td>View &amp; create bookings, manage the calendar</td>
+                      <td>View the full calendar (create/edit is Owner/Manager only)</td>
                       <td className="yes">Yes</td>
                       <td className="yes">Yes</td>
-                      <td className="no">Own jobs only</td>
+                      <td className="yes">
+                        Yes, full detail on own jobs &amp; open board; occupancy only on others&apos;
+                      </td>
                     </tr>
                     <tr>
                       <td>Add properties, connect calendar feeds, set a property&apos;s room profile</td>
@@ -266,6 +269,15 @@ export default function HandbookPage() {
                 correctly instead of looking like a gap or a double-booking.
               </p>
               <p>Click any bar to open it. Click empty space on the calendar to start a new booking (Owner/Manager only).</p>
+              <p>
+                A cleaner sees this same calendar across every property, not just their own jobs —
+                useful for planning around the rest of the schedule. Their own assigned bars get a
+                teal outline; a small teal &quot;?&quot; badge means a directly-assigned job is
+                still waiting on their confirmation (see{" "}
+                <a href="#team">Managing the cleaning team</a>). Opening a booking that belongs to
+                another cleaner shows it&apos;s on the schedule but not its guest name, notes, or
+                other detail.
+              </p>
               <figure className="hb-figure">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -358,9 +370,14 @@ export default function HandbookPage() {
               <p>
                 Assign a booking to a specific cleaner, or mark it <strong>Open</strong> so any
                 cleaner on your team can claim it first-come, first-served — claiming is atomic,
-                so two cleaners can never grab the same job. A cleaner who can&apos;t make it
-                anymore can release a job back to the pool, or decline a directly-assigned job
-                before it&apos;s started.
+                so two cleaners can never grab the same job. Claiming an open job counts as
+                accepting it immediately, but a job you assign directly to a specific cleaner
+                doesn&apos;t count as accepted until they actively confirm it — they see a
+                Confirm/Decline prompt the moment they open it, and can&apos;t update its checklist
+                or status until they confirm. Declining (whether pending or already confirmed,
+                any time before the job&apos;s started) puts it back on the open board for someone
+                else. A cleaner who can&apos;t make an already-confirmed job anymore can release it
+                back to the pool the same way.
               </p>
               <p>
                 Every completed job gets a 1–5 star rating with an optional note. Ratings roll up

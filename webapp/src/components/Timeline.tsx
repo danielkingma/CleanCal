@@ -28,6 +28,10 @@ interface TimelineProps {
   onBarClick: (booking: Booking) => void;
   onTrackClick: (propertyId: string, dateIso: string) => void;
   canCreate: boolean;
+  // A cleaner now sees the whole portfolio's bookings, not just their
+  // own -- passed so their own assigned bars can be picked out from
+  // everyone else's on the shared schedule.
+  viewerId?: string;
 }
 
 export default function Timeline({
@@ -39,6 +43,7 @@ export default function Timeline({
   onBarClick,
   onTrackClick,
   canCreate,
+  viewerId,
 }: TimelineProps) {
   if (days.length === 0) return null;
 
@@ -126,11 +131,14 @@ export default function Timeline({
                   const left = startUnit * dayW;
                   const width = (endUnit - startUnit) * dayW;
                   const isOpenUnclaimed = b.is_open_job && !b.assigned_cleaner_id;
+                  const isMine = viewerId != null && b.assigned_cleaner_id === viewerId;
                   const cls = ["booking-bar", b.status];
                   if (isStart) cls.push("start");
                   if (isEnd) cls.push("end");
                   if (b.ical_missing_since) cls.push("ical-stale");
                   if (isOpenUnclaimed) cls.push("open-job");
+                  if (isMine) cls.push("mine");
+                  if (isMine && !b.is_open_job && !b.assignment_confirmed) cls.push("needs-confirmation");
                   const label = isOpenUnclaimed
                     ? weekly
                       ? "Open — tap to claim"
@@ -202,6 +210,15 @@ export default function Timeline({
                           title="Open dispute"
                         >
                           !
+                        </span>
+                      ) : null}
+                      {isMine && !b.is_open_job && !b.assignment_confirmed ? (
+                        <span
+                          className="confirm-marker"
+                          style={{ left: left - 5, top: barTop + barHeight - 12 }}
+                          title="Needs your confirmation"
+                        >
+                          ?
                         </span>
                       ) : null}
                     </Fragment>

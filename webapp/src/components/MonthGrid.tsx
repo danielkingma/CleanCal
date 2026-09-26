@@ -27,6 +27,10 @@ interface MonthGridProps {
   // their own and don't get it. Off by default so the standalone mobile
   // usage doesn't have to opt out.
   showPlatformNames?: boolean;
+  // A cleaner now sees the whole portfolio's bookings, not just their
+  // own -- passed so their own assigned segments can be picked out from
+  // everyone else's on the shared schedule.
+  viewerId?: string;
 }
 
 interface BarSegment {
@@ -108,6 +112,7 @@ export default function MonthGrid({
   onSelectDate,
   showTitle = true,
   showPlatformNames = false,
+  viewerId,
 }: MonthGridProps) {
   const today = new Date();
   const first = new Date(year, month, 1);
@@ -154,6 +159,8 @@ export default function MonthGrid({
                   const platform = getPlatformBadge(seg.booking.platform_label);
                   const isOpenUnclaimed = seg.booking.is_open_job && !seg.booking.assigned_cleaner_id;
                   const isStale = Boolean(seg.booking.ical_missing_since);
+                  const isMine = viewerId != null && seg.booking.assigned_cleaner_id === viewerId;
+                  const needsConfirmation = isMine && !seg.booking.is_open_job && !seg.booking.assignment_confirmed;
                   const label = isOpenUnclaimed ? "Open" : seg.booking.guests || "Reserved";
                   // seg.span always includes a checkout-day sliver column,
                   // so a 1-night stay already measures span 2 -- checking
@@ -170,7 +177,7 @@ export default function MonthGrid({
                     <button
                       type="button"
                       key={seg.booking.id}
-                      className={`py-bar${seg.roundLeft ? " round-left" : ""}${seg.roundRight ? " round-right" : ""}${isOpenUnclaimed ? " open-job" : ""}${isStale ? " ical-stale" : ""}`}
+                      className={`py-bar${seg.roundLeft ? " round-left" : ""}${seg.roundRight ? " round-right" : ""}${isOpenUnclaimed ? " open-job" : ""}${isStale ? " ical-stale" : ""}${isMine ? " mine" : ""}${needsConfirmation ? " needs-confirmation" : ""}`}
                       style={{
                         gridColumn: `${seg.startCol + 1} / span ${seg.span}`,
                         gridRow: seg.lane + 1,
@@ -188,7 +195,10 @@ export default function MonthGrid({
                         onSelectBooking(seg.booking);
                       }}
                     >
-                      <span className="py-bar-label">{label}</span>
+                      <span className="py-bar-label">
+                        {needsConfirmation ? "? " : ""}
+                        {label}
+                      </span>
                       {/* Only when the segment has at least two day-columns
                           to work with -- on a single day there's no room
                           for a second word without either one getting

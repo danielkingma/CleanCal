@@ -101,6 +101,12 @@ export interface Booking {
   checklist: Checklist;
   assigned_cleaner_id: string | null;
   is_open_job: boolean;
+  // True the moment a cleaner claims an open job (self-assignment is its
+  // own confirmation) or the DB default for every already-existing
+  // booking; false the moment an Owner/Manager directly assigns someone
+  // else, until that cleaner calls confirmAssignedBooking. See
+  // supabase/migrations/0020_cleaner_full_calendar.sql.
+  assignment_confirmed: boolean;
   source?: BookingSource;
   external_uid?: string | null;
   ical_missing_since?: string | null;

@@ -22,6 +22,7 @@ import {
   checkoutDate,
   fromISO,
   isoDate,
+  scopeBookingForViewer,
 } from "@/lib/calendar-utils";
 import { useMediaQuery } from "@/lib/useMediaQuery";
 import { ALL_PLATFORM_BADGES, getPlatformBadge } from "@/lib/platform-badge";
@@ -103,6 +104,7 @@ export default function CalendarApp({
 
   useEffect(() => {
     const supabase = createClient();
+    const staffViewer = isStaff(currentProfile.role);
     const channel = supabase
       .channel("bookings-changes")
       .on(
@@ -115,24 +117,17 @@ export default function CalendarApp({
             return;
           }
 
-          const next = payload.new as Booking;
+          // Realtime broadcasts the raw row straight from Postgres --
+          // every org member can now SELECT every booking (see
+          // supabase/migrations/0020_cleaner_full_calendar.sql), so this
+          // has to apply the same redaction calendar/page.tsx applies on
+          // first load, or a live update would hand a cleaner guest/
+          // rating/dispute detail on a job that isn't theirs.
+          const next = scopeBookingForViewer(payload.new as Booking, currentProfile.id, staffViewer);
           setBookings((prev) => {
             const exists = prev.some((b) => b.id === next.id);
             return exists ? prev.map((b) => (b.id === next.id ? next : b)) : [...prev, next];
           });
-
-          // A cleaner's `properties` list is pre-filtered server-side to
-          // just the properties they currently have a booking on (see
-          // calendar/page.tsx) -- that filter doesn't re-run just because
-          // a booking arrives over realtime, so a newly assigned or
-          // newly-opened booking on a property they didn't have before
-          // would update `bookings` live but never get a row, since
-          // `properties` stays frozen from the initial page load.
-          // Refreshing re-runs the server component's query, which
-          // re-filters with the current data.
-          if (!isStaff(currentProfile.role) && !properties.some((p) => p.id === next.property_id)) {
-            router.refresh();
-          }
         },
       )
       .subscribe();
@@ -140,7 +135,7 @@ export default function CalendarApp({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [currentProfile.role, properties, router]);
+  }, [currentProfile.id, currentProfile.role]);
 
   // On mobile the "week" tab is relabelled "Cleaning List" and shows a
   // month's worth of days as a vertical agenda instead of a literal week --
@@ -396,6 +391,7 @@ export default function CalendarApp({
                 setCursor(fromISO(d));
                 setView("month");
               }}
+              viewerId={currentProfile.id}
             />
           ) : (
             <p className="photo-note">{noPropertiesMessage}</p>
@@ -409,6 +405,7 @@ export default function CalendarApp({
               onSelectBooking={(booking) => setModal({ mode: "edit", booking })}
               onSelectDate={handleMobileMonthDayTap}
               showTitle={false}
+              viewerId={currentProfile.id}
             />
           ) : (
             <p className="photo-note">{noPropertiesMessage}</p>
@@ -421,6 +418,7 @@ export default function CalendarApp({
             properties={properties}
             bookings={bookings}
             onBarClick={(booking) => setModal({ mode: "edit", booking })}
+            viewerId={currentProfile.id}
           />
         ) : (
           <Timeline
@@ -432,6 +430,7 @@ export default function CalendarApp({
             onBarClick={(booking) => setModal({ mode: "edit", booking })}
             onTrackClick={(propertyId, dateIso) => openNewModal(propertyId, dateIso)}
             canCreate={isStaffUser}
+            viewerId={currentProfile.id}
           />
         )}
       </main>
@@ -467,6 +466,7 @@ export default function CalendarApp({
             setModal({ mode: "edit", booking });
           }}
           onClose={() => setDayPicker(null)}
+          viewerId={currentProfile.id}
         />
       ) : null}
     </div>

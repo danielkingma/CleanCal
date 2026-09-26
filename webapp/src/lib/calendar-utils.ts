@@ -64,6 +64,31 @@ export function hasAttention(b: Booking): boolean {
   return b.checklist?.oven?.outcome === "attention" || Boolean(b.checklist?.attention?.flagged);
 }
 
+// A cleaner now sees every booking in the portfolio (for schedule
+// awareness), but guest-facing and cleaner-internal detail on a job
+// that isn't theirs and isn't open still doesn't belong on their
+// screen. Applied both server-side (calendar/page.tsx, on first load)
+// and client-side (CalendarApp.tsx's realtime handler) -- Realtime
+// broadcasts the raw row straight from Postgres, bypassing whatever the
+// server component already redacted, so the same scrub has to run again
+// on every live update too.
+export function scopeBookingForViewer(b: Booking, viewerId: string, isStaffViewer: boolean): Booking {
+  const isMineOrOpen = b.assigned_cleaner_id === viewerId || (b.is_open_job && !b.assigned_cleaner_id);
+  if (isStaffViewer || isMineOrOpen) return b;
+  return {
+    ...b,
+    notes: "",
+    guests: "",
+    checklist: {},
+    rating: null,
+    rating_comment: undefined,
+    dispute_status: "none",
+    payout_status: undefined,
+    stripe_transfer_id: null,
+    linen_pickup: false,
+  };
+}
+
 export const STATUS_LABEL: Record<Booking["status"], string> = {
   "to-clean": "To Clean",
   "in-progress": "In Progress",
