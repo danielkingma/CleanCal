@@ -46,7 +46,7 @@ interface CalendarAppProps {
   trialEndsAt: string | null;
 }
 
-type View = "week" | "month" | "year";
+type View = "assigned" | "week" | "month" | "year";
 
 interface ModalState {
   mode: "new" | "edit";
@@ -142,9 +142,14 @@ export default function CalendarApp({
   // it should move and label itself exactly like the Month tab, just
   // rendered as a list (MobileAgenda) rather than a grid (MonthGrid).
   const isCleaningList = isMobile && derivedView === "week";
+  // The "Assigned" tab is a day-by-day agenda too (same layout as the
+  // mobile Cleaning List), just filtered to the cleaner's own jobs below
+  // instead of switching layouts -- so it shares the same month-of-days
+  // period as month/isCleaningList rather than getting its own.
+  const isMonthPeriod = derivedView === "month" || isCleaningList || derivedView === "assigned";
 
   const days = useMemo(() => {
-    if (derivedView === "month" || isCleaningList) {
+    if (isMonthPeriod) {
       const year = cursor.getFullYear();
       const month = cursor.getMonth();
       const numDays = new Date(year, month + 1, 0).getDate();
@@ -155,22 +160,22 @@ export default function CalendarApp({
       return Array.from({ length: 7 }, (_, i) => addDays(start, i));
     }
     return [];
-  }, [derivedView, isCleaningList, cursor]);
+  }, [derivedView, isMonthPeriod, cursor]);
 
   const periodLabel = useMemo(() => {
-    if (derivedView === "month" || isCleaningList) return `${MONTH_NAMES[cursor.getMonth()]} ${cursor.getFullYear()}`;
+    if (isMonthPeriod) return `${MONTH_NAMES[cursor.getMonth()]} ${cursor.getFullYear()}`;
     if (derivedView === "week") {
       const start = addDays(cursor, -cursor.getDay());
       const end = addDays(start, 6);
       return `${MONTH_NAMES[start.getMonth()].slice(0, 3)} ${start.getDate()} – ${MONTH_NAMES[end.getMonth()].slice(0, 3)} ${end.getDate()}`;
     }
     return `${cursor.getFullYear()}`;
-  }, [derivedView, isCleaningList, cursor]);
+  }, [derivedView, isMonthPeriod, cursor]);
 
   function navigate(dir: number) {
     setCursor((prev) => {
       const next = new Date(prev);
-      if (derivedView === "month" || isCleaningList) next.setMonth(next.getMonth() + dir);
+      if (isMonthPeriod) next.setMonth(next.getMonth() + dir);
       else if (derivedView === "week") next.setDate(next.getDate() + dir * 7);
       else next.setFullYear(next.getFullYear() + dir);
       return next;
@@ -250,16 +255,24 @@ export default function CalendarApp({
             </button>
           </div>
           <div className="view-tabs">
-            {(isMobile
-              ? ([
-                  { key: "week", label: "Cleaning List" },
-                  { key: "month", label: "Month" },
-                ] as const)
-              : ([
-                  { key: "week", label: "Week" },
-                  { key: "month", label: "Month" },
-                  { key: "year", label: "Year" },
-                ] as const)
+            {(
+              [
+                // Only a cleaner has a personal subset worth calling out --
+                // an Owner/Manager's own jobs aren't a distinct concept, so
+                // this tab is theirs alone, and it goes leftmost since it's
+                // the view they'll want most often.
+                ...(isStaffUser ? [] : [{ key: "assigned", label: "Assigned" }]),
+                ...(isMobile
+                  ? [
+                      { key: "week", label: "Cleaning List" },
+                      { key: "month", label: "Month" },
+                    ]
+                  : [
+                      { key: "week", label: "Week" },
+                      { key: "month", label: "Month" },
+                      { key: "year", label: "Year" },
+                    ]),
+              ] as { key: View; label: string }[]
             ).map(({ key, label }) => (
               <button
                 key={key}
@@ -375,13 +388,21 @@ export default function CalendarApp({
                 </div>
               </div>
             </Dropdown>
-            {derivedView !== "year" && !(isMobile && derivedView === "month") ? (
+            {derivedView !== "year" && derivedView !== "assigned" && !(isMobile && derivedView === "month") ? (
               <div className="prop-count">{properties.length} properties</div>
             ) : null}
           </div>
         </div>
 
-        {derivedView === "year" ? (
+        {derivedView === "assigned" ? (
+          <MobileAgenda
+            days={days}
+            properties={properties}
+            bookings={bookings.filter((b) => b.assigned_cleaner_id === currentProfile.id)}
+            onBarClick={(booking) => setModal({ mode: "edit", booking })}
+            viewerId={currentProfile.id}
+          />
+        ) : derivedView === "year" ? (
           yearPropertyId ? (
             <PropertyYearView
               year={cursor.getFullYear()}
