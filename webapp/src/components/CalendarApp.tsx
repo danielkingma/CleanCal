@@ -68,6 +68,20 @@ export default function CalendarApp({
   const isMobile = useMediaQuery("(max-width: 720px)");
   const [view, setView] = useState<View>("month");
   const [yearPropertyId, setYearPropertyId] = useState(() => properties[0]?.id ?? "");
+
+  // properties[0]?.id above only ever runs once, at mount -- if a cleaner's
+  // properties list was empty then and later gains an entry (e.g. the
+  // router.refresh() below after a new assignment arrives over realtime),
+  // this keeps the Year view's selection in sync during render instead of
+  // staying stuck on an empty/stale id (same pattern as syncedBookings
+  // just below).
+  const [syncedProperties, setSyncedProperties] = useState(properties);
+  if (properties !== syncedProperties) {
+    setSyncedProperties(properties);
+    if (!properties.some((p) => p.id === yearPropertyId)) {
+      setYearPropertyId(properties[0]?.id ?? "");
+    }
+  }
   const [cursor, setCursor] = useState(() => new Date());
   const [bookings, setBookings] = useState<Booking[]>(initialBookings);
   const [modal, setModal] = useState<ModalState | null>(null);
@@ -95,15 +109,30 @@ export default function CalendarApp({
         "postgres_changes",
         { event: "*", schema: "public", table: "bookings" },
         (payload) => {
+          if (payload.eventType === "DELETE") {
+            const oldId = (payload.old as { id: string }).id;
+            setBookings((prev) => prev.filter((b) => b.id !== oldId));
+            return;
+          }
+
+          const next = payload.new as Booking;
           setBookings((prev) => {
-            if (payload.eventType === "DELETE") {
-              const oldId = (payload.old as { id: string }).id;
-              return prev.filter((b) => b.id !== oldId);
-            }
-            const next = payload.new as Booking;
             const exists = prev.some((b) => b.id === next.id);
             return exists ? prev.map((b) => (b.id === next.id ? next : b)) : [...prev, next];
           });
+
+          // A cleaner's `properties` list is pre-filtered server-side to
+          // just the properties they currently have a booking on (see
+          // calendar/page.tsx) -- that filter doesn't re-run just because
+          // a booking arrives over realtime, so a newly assigned or
+          // newly-opened booking on a property they didn't have before
+          // would update `bookings` live but never get a row, since
+          // `properties` stays frozen from the initial page load.
+          // Refreshing re-runs the server component's query, which
+          // re-filters with the current data.
+          if (!isStaff(currentProfile.role) && !properties.some((p) => p.id === next.property_id)) {
+            router.refresh();
+          }
         },
       )
       .subscribe();
@@ -111,7 +140,7 @@ export default function CalendarApp({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [currentProfile.role, properties, router]);
 
   // On mobile the "week" tab is relabelled "Cleaning List" and shows a
   // month's worth of days as a vertical agenda instead of a literal week --
@@ -182,6 +211,13 @@ export default function CalendarApp({
   }
 
   const isStaffUser = isStaff(currentProfile.role);
+  // Shown wherever there's nothing to display because `properties` is
+  // empty -- a cleaner only ever sees properties tied to a booking
+  // assigned to them or posted Open (see calendar/page.tsx), so "add a
+  // property" is both wrong (they can't) and misleading about why.
+  const noPropertiesMessage = isStaffUser
+    ? "Add a property to see your calendar here."
+    : "You don't have any jobs assigned yet. Ask an owner or manager to assign you a booking, or check the open job board.";
 
   return (
     <div>
@@ -362,7 +398,7 @@ export default function CalendarApp({
               }}
             />
           ) : (
-            <p className="photo-note">Add a property to see its year calendar here.</p>
+            <p className="photo-note">{noPropertiesMessage}</p>
           )
         ) : isMobile && derivedView === "month" ? (
           yearPropertyId ? (
@@ -375,18 +411,10 @@ export default function CalendarApp({
               showTitle={false}
             />
           ) : (
-            <p className="photo-note">Add a property to see its month calendar here.</p>
+            <p className="photo-note">{noPropertiesMessage}</p>
           )
         ) : properties.length === 0 ? (
-          // A cleaner only ever sees properties tied to a booking that's
-          // assigned to them or posted Open (see calendar/page.tsx) -- an
-          // empty grid with no explanation here reads as broken rather
-          // than "nothing's been assigned to you yet."
-          <p className="photo-note">
-            {isStaffUser
-              ? "Add a property to see your calendar here."
-              : "You don't have any jobs assigned yet. Ask an owner or manager to assign you a booking, or check the open job board."}
-          </p>
+          <p className="photo-note">{noPropertiesMessage}</p>
         ) : isMobile ? (
           <MobileAgenda
             days={days}
