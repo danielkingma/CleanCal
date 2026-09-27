@@ -266,6 +266,13 @@ export default function HandbookPage() {
                 <strong>Month</strong> (a compact grid for one property at a time).
               </p>
               <p>
+                A cleaner also has two extra tabs, set apart from Week/Month/Year since they&apos;re
+                worklists rather than calendar views: <strong>Assigned</strong> lists every job
+                they&apos;ve actually claimed or confirmed that isn&apos;t finished yet, and{" "}
+                <strong>Completed</strong> lists everything they&apos;ve already cleaned. Both are
+                the same day-by-day agenda as Cleaning List, just filtered down.
+              </p>
+              <p>
                 A bar always starts a little into its check-in day and ends a little into its
                 checkout day — 2pm check-in, 10am checkout — so a same-day turnover reads
                 correctly instead of looking like a gap or a double-booking.

@@ -46,7 +46,7 @@ interface CalendarAppProps {
   trialEndsAt: string | null;
 }
 
-type View = "assigned" | "week" | "month" | "year";
+type View = "assigned" | "completed" | "week" | "month" | "year";
 
 interface ModalState {
   mode: "new" | "edit";
@@ -143,11 +143,13 @@ export default function CalendarApp({
   // exactly like the Month tab, just rendered as a list (MobileAgenda)
   // rather than a grid (MonthGrid).
   const isCleaningList = isMobile && derivedView === "week";
-  // The "Assigned" tab is a day-by-day agenda too (same layout as the
-  // mobile Cleaning List), just filtered to the cleaner's own jobs below
-  // instead of switching layouts -- so it shares the same month-of-days
-  // period as month/isCleaningList rather than getting its own.
-  const isMonthPeriod = derivedView === "month" || isCleaningList || derivedView === "assigned";
+  // The "Assigned" and "Completed" tabs are a day-by-day agenda too (same
+  // layout as the mobile Cleaning List), just filtered to the cleaner's
+  // own jobs below instead of switching layouts -- so they share the
+  // same month-of-days period as month/isCleaningList rather than
+  // getting their own.
+  const isMonthPeriod =
+    derivedView === "month" || isCleaningList || derivedView === "assigned" || derivedView === "completed";
 
   const days = useMemo(() => {
     if (isMonthPeriod) {
@@ -262,35 +264,51 @@ export default function CalendarApp({
               Today
             </button>
           </div>
+          {!isStaffUser ? (
+            // A cleaner's own job lists -- kept as a separate pill group
+            // from the calendar views below rather than lumped in with
+            // them, since these aren't different views of the same
+            // schedule, they're two different worklists (still to do vs.
+            // already done).
+            <div className="view-tabs">
+              {(
+                [
+                  { key: "assigned", label: "Assigned" },
+                  { key: "completed", label: "Completed" },
+                ] as { key: View; label: string }[]
+              ).map(({ key, label }) => (
+                <button
+                  key={key}
+                  className={`view-tab${derivedView === key ? " active" : ""}`}
+                  onClick={() => setView(key)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          ) : null}
           <div className="view-tabs">
             {(
-              [
-                // Only a cleaner has a personal subset worth calling out --
-                // an Owner/Manager's own jobs aren't a distinct concept, so
-                // this tab is theirs alone, and it goes leftmost since it's
-                // the view they'll want most often.
-                ...(isStaffUser ? [] : [{ key: "assigned", label: "Assigned" }]),
-                ...(isMobile
-                  ? [
-                      // Staff see every clean here (not just their own),
-                      // so "Cleaning List" -- which reads as "my jobs" --
-                      // is a cleaner-only label; staff get "Assigned"
-                      // instead, matching what the list actually shows:
-                      // which cleaner (if any) is on each job.
-                      { key: "week", label: isStaffUser ? "Assigned" : "Cleaning List" },
-                      { key: "month", label: "Month" },
-                    ]
-                  : [
-                      { key: "week", label: "Week" },
-                      { key: "month", label: "Month" },
-                      { key: "year", label: "Year" },
-                    ]),
-              ] as { key: View; label: string }[]
+              isMobile
+                ? [
+                    // Staff see every clean here (not just their own), so
+                    // "Cleaning List" -- which reads as "my jobs" -- is a
+                    // cleaner-only label; staff get "Assigned" instead,
+                    // matching what the list actually shows: which
+                    // cleaner (if any) is on each job.
+                    { key: "week", label: isStaffUser ? "Assigned" : "Cleaning List" },
+                    { key: "month", label: "Month" },
+                  ]
+                : [
+                    { key: "week", label: "Week" },
+                    { key: "month", label: "Month" },
+                    { key: "year", label: "Year" },
+                  ]
             ).map(({ key, label }) => (
               <button
                 key={key}
                 className={`view-tab${derivedView === key ? " active" : ""}`}
-                onClick={() => setView(key)}
+                onClick={() => setView(key as View)}
               >
                 {label}
               </button>
@@ -401,7 +419,10 @@ export default function CalendarApp({
                 </div>
               </div>
             </Dropdown>
-            {derivedView !== "year" && derivedView !== "assigned" && !(isMobile && derivedView === "month") ? (
+            {derivedView !== "year" &&
+            derivedView !== "assigned" &&
+            derivedView !== "completed" &&
+            !(isMobile && derivedView === "month") ? (
               <div className="prop-count">{properties.length} properties</div>
             ) : null}
           </div>
@@ -415,8 +436,26 @@ export default function CalendarApp({
             // the open board, confirmed a direct assignment, or had a
             // request approved (all of which set assignment_confirmed) --
             // not one an Owner/Manager merely proposed and is still
-            // waiting on them to accept.
-            bookings={bookings.filter((b) => b.assigned_cleaner_id === currentProfile.id && b.assignment_confirmed)}
+            // waiting on them to accept. Completed ones move to their own
+            // "Completed" tab below rather than lingering here.
+            bookings={bookings.filter(
+              (b) =>
+                b.assigned_cleaner_id === currentProfile.id &&
+                b.assignment_confirmed &&
+                b.status !== "complete",
+            )}
+            onBarClick={(booking) => setModal({ mode: "edit", booking })}
+            viewerId={currentProfile.id}
+            isStaffViewer={isStaffUser}
+            cleanerNameById={cleanerNameById}
+          />
+        ) : derivedView === "completed" ? (
+          <MobileAgenda
+            days={days}
+            properties={properties}
+            bookings={bookings.filter(
+              (b) => b.assigned_cleaner_id === currentProfile.id && b.status === "complete",
+            )}
             onBarClick={(booking) => setModal({ mode: "edit", booking })}
             viewerId={currentProfile.id}
             isStaffViewer={isStaffUser}
