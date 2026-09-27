@@ -89,11 +89,22 @@ export async function syncOneFeed(supabase: SupabaseClient, feed: FeedRow): Prom
     // whoever was assigned to it (if anyone), gets a push about it, since
     // this is the one case where CleanCal removes a booking on its own
     // rather than at someone's direct request.
+    //
+    // A feed that comes back with zero events at all is far more likely to
+    // be a fetch/parsing hiccup (a transient OTA outage, a temporarily
+    // malformed response) than every one of this property's bookings
+    // getting cancelled in the same instant -- so that case is treated as
+    // "nothing to compare against" rather than "everything is missing",
+    // and the property's existing bookings are left untouched until a
+    // later sync comes back with real data.
     const seen = new Set(events.map((e) => e.uid));
     const todayIso = isoDate(new Date());
-    const nowMissing = (existing ?? []).filter(
-      (b) => b.external_uid && !seen.has(b.external_uid) && isoDate(checkoutDate(b)) > todayIso,
-    );
+    const nowMissing =
+      events.length === 0
+        ? []
+        : (existing ?? []).filter(
+            (b) => b.external_uid && !seen.has(b.external_uid) && isoDate(checkoutDate(b)) > todayIso,
+          );
 
     if (nowMissing.length > 0) {
       const { error: deleteError } = await supabase
