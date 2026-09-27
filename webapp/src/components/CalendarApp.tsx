@@ -88,10 +88,10 @@ export default function CalendarApp({
   const [modal, setModal] = useState<ModalState | null>(null);
   const [dayPicker, setDayPicker] = useState<{ dateIso: string; bookings: Booking[] } | null>(null);
 
-  // Mobile has no Year tab (see the view-tabs below) -- if someone picked
-  // Year on desktop and then narrowed the window, fall back to Month
-  // everywhere below rather than rendering a tab that isn't offered.
-  const derivedView: View = isMobile && view === "year" ? "month" : view;
+  // Year is now offered on mobile too (as a stack of mini-months, same
+  // PropertyYearView used on desktop -- MonthGrid was already mobile-sized
+  // for the mobile Month tab, so no separate mobile Year layout is needed).
+  const derivedView: View = view;
 
   // Re-sync local state when the server component re-fetches (see
   // router.refresh() in handleDone) -- updating state during render here,
@@ -137,12 +137,17 @@ export default function CalendarApp({
     };
   }, [currentProfile.id, currentProfile.role]);
 
-  // On mobile the "week" tab is relabelled "Cleaning List" (cleaner) or
-  // "Assigned" (staff) and shows a month's worth of days as a vertical
-  // agenda instead of a literal week -- it should move and label itself
-  // exactly like the Month tab, just rendered as a list (MobileAgenda)
-  // rather than a grid (MonthGrid).
-  const isCleaningList = isMobile && derivedView === "week";
+  // On mobile, a CLEANER's "week" tab is relabelled "Cleaning List" and
+  // shows a month's worth of days as a vertical agenda instead of a
+  // literal week -- cleaners already have separate Assigned/Completed
+  // tabs for their own jobs, so this one is meant as a fuller worklist,
+  // not a calendar-week view, and its label makes that clear.
+  //
+  // For an owner/manager the tab is labelled "Week" (not relabelled), so
+  // it must actually behave like one -- a real 7-day window -- rather
+  // than silently showing a month's worth of days under a "Week" label,
+  // which is what made it look like the week view had no bookings.
+  const isCleaningList = isMobile && derivedView === "week" && !isStaff(currentProfile.role);
   // The "Assigned" and "Completed" tabs are a day-by-day agenda too (same
   // layout as the mobile Cleaning List), just filtered to the cleaner's
   // own jobs below instead of switching layouts -- so they share the
@@ -314,6 +319,7 @@ export default function CalendarApp({
                 ? [
                     { key: "week", label: isStaffUser ? "Week" : "Cleaning List" },
                     { key: "month", label: "Month" },
+                    { key: "year", label: "Year" },
                   ]
                 : [
                     { key: "week", label: "Week" },
