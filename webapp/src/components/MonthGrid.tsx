@@ -189,7 +189,6 @@ export default function MonthGrid({
               <div className="py-bar-stack">
                 {segments.map((seg) => {
                   const isOpenUnclaimed = seg.booking.is_open_job && !seg.booking.assigned_cleaner_id;
-                  const isStale = Boolean(seg.booking.ical_missing_since);
                   const isMine = viewerId != null && seg.booking.assigned_cleaner_id === viewerId;
                   const needsConfirmation = isMine && !seg.booking.is_open_job && !seg.booking.assignment_confirmed;
                   const isClaimable = isClaimableBooking(seg.booking, viewerId, isStaffViewer);
@@ -222,7 +221,7 @@ export default function MonthGrid({
                       role="button"
                       tabIndex={0}
                       key={seg.booking.id}
-                      className={`py-bar${seg.roundLeft ? " round-left" : ""}${seg.roundRight ? " round-right" : ""}${isOpenUnclaimed ? " open-job" : ""}${isStale ? " ical-stale" : ""}${isMine ? " mine" : ""}${needsConfirmation ? " needs-confirmation" : ""}${isClaimable ? " requestable" : ""}`}
+                      className={`py-bar${seg.roundLeft ? " round-left" : ""}${seg.roundRight ? " round-right" : ""}${isOpenUnclaimed ? " open-job" : ""}${isMine ? " mine" : ""}${needsConfirmation ? " needs-confirmation" : ""}${isClaimable ? " requestable" : ""}`}
                       style={{
                         gridColumn: `${seg.startCol + 1} / span ${seg.span}`,
                         gridRow: seg.lane + 1,
@@ -231,11 +230,9 @@ export default function MonthGrid({
                         background: platform?.color ?? NEUTRAL_BAR_COLOR,
                       }}
                       title={
-                        isStale
-                          ? "No longer in source calendar — may be cancelled"
-                          : isClaimable
-                            ? "Unassigned — check the box to claim this job"
-                            : `${seg.booking.guests || platform?.name || "Booking"} — ${seg.booking.checkin_date}, ${seg.booking.nights}n`
+                        isClaimable
+                          ? "Unassigned — check the box to claim this job"
+                          : `${seg.booking.guests || platform?.name || "Booking"} — ${seg.booking.checkin_date}, ${seg.booking.nights}n`
                       }
                       onClick={(e) => {
                         e.stopPropagation();

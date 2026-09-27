@@ -162,7 +162,6 @@ export default function Timeline({
                   const cls = ["booking-bar", b.status];
                   if (isStart) cls.push("start");
                   if (isEnd) cls.push("end");
-                  if (b.ical_missing_since) cls.push("ical-stale");
                   if (isOpenUnclaimed) cls.push("open-job");
                   if (isMine) cls.push("mine");
                   if (isMine && !b.is_open_job && !b.assignment_confirmed) cls.push("needs-confirmation");
@@ -200,13 +199,11 @@ export default function Timeline({
                           height: barHeight,
                         }}
                         title={
-                          b.ical_missing_since
-                            ? "No longer in source calendar — may be cancelled"
-                            : isOpenUnclaimed
-                              ? "Open job — click to claim"
-                              : isClaimable
-                                ? "Unassigned — check the box to claim this job"
-                                : undefined
+                          isOpenUnclaimed
+                            ? "Open job — click to claim"
+                            : isClaimable
+                              ? "Unassigned — check the box to claim this job"
+                              : undefined
                         }
                         onClick={(e) => {
                           e.stopPropagation();

@@ -109,7 +109,6 @@ export interface Booking {
   assignment_confirmed: boolean;
   source?: BookingSource;
   external_uid?: string | null;
-  ical_missing_since?: string | null;
   platform_label?: string | null;
   rating?: number | null;
   rating_comment?: string;

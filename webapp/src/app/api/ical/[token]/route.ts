@@ -31,14 +31,14 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tok
 
   // Every booking regardless of source -- an Airbnb-imported reservation
   // needs to show up in the feed handed back to Vrbo, and vice versa, or
-  // this doesn't actually prevent a double-booking. Bookings flagged
-  // `ical_missing_since` are skipped: the guest may have cancelled, so
-  // blocking those dates elsewhere would be wrong until an admin confirms.
+  // this doesn't actually prevent a double-booking. A booking that
+  // disappears from its own source feed is deleted outright (see
+  // syncOneFeed in ical-sync.ts), so there's nothing stale left to filter
+  // out here.
   const { data: bookings } = await supabase
     .from("bookings")
     .select("id, checkin_date, nights")
-    .eq("property_id", property.id)
-    .is("ical_missing_since", null);
+    .eq("property_id", property.id);
 
   const feed = buildIcsFeed(property.name, bookings ?? []);
 

@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { parseIcs } from "./ical";
 import { daysBetween, fromISO } from "./calendar-utils";
+import { sendPushToUsers } from "./push";
 
 interface FeedRow {
   id: string;
@@ -51,7 +52,7 @@ export async function syncOneFeed(supabase: SupabaseClient, feed: FeedRow): Prom
     // (after upserting) to spot UIDs that dropped out of the feed.
     const { data: existing } = await supabase
       .from("bookings")
-      .select("id, external_uid, guests, ical_missing_since")
+      .select("id, external_uid, guests, checkin_date, assigned_cleaner_id")
       .eq("property_id", feed.property_id)
       .eq("source", "ical");
     const existingByUid = new Map((existing ?? []).map((b) => [b.external_uid, b]));
@@ -77,25 +78,40 @@ export async function syncOneFeed(supabase: SupabaseClient, feed: FeedRow): Prom
     }
 
     // A UID previously imported from this feed that's no longer present
-    // may mean the guest cancelled -- flag it rather than deleting, so an
-    // admin can confirm before losing any cleaning progress on it. If a
-    // flagged one reappears, un-flag it.
+    // almost always means the guest cancelled -- deleted outright rather
+    // than left flagged for manual review, so a cancelled booking doesn't
+    // keep cluttering the calendar. Every Owner/Manager, plus whoever was
+    // assigned to it (if anyone), gets a push about it, since this is the
+    // one case where CleanCal removes a booking on its own rather than at
+    // someone's direct request.
     const seen = new Set(events.map((e) => e.uid));
-    const nowMissing = (existing ?? [])
-      .filter((b) => b.external_uid && !seen.has(b.external_uid) && !b.ical_missing_since)
-      .map((b) => b.id);
-    const noLongerMissing = (existing ?? [])
-      .filter((b) => b.external_uid && seen.has(b.external_uid) && b.ical_missing_since)
-      .map((b) => b.id);
+    const nowMissing = (existing ?? []).filter((b) => b.external_uid && !seen.has(b.external_uid));
 
     if (nowMissing.length > 0) {
-      await supabase
+      const { error: deleteError } = await supabase
         .from("bookings")
-        .update({ ical_missing_since: new Date().toISOString() })
-        .in("id", nowMissing);
-    }
-    if (noLongerMissing.length > 0) {
-      await supabase.from("bookings").update({ ical_missing_since: null }).in("id", noLongerMissing);
+        .delete()
+        .in(
+          "id",
+          nowMissing.map((b) => b.id),
+        );
+      if (deleteError) throw new Error(deleteError.message);
+
+      const { data: property } = await supabase
+        .from("properties")
+        .select("name")
+        .eq("id", feed.property_id)
+        .maybeSingle();
+      const { data: staffIds } = await supabase.rpc("staff_user_ids");
+      for (const b of nowMissing) {
+        const recipients = new Set<string>((staffIds as string[] | null) ?? []);
+        if (b.assigned_cleaner_id) recipients.add(b.assigned_cleaner_id);
+        await sendPushToUsers(Array.from(recipients), {
+          title: "A booking was removed",
+          body: `${property?.name ?? "A property"} — check-in ${new Date(b.checkin_date).toLocaleDateString()} disappeared from its source calendar and was deleted.`,
+          url: "/calendar",
+        });
+      }
     }
 
     await supabase

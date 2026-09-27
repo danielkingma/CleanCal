@@ -6,7 +6,7 @@ import { addDays, checkoutDate, isoDate } from "@/lib/calendar-utils";
 import { isStaff, type Booking } from "@/lib/types";
 
 interface AttentionItem {
-  type: "Dispute" | "Flagged" | "Unclaimed";
+  type: "Dispute" | "Unclaimed";
   propertyName: string;
   date: string;
   detail: string;
@@ -34,7 +34,7 @@ export default async function DashboardPage() {
   const { data: bookingsData } = await supabase
     .from("bookings")
     .select(
-      "id, property_id, checkin_date, nights, status, is_open_job, assigned_cleaner_id, dispute_status, ical_missing_since, rating",
+      "id, property_id, checkin_date, nights, status, is_open_job, assigned_cleaner_id, dispute_status, rating",
     );
   const bookings = (bookingsData ?? []) as Booking[];
 
@@ -56,7 +56,6 @@ export default async function DashboardPage() {
 
   const inProgressNow = bookings.filter((b) => b.status === "in-progress").length;
   const openDisputes = bookings.filter((b) => b.dispute_status === "open").length;
-  const flaggedStale = bookings.filter((b) => b.ical_missing_since != null).length;
 
   const rated = bookings.filter((b) => b.rating != null);
   const averageRating = rated.length
@@ -68,14 +67,6 @@ export default async function DashboardPage() {
     const propertyName = propertyNameById[b.property_id] ?? "—";
     if (b.dispute_status === "open") {
       attentionItems.push({ type: "Dispute", propertyName, date: b.checkin_date, detail: "Open dispute" });
-    }
-    if (b.ical_missing_since != null) {
-      attentionItems.push({
-        type: "Flagged",
-        propertyName,
-        date: b.checkin_date,
-        detail: "No longer in source calendar — guest may have cancelled",
-      });
     }
     if (b.is_open_job && !b.assigned_cleaner_id && b.status !== "complete") {
       attentionItems.push({ type: "Unclaimed", propertyName, date: b.checkin_date, detail: "Open job — needs a cleaner" });
@@ -118,10 +109,6 @@ export default async function DashboardPage() {
             <div className="stat-number">{openDisputes}</div>
             <div className="stat-label">Open disputes</div>
           </div>
-          <div className="stat-tile accent-muted">
-            <div className="stat-number">{flaggedStale}</div>
-            <div className="stat-label">Flagged, needs review</div>
-          </div>
           <div className="stat-tile accent-teal">
             <div className="stat-number">
               {averageRating != null ? averageRating.toFixed(1) : "—"}
@@ -135,8 +122,7 @@ export default async function DashboardPage() {
         <h2 style={{ fontSize: 18, marginBottom: 14 }}>Needs attention</h2>
         {attentionItems.length === 0 ? (
           <p className="photo-note" style={{ maxWidth: 760 }}>
-            Nothing needs attention right now — no open disputes, no flagged bookings, and every open job
-            is claimed.
+            Nothing needs attention right now — no open disputes, and every open job is claimed.
           </p>
         ) : (
           <div className="property-card">

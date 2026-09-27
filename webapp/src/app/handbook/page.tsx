@@ -525,8 +525,8 @@ export default function HandbookPage() {
               <h2>FAQ &amp; troubleshooting</h2>
               <h3>A booking didn&apos;t sync from my OTA</h3>
               <p>Check the feed&apos;s status on the Properties page — a red &quot;Error&quot; pill shows the reason. Most often the calendar link expired; grab a fresh export URL from the platform and re-paste it.</p>
-              <h3>A guest cancelled but the booking&apos;s still showing</h3>
-              <p>CleanCal never silently deletes a booking that disappears from a source feed — it flags it instead (a dashed outline on the bar) so an Owner or Manager can confirm and remove it, in case it was a sync hiccup rather than a real cancellation.</p>
+              <h3>A booking disappeared from the calendar</h3>
+              <p>A booking that drops out of its own source feed — almost always a cancellation — is deleted automatically the next time that property syncs, rather than left on the calendar for review. Every Owner/Manager, and whoever was assigned to it, gets a push notification naming the property and date so it&apos;s never a silent surprise.</p>
               <h3>I promoted the wrong person to Manager</h3>
               <p>Go to Cleaners → Team roles and change it back. You can&apos;t change your own role, so you can&apos;t lock yourself out — but nothing stops you fixing someone else&apos;s.</p>
               <h3>The checklist only shows one Bedroom/Bathroom for a bigger property</h3>

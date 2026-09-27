@@ -896,11 +896,6 @@ main {
 .py-bar.needs-confirmation {
   box-shadow: 0 0 0 2px var(--amber) inset;
 }
-.py-bar.ical-stale {
-  opacity: 0.55;
-  outline: 1.5px dashed var(--coral);
-  outline-offset: -1.5px;
-}
 
 /* ---- Modal ---- */
 .overlay {
@@ -1402,7 +1397,6 @@ main {
   letter-spacing: 0.03em;
 }
 .attn-type-pill.dispute { background: rgba(217, 104, 59, 0.16); color: var(--coral); }
-.attn-type-pill.flagged { background: rgba(180, 118, 63, 0.16); color: var(--amber); }
 .attn-type-pill.unclaimed { background: rgba(46, 110, 158, 0.14); color: var(--blue); }
 
 /* ---- Properties admin ---- */
@@ -1490,11 +1484,6 @@ main {
   min-width: 160px;
 }
 
-.booking-bar.ical-stale {
-  opacity: 0.55;
-  outline: 1.5px dashed var(--coral);
-  outline-offset: -1.5px;
-}
 .booking-bar.open-job {
   outline: 2px dashed var(--teal-deep);
   outline-offset: -2px;

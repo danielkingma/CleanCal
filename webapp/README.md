@@ -77,9 +77,9 @@ exactly the same as an OTA: just another URL.
   duplicating it, and never touches its cleaning status, checklist, or
   assigned cleaner once set. If a UID that was previously imported stops
   appearing in the feed (the guest may have cancelled), the booking is
-  flagged (`ical_missing_since`, shown as a banner in the booking modal and
-  a dashed outline on its calendar bar) rather than silently deleted —
-  deleting it is left to an admin to confirm.
+  deleted outright — every Owner/Manager and whoever was assigned to it
+  get a push notification naming the property and date, so it's never a
+  silent surprise.
 - **Automatic sync (optional)**: `/api/cron/sync-ical` re-syncs every
   configured feed when hit with the right secret. It doesn't care who
   calls it, so rather than Vercel's own Cron Jobs (Hobby-plan accounts
@@ -242,8 +242,9 @@ through:
   token in the URL stands in for auth instead (same idea as
   `CRON_SECRET` on the sync route). Lists every booking on that property
   regardless of source (Airbnb-imported, Vrbo-imported, manual, open-job)
-  as a plain "Reserved" block; a booking flagged `ical_missing_since`
-  (the guest may have cancelled) is left out until an admin confirms it.
+  as a plain "Reserved" block; a booking that disappears from its own
+  source feed is deleted outright (see `ical-sync.ts`), so there's
+  nothing stale left to filter out here.
 - **Where to find it**: the "Calendar export" field on each property
   card on `/properties`, with a Copy button. Paste it into Airbnb's
   Calendar → Connect to another website (Step 2 in their UI — "Other

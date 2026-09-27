@@ -556,12 +556,6 @@ export default function BookingModal({
             </div>
           </div>
         ) : null}
-        {mode === "edit" && booking?.ical_missing_since ? (
-          <div className="error-banner">
-            No longer in the source calendar as of {new Date(booking.ical_missing_since).toLocaleDateString()} —
-            the guest may have cancelled. Review and delete if so.
-          </div>
-        ) : null}
 
         <div className="field">
           <label htmlFor="fProperty">Property</label>
