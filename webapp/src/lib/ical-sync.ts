@@ -52,7 +52,7 @@ export async function syncOneFeed(supabase: SupabaseClient, feed: FeedRow): Prom
     // (after upserting) to spot UIDs that dropped out of the feed.
     const { data: existing } = await supabase
       .from("bookings")
-      .select("id, external_uid, guests, checkin_date, nights, assigned_cleaner_id")
+      .select("id, external_uid, guests, checkin_date, nights, assigned_cleaner_id, ical_missing_first_seen_at")
       .eq("property_id", feed.property_id)
       .eq("source", "ical");
     const existingByUid = new Map((existing ?? []).map((b) => [b.external_uid, b]));
@@ -69,6 +69,10 @@ export async function syncOneFeed(supabase: SupabaseClient, feed: FeedRow): Prom
           source: "ical" as const,
           platform_label: feed.source_label,
           guests,
+          // Back in the feed -- clears any earlier "missing" mark from a
+          // fetch that turned out to be a one-off anomaly, not a real
+          // cancellation.
+          ical_missing_first_seen_at: null,
         };
       });
       const { error: upsertError } = await supabase
@@ -78,41 +82,56 @@ export async function syncOneFeed(supabase: SupabaseClient, feed: FeedRow): Prom
     }
 
     // A UID previously imported from this feed that's no longer present
-    // usually means the guest cancelled -- but OTA feeds also routinely
-    // drop stays that have already completed from their export window,
-    // which looks identical to a cancellation from here. Only treat it as
-    // a cancellation (and delete it) when the stay hasn't finished yet --
-    // a completed stay dropping out of the feed is expected housekeeping
-    // by the platform, not a signal to erase real history. Deleted outright
-    // rather than left flagged for manual review, so a cancelled booking
-    // doesn't keep cluttering the calendar. Every Owner/Manager, plus
-    // whoever was assigned to it (if anyone), gets a push about it, since
-    // this is the one case where CleanCal removes a booking on its own
-    // rather than at someone's direct request.
+    // usually means the guest cancelled -- but a single fetch coming back
+    // without it is a surprisingly weak signal on its own: a transient
+    // fetch/parsing hiccup, a feed that briefly omits a reservation, or a
+    // sync landing mid-relink can all look identical to a cancellation
+    // from here, and each of those has caused real bookings to be deleted
+    // before. So a UID missing for the first time is only marked, never
+    // deleted immediately -- it's deleted only once it's *still* missing
+    // on a later sync, meaning at least one full fetch cycle has confirmed
+    // it, not just one possibly-bad snapshot. A genuine cancellation is
+    // still gone within one more sync; a one-off anomaly self-heals when
+    // the next fetch sees the booking again (cleared above) and never
+    // reaches this branch. A stay that has already finished is never
+    // marked or deleted at all, even on repeat misses -- a completed stay
+    // dropping out of the feed is expected OTA housekeeping, not a
+    // cancellation signal. And a feed that comes back with zero events at
+    // all is far more likely to be a fetch/parsing failure than every
+    // booking on the property being cancelled at once, so that case marks
+    // nothing either.
     //
-    // A feed that comes back with zero events at all is far more likely to
-    // be a fetch/parsing hiccup (a transient OTA outage, a temporarily
-    // malformed response) than every one of this property's bookings
-    // getting cancelled in the same instant -- so that case is treated as
-    // "nothing to compare against" rather than "everything is missing",
-    // and the property's existing bookings are left untouched until a
-    // later sync comes back with real data.
+    // Once actually deleted, every Owner/Manager, plus whoever was
+    // assigned to it (if anyone), gets a push about it, since this is the
+    // one case where CleanCal removes a booking on its own rather than at
+    // someone's direct request.
     const seen = new Set(events.map((e) => e.uid));
     const todayIso = isoDate(new Date());
-    const nowMissing =
-      events.length === 0
-        ? []
-        : (existing ?? []).filter(
-            (b) => b.external_uid && !seen.has(b.external_uid) && isoDate(checkoutDate(b)) > todayIso,
-          );
+    const stillOngoing = (existing ?? []).filter(
+      (b) => b.external_uid && !seen.has(b.external_uid) && isoDate(checkoutDate(b)) > todayIso,
+    );
+    const missingNow = events.length === 0 ? [] : stillOngoing;
+    const firstTimeMissing = missingNow.filter((b) => !b.ical_missing_first_seen_at);
+    const confirmedMissing = missingNow.filter((b) => b.ical_missing_first_seen_at);
 
-    if (nowMissing.length > 0) {
+    if (firstTimeMissing.length > 0) {
+      const { error: markError } = await supabase
+        .from("bookings")
+        .update({ ical_missing_first_seen_at: new Date().toISOString() })
+        .in(
+          "id",
+          firstTimeMissing.map((b) => b.id),
+        );
+      if (markError) throw new Error(markError.message);
+    }
+
+    if (confirmedMissing.length > 0) {
       const { error: deleteError } = await supabase
         .from("bookings")
         .delete()
         .in(
           "id",
-          nowMissing.map((b) => b.id),
+          confirmedMissing.map((b) => b.id),
         );
       if (deleteError) throw new Error(deleteError.message);
 
@@ -122,7 +141,7 @@ export async function syncOneFeed(supabase: SupabaseClient, feed: FeedRow): Prom
         .eq("id", feed.property_id)
         .maybeSingle();
       const { data: staffIds } = await supabase.rpc("staff_user_ids");
-      for (const b of nowMissing) {
+      for (const b of confirmedMissing) {
         const recipients = new Set<string>((staffIds as string[] | null) ?? []);
         if (b.assigned_cleaner_id) recipients.add(b.assigned_cleaner_id);
         await sendPushToUsers(Array.from(recipients), {
