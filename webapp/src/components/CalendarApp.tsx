@@ -229,6 +229,19 @@ export default function CalendarApp({
     ? "Add a property to see your calendar here."
     : "You don't have any jobs assigned yet. Ask an owner or manager to assign you a booking, or check the open job board.";
 
+  // A cleaner's Assigned/Completed only ever show their own jobs; an
+  // Owner/Manager's show every booking that has a cleaner on it (or did,
+  // for Completed), regardless of who -- the cleaner's name is what
+  // AgendaCard resolves and displays for a staff viewer.
+  const assignedBookings = isStaffUser
+    ? bookings.filter((b) => !!b.assigned_cleaner_id && b.status !== "complete")
+    : bookings.filter(
+        (b) => b.assigned_cleaner_id === currentProfile.id && b.assignment_confirmed && b.status !== "complete",
+      );
+  const completedBookings = isStaffUser
+    ? bookings.filter((b) => b.status === "complete")
+    : bookings.filter((b) => b.assigned_cleaner_id === currentProfile.id && b.status === "complete");
+
   return (
     <div>
       <div className="topbar">
@@ -264,39 +277,33 @@ export default function CalendarApp({
               Today
             </button>
           </div>
-          {!isStaffUser ? (
-            // A cleaner's own job lists -- kept as a separate pill group
-            // from the calendar views below rather than lumped in with
-            // them, since these aren't different views of the same
-            // schedule, they're two different worklists (still to do vs.
-            // already done).
-            <div className="view-tabs">
-              {(
-                [
-                  { key: "assigned", label: "Assigned" },
-                  { key: "completed", label: "Completed" },
-                ] as { key: View; label: string }[]
-              ).map(({ key, label }) => (
-                <button
-                  key={key}
-                  className={`view-tab${derivedView === key ? " active" : ""}`}
-                  onClick={() => setView(key)}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          ) : null}
+          {/* Worklists (still to do vs. already done), kept as a separate
+              pill group from the calendar views below rather than lumped
+              in with them, since they aren't different views of the same
+              schedule. A cleaner sees only their own jobs here; an
+              Owner/Manager sees every booking that has a cleaner on it,
+              named on each card. */}
+          <div className="view-tabs">
+            {(
+              [
+                { key: "assigned", label: "Assigned" },
+                { key: "completed", label: "Completed" },
+              ] as { key: View; label: string }[]
+            ).map(({ key, label }) => (
+              <button
+                key={key}
+                className={`view-tab${derivedView === key ? " active" : ""}`}
+                onClick={() => setView(key)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
           <div className="view-tabs">
             {(
               isMobile
                 ? [
-                    // Staff see every clean here (not just their own), so
-                    // "Cleaning List" -- which reads as "my jobs" -- is a
-                    // cleaner-only label; staff get "Assigned" instead,
-                    // matching what the list actually shows: which
-                    // cleaner (if any) is on each job.
-                    { key: "week", label: isStaffUser ? "Assigned" : "Cleaning List" },
+                    { key: "week", label: isStaffUser ? "Week" : "Cleaning List" },
                     { key: "month", label: "Month" },
                   ]
                 : [
@@ -432,18 +439,7 @@ export default function CalendarApp({
           <MobileAgenda
             days={days}
             properties={properties}
-            // Only jobs the cleaner has actually chosen -- claimed from
-            // the open board, confirmed a direct assignment, or had a
-            // request approved (all of which set assignment_confirmed) --
-            // not one an Owner/Manager merely proposed and is still
-            // waiting on them to accept. Completed ones move to their own
-            // "Completed" tab below rather than lingering here.
-            bookings={bookings.filter(
-              (b) =>
-                b.assigned_cleaner_id === currentProfile.id &&
-                b.assignment_confirmed &&
-                b.status !== "complete",
-            )}
+            bookings={assignedBookings}
             onBarClick={(booking) => setModal({ mode: "edit", booking })}
             viewerId={currentProfile.id}
             isStaffViewer={isStaffUser}
@@ -453,9 +449,7 @@ export default function CalendarApp({
           <MobileAgenda
             days={days}
             properties={properties}
-            bookings={bookings.filter(
-              (b) => b.assigned_cleaner_id === currentProfile.id && b.status === "complete",
-            )}
+            bookings={completedBookings}
             onBarClick={(booking) => setModal({ mode: "edit", booking })}
             viewerId={currentProfile.id}
             isStaffViewer={isStaffUser}
