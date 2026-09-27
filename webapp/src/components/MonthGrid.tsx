@@ -172,11 +172,17 @@ export default function MonthGrid({
               <div className="py-day-row">
                 {days.map((d) => {
                   const otherMonth = d.getMonth() !== month;
+                  // A leading/trailing padding day is the same calendar
+                  // date as a cell in the adjacent month's own panel (e.g.
+                  // Sept 27 also fills October's first row) -- only the
+                  // panel that actually owns the month highlights it as
+                  // today, so it doesn't look duplicated across panels.
+                  const isToday = !otherMonth && sameDay(d, today);
                   return (
                     <button
                       type="button"
                       key={isoDate(d)}
-                      className={`py-day-cell${otherMonth ? " other-month" : ""}${sameDay(d, today) ? " is-today" : ""}`}
+                      className={`py-day-cell${otherMonth ? " other-month" : ""}${isToday ? " is-today" : ""}`}
                       onClick={() => onSelectDate(isoDate(d))}
                     >
                       {d.getDate()}
