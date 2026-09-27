@@ -17,12 +17,22 @@ interface AgendaCardProps {
   // Staff always sees the full assignment picture, so the "unassigned --
   // check the box to claim it" treatment below never applies to them.
   isStaffViewer?: boolean;
+  // Staff view only -- resolves booking.assigned_cleaner_id to a name,
+  // shown next to the broom mark below.
+  cleanerNameById?: Record<string, string>;
 }
 
 // A single clean, shown as a full-width tappable card -- used by
 // MobileAgenda's day sections and by DayPickerSheet's "which of these"
 // list, so both look and behave the same.
-export default function AgendaCard({ booking: b, propertyName, onClick, viewerId, isStaffViewer }: AgendaCardProps) {
+export default function AgendaCard({
+  booking: b,
+  propertyName,
+  onClick,
+  viewerId,
+  isStaffViewer,
+  cleanerNameById,
+}: AgendaCardProps) {
   const [pending, setPending] = useState(false);
   const isOpenUnclaimed = b.is_open_job && !b.assigned_cleaner_id;
   const isMine = viewerId != null && b.assigned_cleaner_id === viewerId;
@@ -32,6 +42,10 @@ export default function AgendaCard({ booking: b, propertyName, onClick, viewerId
   // viewer can only claim -- it isn't theirs to see yet, only to take for
   // themselves.
   const platform = isClaimable ? undefined : getPlatformBadge(b.platform_label);
+  // Staff can't tell who's on a job without opening it otherwise -- shown
+  // by name (not just a marker) since this list has the room for it.
+  const assignedCleanerName =
+    isStaffViewer && b.assigned_cleaner_id ? (cleanerNameById?.[b.assigned_cleaner_id] ?? "Cleaner") : null;
 
   async function handleClaim() {
     setPending(true);
@@ -79,6 +93,9 @@ export default function AgendaCard({ booking: b, propertyName, onClick, viewerId
           <span className={`agenda-status-chip ${b.status}`}>
             {isOpenUnclaimed ? "Open job" : STATUS_LABEL[b.status]}
           </span>
+          {assignedCleanerName ? (
+            <span className="agenda-cleaner-tag">🧹 {assignedCleanerName}</span>
+          ) : null}
           {b.guests ? <span className="agenda-guests">{b.guests}</span> : null}
           {hasAttention(b) ? <span className="attn-marker agenda-inline-marker">!</span> : null}
           {b.dispute_status === "open" ? <span className="dispute-marker agenda-inline-marker">!</span> : null}

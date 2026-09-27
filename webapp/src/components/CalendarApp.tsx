@@ -137,10 +137,11 @@ export default function CalendarApp({
     };
   }, [currentProfile.id, currentProfile.role]);
 
-  // On mobile the "week" tab is relabelled "Cleaning List" and shows a
-  // month's worth of days as a vertical agenda instead of a literal week --
-  // it should move and label itself exactly like the Month tab, just
-  // rendered as a list (MobileAgenda) rather than a grid (MonthGrid).
+  // On mobile the "week" tab is relabelled "Cleaning List" (cleaner) or
+  // "Assigned" (staff) and shows a month's worth of days as a vertical
+  // agenda instead of a literal week -- it should move and label itself
+  // exactly like the Month tab, just rendered as a list (MobileAgenda)
+  // rather than a grid (MonthGrid).
   const isCleaningList = isMobile && derivedView === "week";
   // The "Assigned" tab is a day-by-day agenda too (same layout as the
   // mobile Cleaning List), just filtered to the cleaner's own jobs below
@@ -211,6 +212,13 @@ export default function CalendarApp({
   }
 
   const isStaffUser = isStaff(currentProfile.role);
+  // Looked up by the mobile agenda list (staff view) to show which
+  // cleaner is on a job by name, next to the broom mark -- see
+  // AgendaCard.tsx.
+  const cleanerNameById = useMemo(
+    () => Object.fromEntries(cleaners.map((c) => [c.id, c.name || c.id])),
+    [cleaners],
+  );
   // Shown wherever there's nothing to display because `properties` is
   // empty -- a cleaner only ever sees properties tied to a booking
   // assigned to them or posted Open (see calendar/page.tsx), so "add a
@@ -264,7 +272,12 @@ export default function CalendarApp({
                 ...(isStaffUser ? [] : [{ key: "assigned", label: "Assigned" }]),
                 ...(isMobile
                   ? [
-                      { key: "week", label: "Cleaning List" },
+                      // Staff see every clean here (not just their own),
+                      // so "Cleaning List" -- which reads as "my jobs" --
+                      // is a cleaner-only label; staff get "Assigned"
+                      // instead, matching what the list actually shows:
+                      // which cleaner (if any) is on each job.
+                      { key: "week", label: isStaffUser ? "Assigned" : "Cleaning List" },
                       { key: "month", label: "Month" },
                     ]
                   : [
@@ -407,6 +420,7 @@ export default function CalendarApp({
             onBarClick={(booking) => setModal({ mode: "edit", booking })}
             viewerId={currentProfile.id}
             isStaffViewer={isStaffUser}
+            cleanerNameById={cleanerNameById}
           />
         ) : derivedView === "year" ? (
           yearPropertyId ? (
@@ -449,6 +463,7 @@ export default function CalendarApp({
             onBarClick={(booking) => setModal({ mode: "edit", booking })}
             viewerId={currentProfile.id}
             isStaffViewer={isStaffUser}
+            cleanerNameById={cleanerNameById}
           />
         ) : (
           <Timeline
@@ -499,6 +514,7 @@ export default function CalendarApp({
           onClose={() => setDayPicker(null)}
           viewerId={currentProfile.id}
           isStaffViewer={isStaffUser}
+          cleanerNameById={cleanerNameById}
         />
       ) : null}
     </div>

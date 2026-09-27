@@ -198,7 +198,14 @@ export default function MonthGrid({
                   // on a segment the viewer can only claim -- it isn't
                   // theirs to see yet, only to take for themselves.
                   const platform = isClaimable ? undefined : getPlatformBadge(seg.booking.platform_label);
-                  const label = isOpenUnclaimed ? "Open" : seg.booking.guests || "Reserved";
+                  // A staff viewer sees every booking, assigned or not --
+                  // "Reserved" used to fill in for a missing guest name
+                  // regardless, which read as "a cleaner has this" even
+                  // when nobody did. The booking's own platform name is a
+                  // truthful fallback instead; the broom mark below is
+                  // what actually says a cleaner is on it.
+                  const label = isOpenUnclaimed ? "Open" : seg.booking.guests || platform?.name || "";
+                  const isAssignedToCleaner = isStaffViewer && !isOpenUnclaimed && !!seg.booking.assigned_cleaner_id;
                   // seg.span always includes a checkout-day sliver column,
                   // so a 1-night stay already measures span 2 -- checking
                   // the booking's actual night count (not the grid span)
@@ -228,7 +235,7 @@ export default function MonthGrid({
                           ? "No longer in source calendar — may be cancelled"
                           : isClaimable
                             ? "Unassigned — check the box to claim this job"
-                            : `${seg.booking.guests || "Reserved"} — ${seg.booking.checkin_date}, ${seg.booking.nights}n`
+                            : `${seg.booking.guests || platform?.name || "Booking"} — ${seg.booking.checkin_date}, ${seg.booking.nights}n`
                       }
                       onClick={(e) => {
                         e.stopPropagation();
@@ -254,6 +261,7 @@ export default function MonthGrid({
                       ) : null}
                       {isClaimable ? null : (
                         <span className="py-bar-label">
+                          {isAssignedToCleaner ? "🧹 " : ""}
                           {needsConfirmation ? "? " : ""}
                           {label}
                         </span>

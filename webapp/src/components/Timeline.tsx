@@ -167,6 +167,10 @@ export default function Timeline({
                   if (isMine) cls.push("mine");
                   if (isMine && !b.is_open_job && !b.assignment_confirmed) cls.push("needs-confirmation");
                   if (isClaimable) cls.push("requestable");
+                  // A staff viewer otherwise has no way to tell, at a
+                  // glance, whether a cleaner is actually on a job -- the
+                  // bar looks the same either way.
+                  const isAssignedToCleaner = isStaffViewer && !isOpenUnclaimed && !!b.assigned_cleaner_id;
                   const label = isOpenUnclaimed
                     ? weekly
                       ? "Open — tap to claim"
@@ -174,9 +178,9 @@ export default function Timeline({
                         ? "Open"
                         : ""
                     : weekly
-                      ? `${STATUS_LABEL[b.status]} · ${b.nights}n`
+                      ? `${isAssignedToCleaner ? "🧹 " : ""}${STATUS_LABEL[b.status]} · ${b.nights}n`
                       : isStart
-                        ? STATUS_LABEL[b.status]
+                        ? `${isAssignedToCleaner ? "🧹 " : ""}${STATUS_LABEL[b.status]}`
                         : "";
                   // Nothing about who's on it, or where it came from, shows
                   // on a bar the viewer can only request -- it isn't theirs

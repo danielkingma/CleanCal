@@ -259,9 +259,11 @@ export default function HandbookPage() {
                 </li>
               </ul>
               <p>
-                On mobile, Week and Year are replaced with two views built for a phone screen:{" "}
-                <strong>Cleaning List</strong> (a scrollable day-by-day agenda, paginated by
-                month) and <strong>Month</strong> (a compact grid for one property at a time).
+                On mobile, Week and Year are replaced with two views built for a phone screen: a
+                scrollable day-by-day agenda, paginated by month — called{" "}
+                <strong>Cleaning List</strong> for a cleaner and <strong>Assigned</strong> for an
+                Owner/Manager, since it shows every clean rather than just their own — and{" "}
+                <strong>Month</strong> (a compact grid for one property at a time).
               </p>
               <p>
                 A bar always starts a little into its check-in day and ends a little into its
@@ -279,6 +281,12 @@ export default function HandbookPage() {
                 suggested someone else — shows no guest name, status, or platform badge at all,
                 just an <strong>Assign</strong> checkbox: ticking it claims the job for that
                 cleaner immediately, the same as claiming one off the open job board.
+              </p>
+              <p>
+                An Owner/Manager sees every booking&apos;s real status and platform badge, and a
+                small 🧹 mark on any job that has a cleaner on it (confirmed or not) — nothing shows
+                a generic &quot;Reserved&quot; label anymore, since that used to appear whether or
+                not a cleaner had actually taken the job.
               </p>
               <figure className="hb-figure">
                 {/* eslint-disable-next-line @next/next/no-img-element */}

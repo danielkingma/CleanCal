@@ -11,6 +11,9 @@ interface MobileAgendaProps {
   onBarClick: (booking: Booking) => void;
   viewerId?: string;
   isStaffViewer?: boolean;
+  // Staff view only -- resolves an assigned booking's cleaner id to a
+  // name for the card (see AgendaCard.tsx).
+  cleanerNameById?: Record<string, string>;
 }
 
 // A vertically-stacked day-by-day list, standing in for the property-row
@@ -26,6 +29,7 @@ export default function MobileAgenda({
   onBarClick,
   viewerId,
   isStaffViewer,
+  cleanerNameById,
 }: MobileAgendaProps) {
   const today = new Date();
   const propertyNameById = Object.fromEntries(properties.map((p) => [p.id, p.name]));
@@ -68,6 +72,7 @@ export default function MobileAgenda({
                   onClick={() => onBarClick(b)}
                   viewerId={viewerId}
                   isStaffViewer={isStaffViewer}
+                  cleanerNameById={cleanerNameById}
                 />
               ))}
             </div>
