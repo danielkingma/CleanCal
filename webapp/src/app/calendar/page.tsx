@@ -43,7 +43,7 @@ export default async function CalendarPage() {
   // guest-facing and cleaner-internal detail on a booking that isn't
   // theirs and isn't open still doesn't belong on their screen, so that's
   // stripped out below before this ever reaches the client.
-  const { data: rawBookings } = await supabase
+  const { data: rawBookings, error: bookingsError } = await supabase
     .from("bookings")
     .select(
       "id, property_id, checkin_date, nights, status, notes, guests, checklist, assigned_cleaner_id, is_open_job, assignment_confirmed, requested_cleaner_id, source, external_uid, ical_missing_since, platform_label, rating, rating_comment, dispute_status, payout_status, stripe_transfer_id, linen_pickup",
@@ -104,7 +104,7 @@ export default async function CalendarPage() {
 
   return (
     <div>
-      {propertiesError ? (
+      {propertiesError || bookingsError ? (
         <pre
           style={{
             background: "#fee2e2",
@@ -115,7 +115,8 @@ export default async function CalendarPage() {
             fontSize: 13,
           }}
         >
-          Couldn&apos;t load properties: {propertiesError.message}
+          {propertiesError ? `Couldn't load properties: ${propertiesError.message}\n` : ""}
+          {bookingsError ? `Couldn't load bookings: ${bookingsError.message}` : ""}
         </pre>
       ) : null}
       <CalendarApp
