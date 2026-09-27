@@ -398,7 +398,12 @@ export default function CalendarApp({
           <MobileAgenda
             days={days}
             properties={properties}
-            bookings={bookings.filter((b) => b.assigned_cleaner_id === currentProfile.id)}
+            // Only jobs the cleaner has actually chosen -- claimed from
+            // the open board, confirmed a direct assignment, or had a
+            // request approved (all of which set assignment_confirmed) --
+            // not one an Owner/Manager merely proposed and is still
+            // waiting on them to accept.
+            bookings={bookings.filter((b) => b.assigned_cleaner_id === currentProfile.id && b.assignment_confirmed)}
             onBarClick={(booking) => setModal({ mode: "edit", booking })}
             viewerId={currentProfile.id}
             isStaffViewer={isStaffUser}
