@@ -10,6 +10,7 @@ interface DayPickerSheetProps {
   onSelect: (booking: Booking) => void;
   onClose: () => void;
   viewerId?: string;
+  isStaffViewer?: boolean;
 }
 
 // Shown when tapping a day on the mobile Month grid lands on more than
@@ -24,6 +25,7 @@ export default function DayPickerSheet({
   onSelect,
   onClose,
   viewerId,
+  isStaffViewer,
 }: DayPickerSheetProps) {
   return (
     <div className="overlay open" onClick={(e) => e.target === e.currentTarget && onClose()}>
@@ -37,6 +39,7 @@ export default function DayPickerSheet({
               propertyName={propertyNameById[b.property_id] ?? "—"}
               onClick={() => onSelect(b)}
               viewerId={viewerId}
+              isStaffViewer={isStaffViewer}
             />
           ))}
         </div>

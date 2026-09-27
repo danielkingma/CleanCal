@@ -1,6 +1,7 @@
 "use client";
 
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
+import { requestBooking, withdrawBookingRequest } from "@/app/calendar/actions";
 import type { Booking, Property } from "@/lib/types";
 import {
   CHECKIN_FRAC,
@@ -15,6 +16,7 @@ import {
   fromISO,
   hasAttention,
   isoDate,
+  isRequestableBooking,
   sameDay,
 } from "@/lib/calendar-utils";
 import { getPlatformBadge } from "@/lib/platform-badge";
@@ -32,6 +34,9 @@ interface TimelineProps {
   // own -- passed so their own assigned bars can be picked out from
   // everyone else's on the shared schedule.
   viewerId?: string;
+  // Staff always sees the full assignment picture, so the "unassigned --
+  // check the box to request it" treatment below never applies to them.
+  isStaffViewer?: boolean;
 }
 
 export default function Timeline({
@@ -44,7 +49,31 @@ export default function Timeline({
   onTrackClick,
   canCreate,
   viewerId,
+  isStaffViewer = false,
 }: TimelineProps) {
+  const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
+
+  async function handleToggleRequest(b: Booking) {
+    setPendingIds((prev) => new Set(prev).add(b.id));
+    try {
+      if (b.requested_cleaner_id === viewerId) {
+        await withdrawBookingRequest(b.id);
+      } else {
+        await requestBooking(b.id);
+      }
+    } catch {
+      // Best-effort from an inline calendar checkbox -- opening the
+      // booking's modal (which surfaces a real error banner) is the
+      // fallback if a request needs troubleshooting.
+    } finally {
+      setPendingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(b.id);
+        return next;
+      });
+    }
+  }
+
   if (days.length === 0) return null;
 
   const rangeStart = days[0];
@@ -132,6 +161,9 @@ export default function Timeline({
                   const width = (endUnit - startUnit) * dayW;
                   const isOpenUnclaimed = b.is_open_job && !b.assigned_cleaner_id;
                   const isMine = viewerId != null && b.assigned_cleaner_id === viewerId;
+                  const isRequestable = isRequestableBooking(b, viewerId, isStaffViewer);
+                  const hasRequested = isRequestable && b.requested_cleaner_id === viewerId;
+                  const isPending = pendingIds.has(b.id);
                   const cls = ["booking-bar", b.status];
                   if (isStart) cls.push("start");
                   if (isEnd) cls.push("end");
@@ -139,6 +171,7 @@ export default function Timeline({
                   if (isOpenUnclaimed) cls.push("open-job");
                   if (isMine) cls.push("mine");
                   if (isMine && !b.is_open_job && !b.assignment_confirmed) cls.push("needs-confirmation");
+                  if (isRequestable) cls.push("requestable");
                   const label = isOpenUnclaimed
                     ? weekly
                       ? "Open — tap to claim"
@@ -150,7 +183,10 @@ export default function Timeline({
                       : isStart
                         ? STATUS_LABEL[b.status]
                         : "";
-                  const platform = getPlatformBadge(b.platform_label);
+                  // Nothing about who's on it, or where it came from, shows
+                  // on a bar the viewer can only request -- it isn't theirs
+                  // to see yet, only to ask an Owner/Manager for.
+                  const platform = isRequestable ? undefined : getPlatformBadge(b.platform_label);
                   const barTop = weekly ? 8 : 6;
                   const barHeight = rowH - (weekly ? 16 : 12);
 
@@ -169,7 +205,9 @@ export default function Timeline({
                             ? "No longer in source calendar — may be cancelled"
                             : isOpenUnclaimed
                               ? "Open job — click to claim"
-                              : undefined
+                              : isRequestable
+                                ? "Unassigned — check the box to ask for this job"
+                                : undefined
                         }
                         onClick={(e) => {
                           e.stopPropagation();
@@ -179,7 +217,22 @@ export default function Timeline({
                         {platform ? (
                           <span className="platform-stripe" style={{ background: platform.color }} />
                         ) : null}
-                        {label}
+                        {isRequestable ? (
+                          <label
+                            className="bar-request-check"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={hasRequested}
+                              disabled={isPending}
+                              onChange={() => handleToggleRequest(b)}
+                            />
+                            {isStart || weekly ? "Assign" : ""}
+                          </label>
+                        ) : (
+                          label
+                        )}
                       </div>
                       {/* Rendered as siblings of the bar, not children -- the bar's
                           overflow:hidden (needed to truncate long labels) would

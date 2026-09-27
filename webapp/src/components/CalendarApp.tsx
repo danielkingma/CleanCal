@@ -401,6 +401,7 @@ export default function CalendarApp({
             bookings={bookings.filter((b) => b.assigned_cleaner_id === currentProfile.id)}
             onBarClick={(booking) => setModal({ mode: "edit", booking })}
             viewerId={currentProfile.id}
+            isStaffViewer={isStaffUser}
           />
         ) : derivedView === "year" ? (
           yearPropertyId ? (
@@ -413,6 +414,7 @@ export default function CalendarApp({
                 setView("month");
               }}
               viewerId={currentProfile.id}
+              isStaffViewer={isStaffUser}
             />
           ) : (
             <p className="photo-note">{noPropertiesMessage}</p>
@@ -427,6 +429,7 @@ export default function CalendarApp({
               onSelectDate={handleMobileMonthDayTap}
               showTitle={false}
               viewerId={currentProfile.id}
+              isStaffViewer={isStaffUser}
             />
           ) : (
             <p className="photo-note">{noPropertiesMessage}</p>
@@ -440,6 +443,7 @@ export default function CalendarApp({
             bookings={bookings}
             onBarClick={(booking) => setModal({ mode: "edit", booking })}
             viewerId={currentProfile.id}
+            isStaffViewer={isStaffUser}
           />
         ) : (
           <Timeline
@@ -452,6 +456,7 @@ export default function CalendarApp({
             onTrackClick={(propertyId, dateIso) => openNewModal(propertyId, dateIso)}
             canCreate={isStaffUser}
             viewerId={currentProfile.id}
+            isStaffViewer={isStaffUser}
           />
         )}
       </main>
@@ -488,6 +493,7 @@ export default function CalendarApp({
           }}
           onClose={() => setDayPicker(null)}
           viewerId={currentProfile.id}
+          isStaffViewer={isStaffUser}
         />
       ) : null}
     </div>

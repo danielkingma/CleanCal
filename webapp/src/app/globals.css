@@ -463,6 +463,13 @@ main {
 .booking-bar.complete {
   background: var(--teal-deep);
 }
+/* A job the viewer can only request (not yet confirmed as theirs, see
+   isRequestableBooking) reads as unassigned rather than by its actual
+   cleaning status -- overrides whichever status color is also in the
+   class list above. */
+.booking-bar.requestable {
+  background: var(--muted);
+}
 .booking-bar.start {
   border-top-left-radius: 5px;
   border-bottom-left-radius: 5px;
@@ -551,6 +558,24 @@ main {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   z-index: 3;
   line-height: 1;
+}
+
+/* A job the viewer can only request -- no status/platform label, just a
+   checkbox to ask an Owner/Manager for it. Shared across the Timeline
+   bar, the Month/Year grid segment, and the mobile agenda card, all of
+   which otherwise show very different content in this spot. */
+.bar-request-check {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  color: inherit;
+  font: inherit;
+}
+.bar-request-check input[type="checkbox"] {
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
 /* ---- Booking source (platform) indicators ---- */
@@ -651,6 +676,7 @@ main {
   border-left: 4px solid var(--line);
   border-radius: 8px;
   padding: 10px 12px;
+  cursor: pointer;
 }
 .agenda-card.to-clean {
   border-left-color: var(--amber);
@@ -665,6 +691,10 @@ main {
   border-left-style: dashed;
   border-left-color: var(--teal-deep);
   font-style: italic;
+}
+.agenda-card.requestable {
+  border-left-style: dashed;
+  border-left-color: var(--muted);
 }
 /* A cleaner now sees every job on the shared schedule -- .mine picks
    their own assignments out from everyone else's; .needs-confirmation

@@ -274,9 +274,11 @@ export default function HandbookPage() {
                 useful for planning around the rest of the schedule. Their own assigned bars get a
                 teal outline; a small teal &quot;?&quot; badge means a directly-assigned job is
                 still waiting on their confirmation (see{" "}
-                <a href="#team">Managing the cleaning team</a>). Opening a booking that belongs to
-                another cleaner shows it&apos;s on the schedule but not its guest name, notes, or
-                other detail.
+                <a href="#team">Managing the cleaning team</a>). A job that isn&apos;t confirmed as
+                theirs — whether no cleaner has been picked yet or an Owner/Manager already
+                suggested someone else — shows no guest name, status, or platform badge at all,
+                just an <strong>Assign</strong> checkbox: any cleaner can tick it to ask for the
+                job, and it&apos;s the Owner/Manager&apos;s approval that actually locks it in.
               </p>
               <figure className="hb-figure">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -378,6 +380,17 @@ export default function HandbookPage() {
                 any time before the job&apos;s started) puts it back on the open board for someone
                 else. A cleaner who can&apos;t make an already-confirmed job anymore can release it
                 back to the pool the same way.
+              </p>
+              <p>
+                Picking a cleaner in the assignment dropdown is a starting suggestion, not an
+                exclusive lock: every other cleaner still sees that job as unassigned on their
+                calendar, with a checkbox to ask for it themselves. When someone does, you&apos;ll
+                see a banner right on the booking naming who asked, with an{" "}
+                <strong>Approve</strong> button — approving hands them the job and confirms it in
+                one step, the same as if they&apos;d confirmed a direct assignment themselves.
+                Nothing changes until you approve a request, so your original pick stays put unless
+                you decide otherwise. This is separate from the open job board above: an open job
+                still claims instantly with no approval step.
               </p>
               <p>
                 Every completed job gets a 1–5 star rating with an optional note. Ratings roll up

@@ -10,6 +10,7 @@ interface MobileAgendaProps {
   bookings: Booking[];
   onBarClick: (booking: Booking) => void;
   viewerId?: string;
+  isStaffViewer?: boolean;
 }
 
 // A vertically-stacked day-by-day list, standing in for the property-row
@@ -18,7 +19,14 @@ interface MobileAgendaProps {
 // viewport but have no reasonable way to compress onto a phone screen
 // without becoming unreadable, so this is a different layout entirely
 // rather than a responsive tweak of the same one.
-export default function MobileAgenda({ days, properties, bookings, onBarClick, viewerId }: MobileAgendaProps) {
+export default function MobileAgenda({
+  days,
+  properties,
+  bookings,
+  onBarClick,
+  viewerId,
+  isStaffViewer,
+}: MobileAgendaProps) {
   const today = new Date();
   const propertyNameById = Object.fromEntries(properties.map((p) => [p.id, p.name]));
 
@@ -59,6 +67,7 @@ export default function MobileAgenda({ days, properties, bookings, onBarClick, v
                   propertyName={propertyNameById[b.property_id] ?? "—"}
                   onClick={() => onBarClick(b)}
                   viewerId={viewerId}
+                  isStaffViewer={isStaffViewer}
                 />
               ))}
             </div>

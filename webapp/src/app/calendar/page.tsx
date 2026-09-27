@@ -46,7 +46,7 @@ export default async function CalendarPage() {
   const { data: rawBookings } = await supabase
     .from("bookings")
     .select(
-      "id, property_id, checkin_date, nights, status, notes, guests, checklist, assigned_cleaner_id, is_open_job, assignment_confirmed, source, external_uid, ical_missing_since, platform_label, rating, rating_comment, dispute_status, payout_status, stripe_transfer_id, linen_pickup",
+      "id, property_id, checkin_date, nights, status, notes, guests, checklist, assigned_cleaner_id, is_open_job, assignment_confirmed, requested_cleaner_id, source, external_uid, ical_missing_since, platform_label, rating, rating_comment, dispute_status, payout_status, stripe_transfer_id, linen_pickup",
     )
     .order("checkin_date");
 
