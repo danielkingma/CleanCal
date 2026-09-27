@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
-  approveBookingRequest,
   claimOpenBooking,
+  claimUnassignedBooking,
   confirmAssignedBooking,
   createBooking,
   declineAssignedBooking,
@@ -12,11 +12,9 @@ import {
   postDisputeMessage,
   rateBooking,
   releaseOpenBooking,
-  requestBooking,
   resolveDispute,
   updateBookingAdmin,
   updateBookingCleaner,
-  withdrawBookingRequest,
   type BookingInput,
 } from "@/app/calendar/actions";
 import { createClient } from "@/lib/supabase/client";
@@ -26,7 +24,7 @@ import {
   daysBetween,
   fromISO,
   isoDate,
-  isRequestableBooking,
+  isClaimableBooking,
 } from "@/lib/calendar-utils";
 import { getPlatformBadge } from "@/lib/platform-badge";
 import {
@@ -108,22 +106,20 @@ export default function BookingModal({
   // A cleaner now sees every booking in the portfolio for schedule
   // awareness. One that isn't confirmed as theirs -- whether it has no
   // cleaner at all or is currently assigned to someone else -- reads as
-  // unassigned to them, with a checkbox to ask an Owner/Manager for it
-  // (see isRequestableBooking in calendar-utils.ts). calendar/page.tsx
-  // and the realtime handler already strip guest/notes/checklist/rating/
-  // dispute data from a booking that isn't theirs or open before it ever
-  // reaches this component, so render a minimal, read-only summary below
-  // instead of the full form.
-  const isRequestableByViewer =
-    role === "cleaner" && !!booking && isRequestableBooking(booking, currentUserId, false);
-  const hasRequested = isRequestableByViewer && booking?.requested_cleaner_id === currentUserId;
+  // unassigned to them, with a checkbox that claims it immediately (see
+  // isClaimableBooking in calendar-utils.ts). An Owner/Manager can always
+  // reassign it afterwards via the "Assigned cleaner" dropdown below if
+  // the wrong cleaner ends up on it. calendar/page.tsx and the realtime
+  // handler already strip guest/notes/checklist/rating/dispute data from
+  // a booking that isn't theirs or open before it ever reaches this
+  // component, so render a minimal, read-only summary below instead of
+  // the full form.
+  const isClaimableByViewer = role === "cleaner" && !!booking && isClaimableBooking(booking, currentUserId, false);
   const canEditCore = isStaffUser;
   const canEditCleaning = (isStaffUser || isAssignedCleaner) && !isPendingConfirmation;
   const canSave = mode === "new" ? isStaffUser : canEditCleaning;
 
   const [confirming, setConfirming] = useState(false);
-  const [requesting, setRequesting] = useState(false);
-  const [approving, setApproving] = useState(false);
 
   async function handleConfirm() {
     if (!booking) return;
@@ -135,36 +131,6 @@ export default function BookingModal({
     } catch (e) {
       setError(e instanceof Error ? e.message : "Couldn't confirm this job.");
       setConfirming(false);
-    }
-  }
-
-  async function handleToggleRequest() {
-    if (!booking) return;
-    setError(null);
-    setRequesting(true);
-    try {
-      if (hasRequested) {
-        await withdrawBookingRequest(booking.id);
-      } else {
-        await requestBooking(booking.id);
-      }
-      onDone();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Couldn't update your request.");
-      setRequesting(false);
-    }
-  }
-
-  async function handleApproveRequest() {
-    if (!booking) return;
-    setError(null);
-    setApproving(true);
-    try {
-      await approveBookingRequest(booking.id);
-      onDone();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Couldn't approve this request.");
-      setApproving(false);
     }
   }
 
@@ -198,6 +164,19 @@ export default function BookingModal({
     setClaiming(true);
     try {
       await claimOpenBooking(booking.id);
+      onDone();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn't claim this job.");
+      setClaiming(false);
+    }
+  }
+
+  async function handleClaimUnassigned() {
+    if (!booking) return;
+    setError(null);
+    setClaiming(true);
+    try {
+      await claimUnassignedBooking(booking.id);
       onDone();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Couldn't claim this job.");
@@ -546,36 +525,8 @@ export default function BookingModal({
         </h2>
 
         {error ? <div className="error-banner">{error}</div> : null}
-        {isRequestableByViewer ? (
-          <div className="info-banner">
-            <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
-              <input
-                type="checkbox"
-                checked={hasRequested}
-                disabled={requesting}
-                onChange={handleToggleRequest}
-              />
-              {hasRequested
-                ? "Waiting on the owner to approve your request."
-                : "This job is unassigned. Check the box if you'd like to clean it — the owner will approve who gets it."}
-            </label>
-          </div>
-        ) : null}
-        {mode === "edit" && isStaffUser && booking?.requested_cleaner_id ? (
-          <div className="info-banner" style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-            <span style={{ flex: 1, minWidth: 200 }}>
-              {cleaners.find((c) => c.id === booking.requested_cleaner_id)?.name || "A cleaner"} has asked to
-              clean this job.
-            </span>
-            <button
-              type="button"
-              className="btn btn-primary"
-              disabled={approving}
-              onClick={handleApproveRequest}
-            >
-              {approving ? "Approving…" : "Approve"}
-            </button>
-          </div>
+        {isClaimableByViewer ? (
+          <div className="info-banner">This job is unassigned — claim it below to take it on.</div>
         ) : null}
         {isUnclaimedOpenJob ? (
           <div className="info-banner">This job is open — claim it below to take it on.</div>
@@ -1124,6 +1075,11 @@ export default function BookingModal({
             </button>
             {isUnclaimedOpenJob ? (
               <button type="button" className="btn btn-primary" disabled={claiming} onClick={handleClaim}>
+                {claiming ? "Claiming…" : "Claim this job"}
+              </button>
+            ) : null}
+            {isClaimableByViewer ? (
+              <button type="button" className="btn btn-primary" disabled={claiming} onClick={handleClaimUnassigned}>
                 {claiming ? "Claiming…" : "Claim this job"}
               </button>
             ) : null}

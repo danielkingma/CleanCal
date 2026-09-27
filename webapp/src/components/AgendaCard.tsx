@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { requestBooking, withdrawBookingRequest } from "@/app/calendar/actions";
-import { STATUS_LABEL, hasAttention, isRequestableBooking } from "@/lib/calendar-utils";
+import { claimUnassignedBooking } from "@/app/calendar/actions";
+import { STATUS_LABEL, hasAttention, isClaimableBooking } from "@/lib/calendar-utils";
 import { getPlatformBadge } from "@/lib/platform-badge";
 import type { Booking } from "@/lib/types";
 
@@ -15,7 +15,7 @@ interface AgendaCardProps {
   // everyone else's on the shared schedule.
   viewerId?: string;
   // Staff always sees the full assignment picture, so the "unassigned --
-  // check the box to request it" treatment below never applies to them.
+  // check the box to claim it" treatment below never applies to them.
   isStaffViewer?: boolean;
 }
 
@@ -27,25 +27,20 @@ export default function AgendaCard({ booking: b, propertyName, onClick, viewerId
   const isOpenUnclaimed = b.is_open_job && !b.assigned_cleaner_id;
   const isMine = viewerId != null && b.assigned_cleaner_id === viewerId;
   const needsConfirmation = isMine && !b.is_open_job && !b.assignment_confirmed;
-  const isRequestable = isRequestableBooking(b, viewerId, Boolean(isStaffViewer));
-  const hasRequested = isRequestable && b.requested_cleaner_id === viewerId;
+  const isClaimable = isClaimableBooking(b, viewerId, Boolean(isStaffViewer));
   // Nothing about who's on it, or where it came from, shows on a card the
-  // viewer can only request -- it isn't theirs to see yet, only to ask an
-  // Owner/Manager for.
-  const platform = isRequestable ? undefined : getPlatformBadge(b.platform_label);
+  // viewer can only claim -- it isn't theirs to see yet, only to take for
+  // themselves.
+  const platform = isClaimable ? undefined : getPlatformBadge(b.platform_label);
 
-  async function handleToggleRequest() {
+  async function handleClaim() {
     setPending(true);
     try {
-      if (hasRequested) {
-        await withdrawBookingRequest(b.id);
-      } else {
-        await requestBooking(b.id);
-      }
+      await claimUnassignedBooking(b.id);
     } catch {
       // Best-effort from an inline calendar checkbox -- opening the
       // booking's modal (which surfaces a real error banner) is the
-      // fallback if a request needs troubleshooting.
+      // fallback if a claim needs troubleshooting.
     } finally {
       setPending(false);
     }
@@ -55,7 +50,7 @@ export default function AgendaCard({ booking: b, propertyName, onClick, viewerId
     <div
       role="button"
       tabIndex={0}
-      className={`agenda-card ${b.status}${isOpenUnclaimed ? " open-job" : ""}${isMine ? " mine" : ""}${needsConfirmation ? " needs-confirmation" : ""}${isRequestable ? " requestable" : ""}`}
+      className={`agenda-card ${b.status}${isOpenUnclaimed ? " open-job" : ""}${isMine ? " mine" : ""}${needsConfirmation ? " needs-confirmation" : ""}${isClaimable ? " requestable" : ""}`}
       onClick={onClick}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
@@ -72,10 +67,10 @@ export default function AgendaCard({ booking: b, propertyName, onClick, viewerId
           </span>
         ) : null}
       </div>
-      {isRequestable ? (
+      {isClaimable ? (
         <div className="agenda-card-bottom">
           <label className="bar-request-check" onClick={(e) => e.stopPropagation()}>
-            <input type="checkbox" checked={hasRequested} disabled={pending} onChange={handleToggleRequest} />
+            <input type="checkbox" checked={false} disabled={pending} onChange={handleClaim} />
             Assign
           </label>
         </div>

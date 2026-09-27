@@ -64,15 +64,16 @@ export function hasAttention(b: Booking): boolean {
   return b.checklist?.oven?.outcome === "attention" || Boolean(b.checklist?.attention?.flagged);
 }
 
-// Any cleaner who isn't already confirmed onto a job can ask an Owner/
-// Manager to give it to them -- whether the job has no cleaner at all or
-// is currently assigned to someone else who hasn't started it yet.
-// Picking a cleaner in the admin dropdown is a starting suggestion, not
-// an exclusive lock, until that Approve happens (see
-// supabase/migrations/0021_booking_request_approval.sql). Deliberately
-// excludes the open job board (is_open_job), which stays its own
-// instant-claim flow with no approval step.
-export function isRequestableBooking(b: Booking, viewerId: string | undefined, isStaffViewer: boolean): boolean {
+// Any cleaner who isn't already confirmed onto a job can tick the box and
+// claim it immediately for themselves -- whether the job has no cleaner
+// at all or is currently assigned to someone else who hasn't started it
+// yet. Picking a cleaner in the admin dropdown is a starting suggestion,
+// not an exclusive lock -- an Owner/Manager can always reassign a job
+// directly (the "Assigned cleaner" dropdown works on any booking). See
+// supabase/migrations/0022_remove_approval_instant_claim.sql. Deliberately
+// excludes the open job board (is_open_job), which has its own identical
+// instant-claim flow (claim_open_booking).
+export function isClaimableBooking(b: Booking, viewerId: string | undefined, isStaffViewer: boolean): boolean {
   if (isStaffViewer || viewerId == null) return false;
   if (b.is_open_job) return false;
   if (b.assigned_cleaner_id === viewerId) return false;

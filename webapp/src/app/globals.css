@@ -463,8 +463,8 @@ main {
 .booking-bar.complete {
   background: var(--teal-deep);
 }
-/* A job the viewer can only request (not yet confirmed as theirs, see
-   isRequestableBooking) reads as unassigned rather than by its actual
+/* A job the viewer can only claim (not yet confirmed as theirs, see
+   isClaimableBooking) reads as unassigned rather than by its actual
    cleaning status -- overrides whichever status color is also in the
    class list above. */
 .booking-bar.requestable {
@@ -560,10 +560,10 @@ main {
   line-height: 1;
 }
 
-/* A job the viewer can only request -- no status/platform label, just a
-   checkbox to ask an Owner/Manager for it. Shared across the Timeline
-   bar, the Month/Year grid segment, and the mobile agenda card, all of
-   which otherwise show very different content in this spot. */
+/* A job the viewer can only claim -- no status/platform label, just a
+   checkbox that assigns it to them immediately. Shared across the
+   Timeline bar, the Month/Year grid segment, and the mobile agenda card,
+   all of which otherwise show very different content in this spot. */
 .bar-request-check {
   display: flex;
   align-items: center;

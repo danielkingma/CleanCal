@@ -107,12 +107,6 @@ export interface Booking {
   // else, until that cleaner calls confirmAssignedBooking. See
   // supabase/migrations/0020_cleaner_full_calendar.sql.
   assignment_confirmed: boolean;
-  // Set to a cleaner's id the moment they check the box asking to take a
-  // job that isn't confirmed as theirs -- cleared the moment an Owner/
-  // Manager approves it (which moves that id into assigned_cleaner_id
-  // instead) or the cleaner withdraws. See
-  // supabase/migrations/0021_booking_request_approval.sql.
-  requested_cleaner_id?: string | null;
   source?: BookingSource;
   external_uid?: string | null;
   ical_missing_since?: string | null;

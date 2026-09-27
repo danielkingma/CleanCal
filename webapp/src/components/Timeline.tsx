@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useState } from "react";
-import { requestBooking, withdrawBookingRequest } from "@/app/calendar/actions";
+import { claimUnassignedBooking } from "@/app/calendar/actions";
 import type { Booking, Property } from "@/lib/types";
 import {
   CHECKIN_FRAC,
@@ -16,7 +16,7 @@ import {
   fromISO,
   hasAttention,
   isoDate,
-  isRequestableBooking,
+  isClaimableBooking,
   sameDay,
 } from "@/lib/calendar-utils";
 import { getPlatformBadge } from "@/lib/platform-badge";
@@ -35,7 +35,7 @@ interface TimelineProps {
   // everyone else's on the shared schedule.
   viewerId?: string;
   // Staff always sees the full assignment picture, so the "unassigned --
-  // check the box to request it" treatment below never applies to them.
+  // check the box to claim it" treatment below never applies to them.
   isStaffViewer?: boolean;
 }
 
@@ -53,18 +53,14 @@ export default function Timeline({
 }: TimelineProps) {
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
 
-  async function handleToggleRequest(b: Booking) {
+  async function handleClaim(b: Booking) {
     setPendingIds((prev) => new Set(prev).add(b.id));
     try {
-      if (b.requested_cleaner_id === viewerId) {
-        await withdrawBookingRequest(b.id);
-      } else {
-        await requestBooking(b.id);
-      }
+      await claimUnassignedBooking(b.id);
     } catch {
       // Best-effort from an inline calendar checkbox -- opening the
       // booking's modal (which surfaces a real error banner) is the
-      // fallback if a request needs troubleshooting.
+      // fallback if a claim needs troubleshooting.
     } finally {
       setPendingIds((prev) => {
         const next = new Set(prev);
@@ -161,8 +157,7 @@ export default function Timeline({
                   const width = (endUnit - startUnit) * dayW;
                   const isOpenUnclaimed = b.is_open_job && !b.assigned_cleaner_id;
                   const isMine = viewerId != null && b.assigned_cleaner_id === viewerId;
-                  const isRequestable = isRequestableBooking(b, viewerId, isStaffViewer);
-                  const hasRequested = isRequestable && b.requested_cleaner_id === viewerId;
+                  const isClaimable = isClaimableBooking(b, viewerId, isStaffViewer);
                   const isPending = pendingIds.has(b.id);
                   const cls = ["booking-bar", b.status];
                   if (isStart) cls.push("start");
@@ -171,7 +166,7 @@ export default function Timeline({
                   if (isOpenUnclaimed) cls.push("open-job");
                   if (isMine) cls.push("mine");
                   if (isMine && !b.is_open_job && !b.assignment_confirmed) cls.push("needs-confirmation");
-                  if (isRequestable) cls.push("requestable");
+                  if (isClaimable) cls.push("requestable");
                   const label = isOpenUnclaimed
                     ? weekly
                       ? "Open — tap to claim"
@@ -185,8 +180,8 @@ export default function Timeline({
                         : "";
                   // Nothing about who's on it, or where it came from, shows
                   // on a bar the viewer can only request -- it isn't theirs
-                  // to see yet, only to ask an Owner/Manager for.
-                  const platform = isRequestable ? undefined : getPlatformBadge(b.platform_label);
+                  // to see yet, only to claim for themselves.
+                  const platform = isClaimable ? undefined : getPlatformBadge(b.platform_label);
                   const barTop = weekly ? 8 : 6;
                   const barHeight = rowH - (weekly ? 16 : 12);
 
@@ -205,8 +200,8 @@ export default function Timeline({
                             ? "No longer in source calendar — may be cancelled"
                             : isOpenUnclaimed
                               ? "Open job — click to claim"
-                              : isRequestable
-                                ? "Unassigned — check the box to ask for this job"
+                              : isClaimable
+                                ? "Unassigned — check the box to claim this job"
                                 : undefined
                         }
                         onClick={(e) => {
@@ -217,16 +212,16 @@ export default function Timeline({
                         {platform ? (
                           <span className="platform-stripe" style={{ background: platform.color }} />
                         ) : null}
-                        {isRequestable ? (
+                        {isClaimable ? (
                           <label
                             className="bar-request-check"
                             onClick={(e) => e.stopPropagation()}
                           >
                             <input
                               type="checkbox"
-                              checked={hasRequested}
+                              checked={false}
                               disabled={isPending}
-                              onChange={() => handleToggleRequest(b)}
+                              onChange={() => handleClaim(b)}
                             />
                             {isStart || weekly ? "Assign" : ""}
                           </label>

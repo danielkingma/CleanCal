@@ -277,8 +277,8 @@ export default function HandbookPage() {
                 <a href="#team">Managing the cleaning team</a>). A job that isn&apos;t confirmed as
                 theirs — whether no cleaner has been picked yet or an Owner/Manager already
                 suggested someone else — shows no guest name, status, or platform badge at all,
-                just an <strong>Assign</strong> checkbox: any cleaner can tick it to ask for the
-                job, and it&apos;s the Owner/Manager&apos;s approval that actually locks it in.
+                just an <strong>Assign</strong> checkbox: ticking it claims the job for that
+                cleaner immediately, the same as claiming one off the open job board.
               </p>
               <figure className="hb-figure">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -384,13 +384,11 @@ export default function HandbookPage() {
               <p>
                 Picking a cleaner in the assignment dropdown is a starting suggestion, not an
                 exclusive lock: every other cleaner still sees that job as unassigned on their
-                calendar, with a checkbox to ask for it themselves. When someone does, you&apos;ll
-                see a banner right on the booking naming who asked, with an{" "}
-                <strong>Approve</strong> button — approving hands them the job and confirms it in
-                one step, the same as if they&apos;d confirmed a direct assignment themselves.
-                Nothing changes until you approve a request, so your original pick stays put unless
-                you decide otherwise. This is separate from the open job board above: an open job
-                still claims instantly with no approval step.
+                calendar, with a checkbox that claims it immediately — first to tick it gets it,
+                same as the open job board. If the wrong cleaner ends up on a job, or you just
+                want to swap who&apos;s doing it, the <strong>Assigned cleaner</strong> dropdown in
+                the booking editor works at any time, on any booking, claimed or not — pick someone
+                else and save to reassign it directly, no approval step either way.
               </p>
               <p>
                 Every completed job gets a 1–5 star rating with an optional note. Ratings roll up

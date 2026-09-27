@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { requestBooking, withdrawBookingRequest } from "@/app/calendar/actions";
+import { claimUnassignedBooking } from "@/app/calendar/actions";
 import type { Booking } from "@/lib/types";
 import {
   CHECKIN_FRAC,
@@ -12,7 +12,7 @@ import {
   checkoutDate,
   daysBetween,
   fromISO,
-  isRequestableBooking,
+  isClaimableBooking,
   isoDate,
   sameDay,
 } from "@/lib/calendar-utils";
@@ -35,7 +35,7 @@ interface MonthGridProps {
   // everyone else's on the shared schedule.
   viewerId?: string;
   // Staff always sees the full assignment picture, so the "unassigned --
-  // check the box to request it" treatment below never applies to them.
+  // check the box to claim it" treatment below never applies to them.
   isStaffViewer?: boolean;
 }
 
@@ -123,18 +123,14 @@ export default function MonthGrid({
 }: MonthGridProps) {
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
 
-  async function handleToggleRequest(b: Booking) {
+  async function handleClaim(b: Booking) {
     setPendingIds((prev) => new Set(prev).add(b.id));
     try {
-      if (b.requested_cleaner_id === viewerId) {
-        await withdrawBookingRequest(b.id);
-      } else {
-        await requestBooking(b.id);
-      }
+      await claimUnassignedBooking(b.id);
     } catch {
       // Best-effort from an inline calendar checkbox -- opening the
       // booking's modal (which surfaces a real error banner) is the
-      // fallback if a request needs troubleshooting.
+      // fallback if a claim needs troubleshooting.
     } finally {
       setPendingIds((prev) => {
         const next = new Set(prev);
@@ -196,13 +192,12 @@ export default function MonthGrid({
                   const isStale = Boolean(seg.booking.ical_missing_since);
                   const isMine = viewerId != null && seg.booking.assigned_cleaner_id === viewerId;
                   const needsConfirmation = isMine && !seg.booking.is_open_job && !seg.booking.assignment_confirmed;
-                  const isRequestable = isRequestableBooking(seg.booking, viewerId, isStaffViewer);
-                  const hasRequested = isRequestable && seg.booking.requested_cleaner_id === viewerId;
+                  const isClaimable = isClaimableBooking(seg.booking, viewerId, isStaffViewer);
                   const isPending = pendingIds.has(seg.booking.id);
                   // Nothing about who's on it, or where it came from, shows
-                  // on a segment the viewer can only request -- it isn't
-                  // theirs to see yet, only to ask an Owner/Manager for.
-                  const platform = isRequestable ? undefined : getPlatformBadge(seg.booking.platform_label);
+                  // on a segment the viewer can only claim -- it isn't
+                  // theirs to see yet, only to take for themselves.
+                  const platform = isClaimable ? undefined : getPlatformBadge(seg.booking.platform_label);
                   const label = isOpenUnclaimed ? "Open" : seg.booking.guests || "Reserved";
                   // seg.span always includes a checkout-day sliver column,
                   // so a 1-night stay already measures span 2 -- checking
@@ -220,7 +215,7 @@ export default function MonthGrid({
                       role="button"
                       tabIndex={0}
                       key={seg.booking.id}
-                      className={`py-bar${seg.roundLeft ? " round-left" : ""}${seg.roundRight ? " round-right" : ""}${isOpenUnclaimed ? " open-job" : ""}${isStale ? " ical-stale" : ""}${isMine ? " mine" : ""}${needsConfirmation ? " needs-confirmation" : ""}${isRequestable ? " requestable" : ""}`}
+                      className={`py-bar${seg.roundLeft ? " round-left" : ""}${seg.roundRight ? " round-right" : ""}${isOpenUnclaimed ? " open-job" : ""}${isStale ? " ical-stale" : ""}${isMine ? " mine" : ""}${needsConfirmation ? " needs-confirmation" : ""}${isClaimable ? " requestable" : ""}`}
                       style={{
                         gridColumn: `${seg.startCol + 1} / span ${seg.span}`,
                         gridRow: seg.lane + 1,
@@ -231,8 +226,8 @@ export default function MonthGrid({
                       title={
                         isStale
                           ? "No longer in source calendar — may be cancelled"
-                          : isRequestable
-                            ? "Unassigned — check the box to ask for this job"
+                          : isClaimable
+                            ? "Unassigned — check the box to claim this job"
                             : `${seg.booking.guests || "Reserved"} — ${seg.booking.checkin_date}, ${seg.booking.nights}n`
                       }
                       onClick={(e) => {
@@ -246,18 +241,18 @@ export default function MonthGrid({
                         }
                       }}
                     >
-                      {isRequestable && seg.roundLeft ? (
+                      {isClaimable && seg.roundLeft ? (
                         <label className="bar-request-check" onClick={(e) => e.stopPropagation()}>
                           <input
                             type="checkbox"
-                            checked={hasRequested}
+                            checked={false}
                             disabled={isPending}
-                            onChange={() => handleToggleRequest(seg.booking)}
+                            onChange={() => handleClaim(seg.booking)}
                           />
                           Assign
                         </label>
                       ) : null}
-                      {isRequestable ? null : (
+                      {isClaimable ? null : (
                         <span className="py-bar-label">
                           {needsConfirmation ? "? " : ""}
                           {label}

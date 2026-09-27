@@ -209,20 +209,21 @@ export async function confirmAssignedBooking(id: string) {
   }
 }
 
-// Cleaner asks to take a job that isn't confirmed as theirs yet -- works
-// whether it has no cleaner at all or is currently assigned to someone
-// else who hasn't started it. Doesn't assign anything by itself; an
-// Owner/Manager still has to approve it (see approveBookingRequest
-// below). See request_booking_assignment in
-// supabase/migrations/0021_booking_request_approval.sql.
-export async function requestBooking(id: string) {
+// Cleaner ticks the box on a job that isn't confirmed as theirs yet --
+// works whether it has no cleaner at all or is currently assigned to
+// someone else who hasn't started it -- and claims it immediately, same
+// as claiming an open job (claimOpenBooking above). An Owner/Manager can
+// always reassign it afterwards via the "Assigned cleaner" dropdown if
+// the wrong cleaner ends up on it. See claim_unassigned_booking in
+// supabase/migrations/0022_remove_approval_instant_claim.sql.
+export async function claimUnassignedBooking(id: string) {
   const supabase = await createClient();
   const { data: booking } = await supabase
     .from("bookings")
     .select("property_id, checkin_date")
     .eq("id", id)
     .maybeSingle();
-  const { error } = await supabase.rpc("request_booking_assignment", { p_booking_id: id });
+  const { error } = await supabase.rpc("claim_unassigned_booking", { p_booking_id: id });
   if (error) throw new Error(error.message);
   revalidatePath("/calendar");
 
@@ -234,45 +235,8 @@ export async function requestBooking(id: string) {
       .eq("id", booking.property_id)
       .maybeSingle();
     await sendPushToUsers((staffIds as string[] | null) ?? [], {
-      title: "A cleaner wants a job",
-      body: `${property?.name ?? "A booking"} — check-in ${new Date(booking.checkin_date).toLocaleDateString()} has a request waiting on your approval.`,
-      url: "/calendar",
-    });
-  }
-}
-
-// The "changed my mind" counterpart -- unchecking the box before an
-// Owner/Manager has approved or declined it.
-export async function withdrawBookingRequest(id: string) {
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("withdraw_booking_request", { p_booking_id: id });
-  if (error) throw new Error(error.message);
-  revalidatePath("/calendar");
-}
-
-// Owner/Manager approves a pending request -- the moment the job actually
-// becomes that cleaner's. See approve_booking_request in the same
-// migration as requestBooking above.
-export async function approveBookingRequest(id: string) {
-  const supabase = await createClient();
-  const { data: before } = await supabase
-    .from("bookings")
-    .select("property_id, checkin_date, requested_cleaner_id")
-    .eq("id", id)
-    .maybeSingle();
-  const { error } = await supabase.rpc("approve_booking_request", { p_booking_id: id });
-  if (error) throw new Error(error.message);
-  revalidatePath("/calendar");
-
-  if (before?.requested_cleaner_id) {
-    const { data: property } = await supabase
-      .from("properties")
-      .select("name")
-      .eq("id", before.property_id)
-      .maybeSingle();
-    await sendPushToUsers([before.requested_cleaner_id], {
-      title: "Your request was approved",
-      body: `${property?.name ?? "A booking"} — check-in ${new Date(before.checkin_date).toLocaleDateString()} is now yours.`,
+      title: "A job was claimed",
+      body: `${property?.name ?? "A booking"} — check-in ${new Date(booking.checkin_date).toLocaleDateString()} was claimed by a cleaner.`,
       url: "/calendar",
     });
   }
