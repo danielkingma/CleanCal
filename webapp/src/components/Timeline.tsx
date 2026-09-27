@@ -37,6 +37,9 @@ interface TimelineProps {
   // Staff always sees the full assignment picture, so the "unassigned --
   // check the box to claim it" treatment below never applies to them.
   isStaffViewer?: boolean;
+  // Staff view only -- resolves booking.assigned_cleaner_id to a name,
+  // shown next to the broom mark below.
+  cleanerNameById?: Record<string, string>;
 }
 
 export default function Timeline({
@@ -50,6 +53,7 @@ export default function Timeline({
   canCreate,
   viewerId,
   isStaffViewer = false,
+  cleanerNameById,
 }: TimelineProps) {
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
 
@@ -170,6 +174,10 @@ export default function Timeline({
                   // glance, whether a cleaner is actually on a job -- the
                   // bar looks the same either way.
                   const isAssignedToCleaner = isStaffViewer && !isOpenUnclaimed && !!b.assigned_cleaner_id;
+                  const assignedCleanerName = isAssignedToCleaner
+                    ? (cleanerNameById?.[b.assigned_cleaner_id!] ?? "Cleaner")
+                    : null;
+                  const broomPrefix = assignedCleanerName ? `🧹 ${assignedCleanerName} · ` : "";
                   const label = isOpenUnclaimed
                     ? weekly
                       ? "Open — tap to claim"
@@ -177,9 +185,9 @@ export default function Timeline({
                         ? "Open"
                         : ""
                     : weekly
-                      ? `${isAssignedToCleaner ? "🧹 " : ""}${STATUS_LABEL[b.status]} · ${b.nights}n`
+                      ? `${broomPrefix}${STATUS_LABEL[b.status]} · ${b.nights}n`
                       : isStart
-                        ? `${isAssignedToCleaner ? "🧹 " : ""}${STATUS_LABEL[b.status]}`
+                        ? `${broomPrefix}${STATUS_LABEL[b.status]}`
                         : "";
                   // Nothing about who's on it, or where it came from, shows
                   // on a bar the viewer can only request -- it isn't theirs

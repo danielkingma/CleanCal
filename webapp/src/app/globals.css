@@ -871,12 +871,6 @@ main {
   text-overflow: ellipsis;
   min-width: 0;
 }
-.py-bar-platform {
-  flex: 0 0 auto;
-  white-space: nowrap;
-  opacity: 0.85;
-  font-weight: 500;
-}
 .py-bar.round-left {
   border-top-left-radius: 8px;
   border-bottom-left-radius: 8px;

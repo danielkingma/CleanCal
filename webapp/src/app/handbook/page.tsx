@@ -293,10 +293,11 @@ export default function HandbookPage() {
                 cleaner immediately, the same as claiming one off the open job board.
               </p>
               <p>
-                An Owner/Manager sees every booking&apos;s real status and platform badge, and a
-                small 🧹 mark on any job that has a cleaner on it (confirmed or not) — nothing shows
-                a generic &quot;Reserved&quot; label anymore, since that used to appear whether or
-                not a cleaner had actually taken the job.
+                An Owner/Manager sees every booking&apos;s real status and platform badge, and on
+                any job that has a cleaner on it (confirmed or not) — a small 🧹 mark plus that
+                cleaner&apos;s name, right on the bar, on Week, Month, and Year alike. Nothing shows
+                a generic &quot;Reserved&quot; label anymore, and a platform&apos;s name only ever
+                appears once per booking.
               </p>
               <figure className="hb-figure">
                 {/* eslint-disable-next-line @next/next/no-img-element */}

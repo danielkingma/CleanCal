@@ -25,11 +25,6 @@ interface MonthGridProps {
   onSelectBooking: (booking: Booking) => void;
   onSelectDate: (dateIso: string) => void;
   showTitle?: boolean;
-  // The Year view has room for a platform name (Airbnb, Vrbo, ...) on a
-  // long-enough bar; the mobile Month tab's bars are already tighter on
-  // their own and don't get it. Off by default so the standalone mobile
-  // usage doesn't have to opt out.
-  showPlatformNames?: boolean;
   // A cleaner now sees the whole portfolio's bookings, not just their
   // own -- passed so their own assigned segments can be picked out from
   // everyone else's on the shared schedule.
@@ -37,6 +32,9 @@ interface MonthGridProps {
   // Staff always sees the full assignment picture, so the "unassigned --
   // check the box to claim it" treatment below never applies to them.
   isStaffViewer?: boolean;
+  // Staff view only -- resolves booking.assigned_cleaner_id to a name,
+  // shown next to the broom mark below.
+  cleanerNameById?: Record<string, string>;
 }
 
 interface BarSegment {
@@ -117,9 +115,9 @@ export default function MonthGrid({
   onSelectBooking,
   onSelectDate,
   showTitle = true,
-  showPlatformNames = false,
   viewerId,
   isStaffViewer = false,
+  cleanerNameById,
 }: MonthGridProps) {
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
 
@@ -197,25 +195,19 @@ export default function MonthGrid({
                   // on a segment the viewer can only claim -- it isn't
                   // theirs to see yet, only to take for themselves.
                   const platform = isClaimable ? undefined : getPlatformBadge(seg.booking.platform_label);
-                  // A staff viewer sees every booking, assigned or not --
-                  // "Reserved" used to fill in for a missing guest name
-                  // regardless, which read as "a cleaner has this" even
-                  // when nobody did. The booking's own platform name is a
-                  // truthful fallback instead; the broom mark below is
-                  // what actually says a cleaner is on it.
-                  const label = isOpenUnclaimed ? "Open" : seg.booking.guests || platform?.name || "";
                   const isAssignedToCleaner = isStaffViewer && !isOpenUnclaimed && !!seg.booking.assigned_cleaner_id;
-                  // seg.span always includes a checkout-day sliver column,
-                  // so a 1-night stay already measures span 2 -- checking
-                  // the booking's actual night count (not the grid span)
-                  // is what "long enough to fit the word" really means.
-                  // seg.roundRight restricts this to the row that actually
-                  // contains the checkout: a stay spanning multiple weeks
-                  // gets one BarSegment per row it crosses, and without this
-                  // check the platform name was repeated on every one of
-                  // those rows instead of once at the real end of the stay.
-                  const showPlatformName =
-                    showPlatformNames && Boolean(platform) && seg.booking.nights >= 2 && seg.roundRight;
+                  const assignedCleanerName = isAssignedToCleaner
+                    ? (cleanerNameById?.[seg.booking.assigned_cleaner_id!] ?? "Cleaner")
+                    : null;
+                  // Which cleaner is on it is the most useful thing to show
+                  // an Owner/Manager at a glance, so it wins over the guest
+                  // name once assigned. The platform's color is already the
+                  // segment's background -- its name is only spelled out in
+                  // text as a last-resort fallback, never alongside it, so
+                  // it never shows twice on the same booking.
+                  const label = isOpenUnclaimed
+                    ? "Open"
+                    : (assignedCleanerName ?? (seg.booking.guests || platform?.name || ""));
                   return (
                     <div
                       role="button"
@@ -232,7 +224,7 @@ export default function MonthGrid({
                       title={
                         isClaimable
                           ? "Unassigned — check the box to claim this job"
-                          : `${seg.booking.guests || platform?.name || "Booking"} — ${seg.booking.checkin_date}, ${seg.booking.nights}n`
+                          : `${assignedCleanerName ?? (seg.booking.guests || platform?.name || "Booking")} — ${seg.booking.checkin_date}, ${seg.booking.nights}n`
                       }
                       onClick={(e) => {
                         e.stopPropagation();
@@ -258,16 +250,11 @@ export default function MonthGrid({
                       ) : null}
                       {isClaimable ? null : (
                         <span className="py-bar-label">
-                          {isAssignedToCleaner ? "🧹 " : ""}
+                          {assignedCleanerName ? "🧹 " : ""}
                           {needsConfirmation ? "? " : ""}
                           {label}
                         </span>
                       )}
-                      {/* Only when the segment has at least two day-columns
-                          to work with -- on a single day there's no room
-                          for a second word without either one getting
-                          clipped. */}
-                      {showPlatformName ? <span className="py-bar-platform">{platform!.name}</span> : null}
                     </div>
                   );
                 })}

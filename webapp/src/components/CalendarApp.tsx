@@ -467,6 +467,7 @@ export default function CalendarApp({
               }}
               viewerId={currentProfile.id}
               isStaffViewer={isStaffUser}
+              cleanerNameById={cleanerNameById}
             />
           ) : (
             <p className="photo-note">{noPropertiesMessage}</p>
@@ -482,6 +483,7 @@ export default function CalendarApp({
               showTitle={false}
               viewerId={currentProfile.id}
               isStaffViewer={isStaffUser}
+              cleanerNameById={cleanerNameById}
             />
           ) : (
             <p className="photo-note">{noPropertiesMessage}</p>
@@ -510,6 +512,7 @@ export default function CalendarApp({
             canCreate={isStaffUser}
             viewerId={currentProfile.id}
             isStaffViewer={isStaffUser}
+            cleanerNameById={cleanerNameById}
           />
         )}
       </main>
