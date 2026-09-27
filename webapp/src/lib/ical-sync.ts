@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { parseIcs } from "./ical";
-import { daysBetween, fromISO } from "./calendar-utils";
+import { checkoutDate, daysBetween, fromISO, isoDate } from "./calendar-utils";
 import { sendPushToUsers } from "./push";
 
 interface FeedRow {
@@ -52,7 +52,7 @@ export async function syncOneFeed(supabase: SupabaseClient, feed: FeedRow): Prom
     // (after upserting) to spot UIDs that dropped out of the feed.
     const { data: existing } = await supabase
       .from("bookings")
-      .select("id, external_uid, guests, checkin_date, assigned_cleaner_id")
+      .select("id, external_uid, guests, checkin_date, nights, assigned_cleaner_id")
       .eq("property_id", feed.property_id)
       .eq("source", "ical");
     const existingByUid = new Map((existing ?? []).map((b) => [b.external_uid, b]));
@@ -78,14 +78,22 @@ export async function syncOneFeed(supabase: SupabaseClient, feed: FeedRow): Prom
     }
 
     // A UID previously imported from this feed that's no longer present
-    // almost always means the guest cancelled -- deleted outright rather
-    // than left flagged for manual review, so a cancelled booking doesn't
-    // keep cluttering the calendar. Every Owner/Manager, plus whoever was
-    // assigned to it (if anyone), gets a push about it, since this is the
-    // one case where CleanCal removes a booking on its own rather than at
-    // someone's direct request.
+    // usually means the guest cancelled -- but OTA feeds also routinely
+    // drop stays that have already completed from their export window,
+    // which looks identical to a cancellation from here. Only treat it as
+    // a cancellation (and delete it) when the stay hasn't finished yet --
+    // a completed stay dropping out of the feed is expected housekeeping
+    // by the platform, not a signal to erase real history. Deleted outright
+    // rather than left flagged for manual review, so a cancelled booking
+    // doesn't keep cluttering the calendar. Every Owner/Manager, plus
+    // whoever was assigned to it (if anyone), gets a push about it, since
+    // this is the one case where CleanCal removes a booking on its own
+    // rather than at someone's direct request.
     const seen = new Set(events.map((e) => e.uid));
-    const nowMissing = (existing ?? []).filter((b) => b.external_uid && !seen.has(b.external_uid));
+    const todayIso = isoDate(new Date());
+    const nowMissing = (existing ?? []).filter(
+      (b) => b.external_uid && !seen.has(b.external_uid) && isoDate(checkoutDate(b)) > todayIso,
+    );
 
     if (nowMissing.length > 0) {
       const { error: deleteError } = await supabase
