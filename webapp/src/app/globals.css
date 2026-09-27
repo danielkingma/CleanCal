@@ -59,6 +59,13 @@ a {
   flex-wrap: wrap;
   gap: 12px;
 }
+.topbar-left,
+.topbar-right {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
 .brand {
   font-size: 21px;
   display: flex;

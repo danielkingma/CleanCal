@@ -265,6 +265,15 @@ export default function CalendarApp({
         </div>
 
         <div className="topbar-row">
+          {/* Grouped together (rather than left as direct space-between
+              children of topbar-row) so the property select appearing only
+              in Year/mobile-Month view -- inside topbar-right below --
+              never shifts where these controls sit. Previously all of
+              these were siblings under one space-between row, so adding or
+              removing that one element redistributed space across every
+              gap and nudged the Assigned/Completed and Week/Month/Year
+              pills sideways depending on which period was selected. */}
+          <div className="topbar-left">
           <div className="nav-controls">
             <button className="nav-btn" onClick={() => navigate(-1)} aria-label="Previous">
               ‹
@@ -321,6 +330,8 @@ export default function CalendarApp({
               </button>
             ))}
           </div>
+          </div>
+          <div className="topbar-right">
           {(derivedView === "year" || (isMobile && derivedView === "month")) && properties.length > 0 ? (
             <select
               className="year-property-select"
@@ -373,6 +384,7 @@ export default function CalendarApp({
             </Link>
             <NotificationsToggle className="dropdown-item" />
           </Dropdown>
+          </div>
         </div>
       </div>
 
