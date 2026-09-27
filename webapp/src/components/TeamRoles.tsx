@@ -35,33 +35,27 @@ export default function TeamRoles({ profiles, currentUserId }: TeamRolesProps) {
         day-to-day access but can&apos;t change roles or delete properties.
       </p>
       {error ? <div className="error-banner">{error}</div> : null}
-      <table className="feed-table">
-        <tbody>
-          {profiles.map((p) => (
-            <tr key={p.id}>
-              <td>{p.name || "(no name set)"}</td>
-              <td>
-                <select
-                  value={p.role}
-                  disabled={p.id === currentUserId || savingId === p.id}
-                  onChange={(e) => handleRoleChange(p.id, e.target.value as Role)}
-                >
-                  {ROLE_OPTIONS.map((r) => (
-                    <option key={r} value={r}>
-                      {r}
-                    </option>
-                  ))}
-                </select>
-              </td>
-              {p.id === currentUserId ? (
-                <td style={{ fontSize: 12.5, color: "var(--muted)" }}>You</td>
-              ) : (
-                <td />
-              )}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="team-role-list">
+        {profiles.map((p) => (
+          <div className="team-role-row" key={p.id}>
+            <span className="team-role-name">{p.name || "(no name set)"}</span>
+            <span className="team-role-controls">
+              <select
+                value={p.role}
+                disabled={p.id === currentUserId || savingId === p.id}
+                onChange={(e) => handleRoleChange(p.id, e.target.value as Role)}
+              >
+                {ROLE_OPTIONS.map((r) => (
+                  <option key={r} value={r}>
+                    {r}
+                  </option>
+                ))}
+              </select>
+              {p.id === currentUserId ? <span className="team-role-you">You</span> : null}
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

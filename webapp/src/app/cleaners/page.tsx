@@ -105,9 +105,19 @@ export default async function CleanersPage() {
 
           return (
             <div className="property-card" key={cleaner.id}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <h2 style={{ fontSize: 18, margin: 0 }}>{cleaner.name || "(no name set)"}</h2>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  flexWrap: "wrap",
+                  rowGap: 6,
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", rowGap: 6 }}>
+                  <h2 style={{ fontSize: 18, margin: 0, overflowWrap: "anywhere" }}>
+                    {cleaner.name || "(no name set)"}
+                  </h2>
                   {cleaner.identity_status === "verified" ? (
                     <span className="sync-pill ok">ID verified</span>
                   ) : cleaner.identity_status === "pending" ? (
