@@ -101,11 +101,26 @@ export async function proxy(request: NextRequest) {
   // of the app already follows, e.g. dashboard/page.tsx's isStaff check).
   const isOnboardingExempt = ONBOARDING_EXEMPT_PATHS.some((p) => path.startsWith(p));
   if (user && !isPublic && !isOnboardingExempt) {
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("organization_id, deactivated_at")
       .eq("id", user.id)
       .maybeSingle();
+
+    // Fail OPEN, not closed, on a query error (e.g. a migration this
+    // column depends on hasn't been applied to this database yet --
+    // deactivated_at needs 0026_remove_cleaner.sql). The old code below
+    // reads a missing `profile` exactly like "no organization_id" and
+    // redirects to /onboarding; /onboarding does its own (different,
+    // narrower) query, finds the real org fine, and redirects back to
+    // where the user came from -- which proxy.ts then bounces right back
+    // out of, forever. A real per-user "no org yet" case still gets
+    // caught below every other request once this query is actually
+    // succeeding again.
+    if (profileError) {
+      console.error("proxy: profile lookup failed, skipping org/deactivation checks:", profileError.message);
+      return response;
+    }
 
     // An Owner removed this cleaner from the team (Cleaners page ->
     // "Remove") -- see supabase/migrations/0026_remove_cleaner.sql for
