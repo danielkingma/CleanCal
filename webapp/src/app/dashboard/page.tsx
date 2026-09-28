@@ -84,16 +84,18 @@ export default async function DashboardPage() {
   return (
     <div>
       <div className="topbar">
-        <div className="brand">
-          <Logo />
-          Clean<span>Cal</span>
+        <div className="topbar-row">
+          <div className="brand">
+            <Logo />
+            Clean<span>Cal</span>
+          </div>
+          <SignOutButton />
         </div>
-        <div style={{ color: "var(--muted)", fontSize: 14 }}>Dashboard</div>
-        <div style={{ marginLeft: "auto", display: "flex", gap: 10, alignItems: "center" }}>
+        <div className="topbar-row">
+          <div style={{ color: "var(--muted)", fontSize: 14 }}>Dashboard</div>
           <Link href="/calendar" className="today-btn">
             ← Calendar
           </Link>
-          <SignOutButton />
         </div>
       </div>
 

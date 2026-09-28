@@ -74,22 +74,26 @@ export default function PropertiesAdmin({
   return (
     <div>
       <div className="topbar">
-        <div className="brand">
-          <Logo />
-          Clean<span>Cal</span>
-        </div>
-        <div style={{ color: "var(--muted)", fontSize: 14 }}>Properties</div>
-        <div style={{ marginLeft: "auto", display: "flex", gap: 10, alignItems: "center" }}>
-          {syncAllMessage ? (
-            <span style={{ fontSize: 13, color: "var(--muted)" }}>{syncAllMessage}</span>
-          ) : null}
-          <button className="today-btn" onClick={handleSyncAll} disabled={syncingAll}>
-            {syncingAll ? "Syncing…" : "Sync all feeds"}
-          </button>
-          <Link href="/calendar" className="today-btn">
-            ← Calendar
-          </Link>
+        <div className="topbar-row">
+          <div className="brand">
+            <Logo />
+            Clean<span>Cal</span>
+          </div>
           <SignOutButton />
+        </div>
+        <div className="topbar-row">
+          <div style={{ color: "var(--muted)", fontSize: 14 }}>Properties</div>
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            {syncAllMessage ? (
+              <span style={{ fontSize: 13, color: "var(--muted)" }}>{syncAllMessage}</span>
+            ) : null}
+            <button className="today-btn" onClick={handleSyncAll} disabled={syncingAll}>
+              {syncingAll ? "Syncing…" : "Sync all feeds"}
+            </button>
+            <Link href="/calendar" className="today-btn">
+              ← Calendar
+            </Link>
+          </div>
         </div>
       </div>
 

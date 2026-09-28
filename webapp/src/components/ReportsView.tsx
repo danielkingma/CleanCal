@@ -118,16 +118,18 @@ export default function ReportsView({ completed, properties, profiles }: Reports
   return (
     <div>
       <div className="topbar">
-        <div className="brand">
-          <Logo />
-          Clean<span>Cal</span>
+        <div className="topbar-row">
+          <div className="brand">
+            <Logo />
+            Clean<span>Cal</span>
+          </div>
+          <SignOutButton />
         </div>
-        <div style={{ color: "var(--muted)", fontSize: 14 }}>Reports</div>
-        <div style={{ marginLeft: "auto", display: "flex", gap: 10, alignItems: "center" }}>
+        <div className="topbar-row">
+          <div style={{ color: "var(--muted)", fontSize: 14 }}>Reports</div>
           <Link href="/calendar" className="today-btn">
             ← Calendar
           </Link>
-          <SignOutButton />
         </div>
       </div>
 
