@@ -14,6 +14,11 @@ export default function OnboardingForm({
 }) {
   const router = useRouter();
   const [name, setName] = useState("");
+  // Separate from `name` above (that one's the business name, used only
+  // in the create-a-business branch below) -- this is the person's own
+  // name, required so it never falls back to handle_new_user()'s
+  // email-derived default (see 0028_require_name_on_invite.sql for why).
+  const [joinName, setJoinName] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,11 +37,11 @@ export default function OnboardingForm({
   }
 
   async function handleJoin() {
-    if (!inviteToken) return;
+    if (!inviteToken || !joinName.trim()) return;
     setSaving(true);
     setError(null);
     try {
-      await redeemInvite(inviteToken);
+      await redeemInvite(inviteToken, joinName);
       router.push("/calendar");
       router.refresh();
     } catch (e) {
@@ -58,11 +63,24 @@ export default function OnboardingForm({
               <p className="auth-sub">
                 You&apos;ve been invited to join <strong>{inviteOrgName}</strong> on CleanCal.
               </p>
+              <div className="auth-form">
+                <div className="field">
+                  <label htmlFor="joinName">Your name</label>
+                  <input
+                    id="joinName"
+                    type="text"
+                    required
+                    placeholder="e.g. Alex Nguyen"
+                    value={joinName}
+                    onChange={(e) => setJoinName(e.target.value)}
+                  />
+                </div>
+              </div>
               <button
                 type="button"
                 className="btn btn-primary"
                 onClick={handleJoin}
-                disabled={saving}
+                disabled={saving || !joinName.trim()}
                 style={{ width: "100%" }}
               >
                 {saving ? "Joining…" : "Join"}

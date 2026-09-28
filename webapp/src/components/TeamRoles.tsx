@@ -9,9 +9,10 @@ const ROLE_OPTIONS: Role[] = ["owner", "manager", "cleaner"];
 interface TeamRolesProps {
   profiles: Profile[];
   currentUserId: string;
+  emailById: Record<string, string>;
 }
 
-export default function TeamRoles({ profiles, currentUserId }: TeamRolesProps) {
+export default function TeamRoles({ profiles, currentUserId, emailById }: TeamRolesProps) {
   const [savingId, setSavingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,7 +39,12 @@ export default function TeamRoles({ profiles, currentUserId }: TeamRolesProps) {
       <div className="team-role-list">
         {profiles.map((p) => (
           <div className="team-role-row" key={p.id}>
-            <span className="team-role-name">{p.name || "(no name set)"}</span>
+            <span className="team-role-name">
+              {p.name || "(no name set)"}
+              {emailById[p.id] ? (
+                <span style={{ fontWeight: 400, color: "var(--muted)", marginLeft: 8 }}>{emailById[p.id]}</span>
+              ) : null}
+            </span>
             <span className="team-role-controls">
               <select
                 value={p.role}

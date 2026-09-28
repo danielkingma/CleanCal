@@ -42,7 +42,11 @@ async function notifyAssignment(
     // Staff creating/editing this booking is always admin, so profiles
     // RLS (profiles_select_own_or_admin) already lets this read every
     // cleaner's id directly -- no RPC needed.
-    const { data: cleanerProfiles } = await supabase.from("profiles").select("id").eq("role", "cleaner");
+    const { data: cleanerProfiles } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("role", "cleaner")
+      .is("deactivated_at", null);
     const ids = (cleanerProfiles ?? []).map((p) => p.id as string);
     await notifyUsers(ids, {
       title: "New open job posted",

@@ -38,7 +38,11 @@ export default async function DashboardPage() {
     );
   const bookings = (bookingsData ?? []) as Booking[];
 
-  const { data: cleanersData } = await supabase.from("profiles").select("id").eq("role", "cleaner");
+  const { data: cleanersData } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("role", "cleaner")
+    .is("deactivated_at", null);
   const cleanerCount = (cleanersData ?? []).length;
 
   const today = new Date();

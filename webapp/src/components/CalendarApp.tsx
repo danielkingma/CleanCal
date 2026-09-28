@@ -37,7 +37,6 @@ const OTHER_PLATFORM_COLOR = "#5B6560";
 
 interface CalendarAppProps {
   currentProfile: Profile;
-  currentUserEmail: string;
   properties: Property[];
   initialBookings: Booking[];
   cleaners: Profile[];
@@ -57,7 +56,6 @@ interface ModalState {
 
 export default function CalendarApp({
   currentProfile,
-  currentUserEmail,
   properties,
   initialBookings,
   cleaners,
@@ -265,7 +263,7 @@ export default function CalendarApp({
         <div className="topbar-row">
           <div className="user-badge">
             <span className="role-pill">{currentProfile.role}</span>
-            <span>{currentUserEmail}</span>
+            <span>{currentProfile.name || "(no name set)"}</span>
           </div>
         </div>
 

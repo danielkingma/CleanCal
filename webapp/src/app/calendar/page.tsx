@@ -62,6 +62,7 @@ export default async function CalendarPage() {
       .from("profiles")
       .select("id, name, role, stripe_connect_status")
       .eq("role", "cleaner")
+      .is("deactivated_at", null)
       .order("name");
     cleaners = data ?? [];
 
@@ -121,7 +122,6 @@ export default async function CalendarPage() {
       ) : null}
       <CalendarApp
         currentProfile={currentProfile}
-        currentUserEmail={user.email ?? ""}
         properties={properties as Property[]}
         initialBookings={(bookings ?? []) as Booking[]}
         cleaners={cleaners}

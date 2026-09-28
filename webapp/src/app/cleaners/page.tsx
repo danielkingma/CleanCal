@@ -53,9 +53,25 @@ export default async function CleanersPage() {
     : { data: null };
 
   let allProfiles: Profile[] = [];
+  // Owner-only (see org_member_emails, 0027_org_member_emails.sql) -- a
+  // profiles.name that defaults to an email's local part at signup
+  // (handle_new_user, 0001_init.sql) can look like a name and not be
+  // one, so the page shows the real email address too rather than
+  // leaving an owner to guess whether "smsf.kingma" is someone's actual
+  // name or just a not-yet-personalized account.
+  let emailById: Record<string, string> = {};
   if (isOwner) {
-    const { data } = await supabase.from("profiles").select("id, name, role").order("name");
+    const { data } = await supabase
+      .from("profiles")
+      .select("id, name, role")
+      .is("deactivated_at", null)
+      .order("name");
     allProfiles = data ?? [];
+
+    const { data: emailRows } = await supabase.rpc("org_member_emails");
+    emailById = Object.fromEntries(
+      ((emailRows as { id: string; email: string }[] | null) ?? []).map((r) => [r.id, r.email]),
+    );
   }
 
   const { data: ratedBookings } = await supabase
@@ -104,7 +120,7 @@ export default async function CleanersPage() {
       <main>
         <InviteLink isOwner={isOwner} organizationName={organizationName} />
 
-        {isOwner ? <TeamRoles profiles={allProfiles} currentUserId={user.id} /> : null}
+        {isOwner ? <TeamRoles profiles={allProfiles} currentUserId={user.id} emailById={emailById} /> : null}
 
         {(cleaners ?? []).length === 0 ? (
           <p className="photo-note" style={{ maxWidth: 760 }}>
@@ -132,6 +148,9 @@ export default async function CleanersPage() {
                   <h2 style={{ fontSize: 18, margin: 0, overflowWrap: "anywhere" }}>
                     {cleaner.name || "(no name set)"}
                   </h2>
+                  {isOwner && emailById[cleaner.id] ? (
+                    <span style={{ fontSize: 12.5, color: "var(--muted)" }}>{emailById[cleaner.id]}</span>
+                  ) : null}
                   {cleaner.identity_status === "verified" ? (
                     <span className="sync-pill ok">ID verified</span>
                   ) : cleaner.identity_status === "pending" ? (
@@ -192,7 +211,14 @@ export default async function CleanersPage() {
                 }}
               >
                 <div>
-                  <div style={{ fontWeight: 500 }}>{cleaner.name || "(no name set)"}</div>
+                  <div style={{ fontWeight: 500 }}>
+                    {cleaner.name || "(no name set)"}
+                    {emailById[cleaner.id] ? (
+                      <span style={{ fontWeight: 400, color: "var(--muted)", marginLeft: 8 }}>
+                        {emailById[cleaner.id]}
+                      </span>
+                    ) : null}
+                  </div>
                   <div style={{ fontSize: 12.5, color: "var(--muted)" }}>
                     Removed {new Date(cleaner.deactivated_at as string).toLocaleDateString()}
                   </div>

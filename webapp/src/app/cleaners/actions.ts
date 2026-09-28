@@ -101,7 +101,11 @@ export async function removeCleaner(userId: string) {
   revalidatePath("/calendar");
 
   if (upcoming && upcoming.length > 0) {
-    const { data: cleanerProfiles } = await supabase.from("profiles").select("id").eq("role", "cleaner");
+    const { data: cleanerProfiles } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("role", "cleaner")
+      .is("deactivated_at", null);
     const ids = (cleanerProfiles ?? []).map((p) => p.id as string).filter((id) => id !== userId);
     await notifyUsers(ids, {
       title: `${upcoming.length} job${upcoming.length > 1 ? "s" : ""} back on the open board`,

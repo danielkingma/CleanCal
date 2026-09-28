@@ -13,9 +13,9 @@ export async function createOrganization(name: string) {
   revalidatePath("/", "layout");
 }
 
-export async function redeemInvite(token: string) {
+export async function redeemInvite(token: string, name: string) {
   const supabase = await createClient();
-  const { error } = await supabase.rpc("redeem_invite", { p_token: token });
+  const { error } = await supabase.rpc("redeem_invite", { p_token: token, p_name: name });
   if (error) throw new Error(error.message);
   revalidatePath("/", "layout");
 }
