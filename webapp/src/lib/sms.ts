@@ -11,6 +11,14 @@ function configured(): boolean {
   return Boolean(TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN && TWILIO_FROM_NUMBER);
 }
 
+// Exported so the Profile page (a server component, the only place that
+// can see non-NEXT_PUBLIC_ env vars) can decide whether to show the SMS
+// opt-in checkbox at all -- before Twilio is configured, offering a
+// checkbox that silently does nothing is worse than not showing it.
+export function smsConfigured(): boolean {
+  return configured();
+}
+
 // The `phone` field on Profile is free text a person typed into
 // ProfileForm.tsx, almost always as a local AU mobile ("04xx xxx xxx")
 // rather than E.164 -- Twilio requires E.164. This is a best-guess AU

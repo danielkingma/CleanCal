@@ -6,7 +6,15 @@ import { startConnectOnboarding, startIdentityVerification, updateOwnProfile } f
 import Logo from "./Logo";
 import type { Profile } from "@/lib/types";
 
-export default function ProfileForm({ profile, email }: { profile: Profile; email: string }) {
+export default function ProfileForm({
+  profile,
+  email,
+  smsAvailable,
+}: {
+  profile: Profile;
+  email: string;
+  smsAvailable: boolean;
+}) {
   const [name, setName] = useState(profile.name);
   const [bio, setBio] = useState(profile.bio ?? "");
   const [phone, setPhone] = useState(profile.phone ?? "");
@@ -94,18 +102,20 @@ export default function ProfileForm({ profile, email }: { profile: Profile; emai
               placeholder="For admins/clients to reach you"
               onChange={(e) => setPhone(e.target.value)}
             />
-            <label
-              htmlFor="pSmsOptIn"
-              style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, fontWeight: 400 }}
-            >
-              <input
-                id="pSmsOptIn"
-                type="checkbox"
-                checked={smsOptIn}
-                onChange={(e) => setSmsOptIn(e.target.checked)}
-              />
-              Also text me booking/job alerts (standard SMS rates may apply)
-            </label>
+            {smsAvailable ? (
+              <label
+                htmlFor="pSmsOptIn"
+                style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, fontWeight: 400 }}
+              >
+                <input
+                  id="pSmsOptIn"
+                  type="checkbox"
+                  checked={smsOptIn}
+                  onChange={(e) => setSmsOptIn(e.target.checked)}
+                />
+                Also text me booking/job alerts (standard SMS rates may apply)
+              </label>
+            ) : null}
           </div>
 
           <div className="field">
