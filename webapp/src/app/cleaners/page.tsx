@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import InviteLink from "@/components/InviteLink";
 import Logo from "@/components/Logo";
 import TeamRoles from "@/components/TeamRoles";
+import { RemoveCleanerButton, RestoreCleanerButton } from "@/components/CleanerRemoval";
 import { isStaff, type Profile } from "@/lib/types";
 
 export default async function CleanersPage() {
@@ -34,9 +35,22 @@ export default async function CleanersPage() {
 
   const { data: cleaners } = await supabase
     .from("profiles")
-    .select("id, name, bio, phone, service_area, identity_status, stripe_connect_status")
+    .select("id, name, bio, phone, service_area, identity_status, stripe_connect_status, deactivated_at")
     .eq("role", "cleaner")
+    .is("deactivated_at", null)
     .order("name");
+
+  // Kept out of the main list, but still visible (owner-only, see below)
+  // so a removal made by mistake is a click to undo, not a support
+  // ticket -- see removeCleaner/restoreCleaner in cleaners/actions.ts.
+  const { data: removedCleaners } = isOwner
+    ? await supabase
+        .from("profiles")
+        .select("id, name, deactivated_at")
+        .eq("role", "cleaner")
+        .not("deactivated_at", "is", null)
+        .order("deactivated_at", { ascending: false })
+    : { data: null };
 
   let allProfiles: Profile[] = [];
   if (isOwner) {
@@ -152,9 +166,42 @@ export default async function CleanersPage() {
                       .join(", ")}${upcomingOff.length > 5 ? ` +${upcomingOff.length - 5} more` : ""}`
                   : "No upcoming unavailable dates"}
               </p>
+              {isOwner ? <RemoveCleanerButton cleanerId={cleaner.id} cleanerName={cleaner.name} /> : null}
             </div>
           );
         })}
+
+        {isOwner && removedCleaners && removedCleaners.length > 0 ? (
+          <div className="property-card" style={{ marginTop: 16 }}>
+            <h2 style={{ fontSize: 16, margin: "0 0 4px" }}>Removed cleaners</h2>
+            <p style={{ fontSize: 13, color: "var(--muted)", margin: "0 0 12px" }}>
+              No longer able to sign in. Their past bookings, ratings, and payout history are
+              untouched.
+            </p>
+            {removedCleaners.map((cleaner) => (
+              <div
+                key={cleaner.id}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  flexWrap: "wrap",
+                  rowGap: 8,
+                  padding: "10px 0",
+                  borderTop: "1px solid var(--line)",
+                }}
+              >
+                <div>
+                  <div style={{ fontWeight: 500 }}>{cleaner.name || "(no name set)"}</div>
+                  <div style={{ fontSize: 12.5, color: "var(--muted)" }}>
+                    Removed {new Date(cleaner.deactivated_at as string).toLocaleDateString()}
+                  </div>
+                </div>
+                <RestoreCleanerButton cleanerId={cleaner.id} />
+              </div>
+            ))}
+          </div>
+        ) : null}
       </main>
     </div>
   );

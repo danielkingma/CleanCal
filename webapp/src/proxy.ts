@@ -103,9 +103,23 @@ export async function proxy(request: NextRequest) {
   if (user && !isPublic && !isOnboardingExempt) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("organization_id")
+      .select("organization_id, deactivated_at")
       .eq("id", user.id)
       .maybeSingle();
+
+    // An Owner removed this cleaner from the team (Cleaners page ->
+    // "Remove") -- see supabase/migrations/0026_remove_cleaner.sql for
+    // why that's a flag rather than actually deleting their row/auth
+    // user. Sign them out here so the next request everywhere else in
+    // this file just sees "no user" -- same dead end as a wrong
+    // password, not a page explaining why.
+    if (profile?.deactivated_at) {
+      await supabase.auth.signOut();
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      return NextResponse.redirect(url);
+    }
+
     if (!profile?.organization_id) {
       const url = request.nextUrl.clone();
       url.pathname = "/onboarding";

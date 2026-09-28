@@ -26,6 +26,7 @@ export interface Profile {
   service_area?: string;
   identity_status?: IdentityStatus;
   stripe_connect_status?: ConnectStatus;
+  deactivated_at?: string | null;
 }
 
 export interface CleanerRating {
