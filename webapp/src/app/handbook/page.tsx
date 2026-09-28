@@ -497,18 +497,22 @@ export default function HandbookPage() {
 
             <section className="hb-section" id="pricing">
               <h2>Pricing</h2>
-              <p>CleanCal&apos;s planned pricing scales with the number of properties on your account:</p>
+              <p>
+                CleanCal&apos;s planned pricing scales with the number of properties on your
+                account, but every tier starts with the same free first month, however many
+                properties you run:
+              </p>
               <div className="hb-table-wrap">
                 <table>
                   <tbody>
                     <tr><th>Properties</th><th>Price</th></tr>
-                    <tr><td>1 – 3</td><td>Free for 6 months, then $5/property/month</td></tr>
-                    <tr><td>4 – 15</td><td>$5 per property/month</td></tr>
-                    <tr><td>16 – 50</td><td>$150/month (flat)</td></tr>
-                    <tr><td>51 – 100</td><td>$250/month (flat)</td></tr>
-                    <tr><td>101 – 200</td><td>$350/month (flat)</td></tr>
-                    <tr><td>201 – 500</td><td>$500/month (flat)</td></tr>
-                    <tr><td>500+</td><td>Custom enterprise pricing</td></tr>
+                    <tr><td>1 – 3</td><td>Free for 1 month, then $5/property/month</td></tr>
+                    <tr><td>4 – 15</td><td>Free for 1 month, then $5 per property/month</td></tr>
+                    <tr><td>16 – 50</td><td>Free for 1 month, then $150/month (flat)</td></tr>
+                    <tr><td>51 – 100</td><td>Free for 1 month, then $250/month (flat)</td></tr>
+                    <tr><td>101 – 200</td><td>Free for 1 month, then $350/month (flat)</td></tr>
+                    <tr><td>201 – 500</td><td>Free for 1 month, then $500/month (flat)</td></tr>
+                    <tr><td>500+</td><td>Free for 1 month, then custom enterprise pricing</td></tr>
                   </tbody>
                 </table>
               </div>
