@@ -51,6 +51,12 @@ a {
   padding: 16px 24px;
   border-bottom: 1px solid var(--line);
   background: var(--white);
+  /* Sticky, not just top-of-page: on a long list (history, reports,
+     cleaners) the topbar would otherwise scroll away with everything
+     else, taking Sign out with it. Same treatment as .landing-nav below. */
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 .topbar-row {
   display: flex;
