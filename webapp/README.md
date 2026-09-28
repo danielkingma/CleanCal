@@ -673,6 +673,50 @@ are ported 1:1 from the old artifact, scoped under a `.hb-page` class in
 other page. Updating the handbook from here on means editing this file
 directly, not republishing an external artifact.
 
+## SMS notifications (slice 21)
+
+Push notifications (slice 12) only reach a phone that has the PWA
+installed and notifications enabled in the browser -- fine for a cleaner
+who lives in the app, less reliable for an owner/manager who mostly
+ignores it, or anyone who hasn't set push up yet. SMS is the same set of
+events, delivered as a plain text instead, for anyone who opts in.
+
+The `phone` field already existed on Profile (added in slice 2 for
+admins/clients to reach a cleaner); this adds a separate `sms_opt_in`
+checkbox next to it (`supabase/migrations/0025_sms_notifications.sql`)
+-- having a phone number on file never implied consent to text it, so
+opting in is a deliberate, off-by-default action on the Profile page.
+
+Sending goes through Twilio's REST API directly (`src/lib/sms.ts`) --
+no SDK, just one authenticated POST per text -- and every call site that
+used to call `sendPushToUsers` (`src/lib/push.ts`) directly now calls
+`notifyUsers` (`src/lib/notify.ts`) instead, which fans the same event
+out to both push and SMS. So SMS covers exactly the same moments push
+already did:
+
+- A job is directly assigned, or posted to the open board.
+- A cleaner declines an assigned job, or confirms/claims one.
+- A dispute message is posted.
+- A cleaning gets rated.
+
+Same best-effort posture as push: no Twilio credentials, no opt-in, or
+an unparseable phone number and it's silently skipped rather than
+surfacing an error to whoever triggered the notification. The phone
+number is free text (someone typed "04xx xxx xxx" into ProfileForm), so
+`sms.ts` does a best-guess normalization to E.164 for Australian mobile
+numbers specifically -- see the comment there if CleanCal ever needs to
+support numbers from other countries.
+
+SMS is entirely optional -- without the `TWILIO_*` env vars set (see
+`.env.local.example`), the opt-in checkbox is harmless and nothing gets
+sent. To turn it on: sign up at twilio.com, verify your business (needed
+before you can buy an Australian number -- budget a day or two), buy a
+number under **Phone Numbers → Manage → Buy a number**, then copy your
+Account SID, Auth Token, and that number into `.env.local` (or your
+Vercel project's env vars). Twilio bills per SMS segment sent (a few
+cents each) plus a small monthly fee for the number -- there's no
+CleanCal-side cost beyond that.
+
 ## Backlog
 
 Waiting on something outside this repo before there's anything to build:
@@ -729,7 +773,9 @@ Fill in `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 from your project's **Settings → API** page. Push notifications are
 optional — see the commented-out `VAPID_*` block in
 `.env.local.example` if you want the "Enable notifications" button to
-appear.
+appear. SMS notifications are optional too — see the commented-out
+`TWILIO_*` block if you want the "Also text me booking/job alerts"
+checkbox on the Profile page to actually send anything.
 
 ### 4. Sign in and create your business
 

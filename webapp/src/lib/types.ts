@@ -22,6 +22,7 @@ export interface Profile {
   role: Role;
   bio?: string;
   phone?: string;
+  sms_opt_in?: boolean;
   service_area?: string;
   identity_status?: IdentityStatus;
   stripe_connect_status?: ConnectStatus;

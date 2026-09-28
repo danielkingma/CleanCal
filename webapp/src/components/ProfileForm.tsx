@@ -10,6 +10,7 @@ export default function ProfileForm({ profile, email }: { profile: Profile; emai
   const [name, setName] = useState(profile.name);
   const [bio, setBio] = useState(profile.bio ?? "");
   const [phone, setPhone] = useState(profile.phone ?? "");
+  const [smsOptIn, setSmsOptIn] = useState(profile.sms_opt_in ?? false);
   const [serviceArea, setServiceArea] = useState(profile.service_area ?? "");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -24,7 +25,7 @@ export default function ProfileForm({ profile, email }: { profile: Profile; emai
     setSaved(false);
     setError(null);
     try {
-      await updateOwnProfile(name, bio, phone, serviceArea);
+      await updateOwnProfile(name, bio, phone, serviceArea, smsOptIn);
       setSaved(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Couldn't save.");
@@ -93,6 +94,18 @@ export default function ProfileForm({ profile, email }: { profile: Profile; emai
               placeholder="For admins/clients to reach you"
               onChange={(e) => setPhone(e.target.value)}
             />
+            <label
+              htmlFor="pSmsOptIn"
+              style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, fontWeight: 400 }}
+            >
+              <input
+                id="pSmsOptIn"
+                type="checkbox"
+                checked={smsOptIn}
+                onChange={(e) => setSmsOptIn(e.target.checked)}
+              />
+              Also text me booking/job alerts (standard SMS rates may apply)
+            </label>
           </div>
 
           <div className="field">

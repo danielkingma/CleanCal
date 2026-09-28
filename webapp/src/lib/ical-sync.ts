@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { parseIcs } from "./ical";
 import { checkoutDate, daysBetween, fromISO, isoDate } from "./calendar-utils";
-import { sendPushToUsers } from "./push";
+import { notifyUsers } from "./notify";
 
 interface FeedRow {
   id: string;
@@ -144,7 +144,7 @@ export async function syncOneFeed(supabase: SupabaseClient, feed: FeedRow): Prom
       for (const b of confirmedMissing) {
         const recipients = new Set<string>((staffIds as string[] | null) ?? []);
         if (b.assigned_cleaner_id) recipients.add(b.assigned_cleaner_id);
-        await sendPushToUsers(Array.from(recipients), {
+        await notifyUsers(Array.from(recipients), {
           title: "A booking was removed",
           body: `${property?.name ?? "A property"} — check-in ${new Date(b.checkin_date).toLocaleDateString()} disappeared from its source calendar and was deleted.`,
           url: "/calendar",

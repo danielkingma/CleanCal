@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { sendPushToUsers } from "@/lib/push";
+import { notifyUsers } from "@/lib/notify";
 import { getStripe } from "@/lib/stripe";
 import type { BookingStatus, Checklist } from "@/lib/types";
 
@@ -24,7 +24,7 @@ type SupabaseServer = Awaited<ReturnType<typeof createClient>>;
 
 // Push a heads-up about a new/changed assignment. Only ever called after
 // the write it describes has already succeeded -- a failure here is
-// swallowed inside sendPushToUsers, never surfaced to the admin saving
+// swallowed inside notifyUsers (push.ts/sms.ts), never surfaced to the admin saving
 // the booking.
 async function notifyAssignment(
   supabase: SupabaseServer,
@@ -44,13 +44,13 @@ async function notifyAssignment(
     // cleaner's id directly -- no RPC needed.
     const { data: cleanerProfiles } = await supabase.from("profiles").select("id").eq("role", "cleaner");
     const ids = (cleanerProfiles ?? []).map((p) => p.id as string);
-    await sendPushToUsers(ids, {
+    await notifyUsers(ids, {
       title: "New open job posted",
       body: `${propertyName} — check-in ${when}. First to claim it gets it.`,
       url: "/calendar",
     });
   } else if (input.assigned_cleaner_id) {
-    await sendPushToUsers([input.assigned_cleaner_id], {
+    await notifyUsers([input.assigned_cleaner_id], {
       title: "New job assigned to you",
       body: `${propertyName} — check-in ${when}.`,
       url: "/calendar",
@@ -119,7 +119,7 @@ export async function rateBooking(id: string, rating: number, comment: string) {
   revalidatePath("/cleaners");
 
   if (booking?.assigned_cleaner_id) {
-    await sendPushToUsers([booking.assigned_cleaner_id], {
+    await notifyUsers([booking.assigned_cleaner_id], {
       title: "You got a new rating",
       body: `★ ${rating}${comment ? ` — ${comment}` : ""}`,
       url: "/history",
@@ -170,7 +170,7 @@ export async function declineAssignedBooking(id: string) {
       .select("name")
       .eq("id", booking.property_id)
       .maybeSingle();
-    await sendPushToUsers((staffIds as string[] | null) ?? [], {
+    await notifyUsers((staffIds as string[] | null) ?? [], {
       title: "Job declined",
       body: `${property?.name ?? "A booking"} — check-in ${new Date(booking.checkin_date).toLocaleDateString()} is back on the open board.`,
       url: "/calendar",
@@ -201,7 +201,7 @@ export async function confirmAssignedBooking(id: string) {
       .select("name")
       .eq("id", booking.property_id)
       .maybeSingle();
-    await sendPushToUsers((staffIds as string[] | null) ?? [], {
+    await notifyUsers((staffIds as string[] | null) ?? [], {
       title: "Job confirmed",
       body: `${property?.name ?? "A booking"} — check-in ${new Date(booking.checkin_date).toLocaleDateString()} was confirmed by the assigned cleaner.`,
       url: "/calendar",
@@ -234,7 +234,7 @@ export async function claimUnassignedBooking(id: string) {
       .select("name")
       .eq("id", booking.property_id)
       .maybeSingle();
-    await sendPushToUsers((staffIds as string[] | null) ?? [], {
+    await notifyUsers((staffIds as string[] | null) ?? [], {
       title: "A job was claimed",
       body: `${property?.name ?? "A booking"} — check-in ${new Date(booking.checkin_date).toLocaleDateString()} was claimed by a cleaner.`,
       url: "/calendar",
@@ -283,9 +283,9 @@ export async function postDisputeMessage(bookingId: string, body: string) {
     };
     if (authorProfile?.role === "cleaner") {
       const { data: staffIds } = await supabase.rpc("staff_user_ids");
-      await sendPushToUsers((staffIds as string[] | null) ?? [], payload);
+      await notifyUsers((staffIds as string[] | null) ?? [], payload);
     } else if (booking.assigned_cleaner_id) {
-      await sendPushToUsers([booking.assigned_cleaner_id], payload);
+      await notifyUsers([booking.assigned_cleaner_id], payload);
     }
   }
 }
