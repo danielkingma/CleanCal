@@ -2417,3 +2417,140 @@ main {
     padding: 76px 20px 80px;
   }
 }
+
+/* Device mockups (DeviceShowcase.tsx) -- CSS-only phone/monitor frames
+   around a real screenshot, no image-processing dependency. */
+.device-showcase {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 56px;
+  flex-wrap: wrap;
+  margin: 32px 0;
+}
+.device-fig {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.device-fig figcaption {
+  margin-top: 14px;
+  font-size: 12.5px;
+  color: var(--muted);
+  text-align: center;
+  max-width: 260px;
+}
+
+/* Monitor */
+.monitor-frame {
+  width: 420px;
+  max-width: 62vw;
+  aspect-ratio: 16 / 10;
+  background: #1b1b1d;
+  border-radius: 14px;
+  padding: 14px 14px 20px;
+  box-shadow: 0 24px 50px -20px rgba(20, 35, 31, 0.45);
+  position: relative;
+}
+.monitor-camera {
+  position: absolute;
+  top: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #3a3a3d;
+}
+.monitor-screen {
+  width: 100%;
+  height: 100%;
+  border-radius: 3px;
+  overflow: hidden;
+  background: var(--paper);
+}
+.monitor-screen img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+}
+.monitor-stand-neck {
+  width: 22px;
+  height: 34px;
+  background: linear-gradient(#2a2a2c, #19191b);
+  margin: 0 auto;
+}
+.monitor-stand-base {
+  width: 140px;
+  height: 10px;
+  border-radius: 6px;
+  background: linear-gradient(#2a2a2c, #19191b);
+  margin: 0 auto;
+}
+
+/* Phone (Samsung Galaxy S25 Ultra proportions -- tall 19.5:9 screen,
+   slim bezel, centered punch-hole camera, right-edge buttons). */
+.phone-frame {
+  position: relative;
+  width: 190px;
+  max-width: 46vw;
+  aspect-ratio: 9 / 19.5;
+  background: #101012;
+  border-radius: 34px;
+  padding: 10px;
+  box-shadow: 0 24px 50px -18px rgba(20, 35, 31, 0.5);
+}
+.phone-camera {
+  position: absolute;
+  top: 19px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #26262a;
+  z-index: 2;
+}
+.phone-screen {
+  width: 100%;
+  height: 100%;
+  border-radius: 24px;
+  overflow: hidden;
+  background: var(--paper);
+}
+.phone-screen img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+}
+.phone-side-btn {
+  position: absolute;
+  right: -2px;
+  width: 3px;
+  border-radius: 2px;
+  background: #101012;
+}
+.phone-side-btn-vol {
+  top: 26%;
+  height: 8%;
+}
+.phone-side-btn-power {
+  top: 36%;
+  height: 6%;
+}
+@media (max-width: 640px) {
+  .device-showcase {
+    gap: 28px;
+  }
+  .monitor-frame {
+    max-width: 78vw;
+  }
+  .phone-frame {
+    max-width: 40vw;
+  }
+}

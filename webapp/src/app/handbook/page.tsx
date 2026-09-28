@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Logo from "@/components/Logo";
+import DeviceShowcase from "@/components/DeviceShowcase";
 
 // Ported from the standalone claude.ai Handbook artifact into the app
 // itself -- that link required viewers to be signed into (and shared
@@ -70,6 +71,14 @@ export default function HandbookPage() {
                 sidebar for what you need, or read straight through if you&apos;re setting up
                 for the first time.
               </p>
+              <DeviceShowcase
+                monitorSrc="/handbook/calendar-example.png"
+                monitorAlt="The CleanCal calendar, month view, open in a desktop browser"
+                monitorCaption="On desktop -- the full portfolio calendar."
+                phoneSrc="/handbook/calendar-example.png"
+                phoneAlt="The CleanCal calendar as installed on a phone"
+                phoneCaption="Installed on a phone -- same calendar, built for one hand."
+              />
             </div>
 
             <section className="hb-section" id="welcome">
@@ -430,14 +439,41 @@ export default function HandbookPage() {
             <section className="hb-section" id="mobile">
               <h2>Mobile app &amp; notifications</h2>
               <p>
-                CleanCal installs like a native app: open it in your phone&apos;s browser and use
-                &quot;Add to Home Screen&quot; (or the browser&apos;s own install prompt) to get a
-                home-screen icon that launches full-screen, no browser bar.
+                CleanCal isn&apos;t in the App Store or Google Play — it installs straight from
+                your phone&apos;s browser instead, as a Progressive Web App (PWA). That means one
+                fewer download to manage and updates that land instantly, with no app-store review
+                to wait on. Once installed, it looks and behaves like any other app: its own
+                home-screen icon, its own app-switcher entry, and a full-screen window with no
+                browser address bar.
               </p>
+              <h3>Installing on iPhone (Safari)</h3>
+              <ol className="hb-step-list">
+                <li>Open <span className="hb-kbd-chip">cleancal.net</span> in Safari — the install prompt only appears in Safari, not Chrome or another browser on iOS.</li>
+                <li>Tap the Share icon (the square with an arrow pointing up) in the bottom toolbar.</li>
+                <li>Scroll down and tap <span className="hb-kbd-chip">Add to Home Screen</span>.</li>
+                <li>Tap <span className="hb-kbd-chip">Add</span> in the top-right corner — the CleanCal icon appears on your home screen right away.</li>
+              </ol>
+              <h3>Installing on Android (Chrome)</h3>
+              <ol className="hb-step-list">
+                <li>Open <span className="hb-kbd-chip">cleancal.net</span> in Chrome.</li>
+                <li>
+                  Tap <span className="hb-kbd-chip">Install app</span> if Chrome offers it directly
+                  (usually as a banner or an icon in the address bar) — otherwise open the ⋮ menu
+                  in the top-right and tap <span className="hb-kbd-chip">Add to Home screen</span>{" "}
+                  or <span className="hb-kbd-chip">Install app</span>.
+                </li>
+                <li>Confirm by tapping <span className="hb-kbd-chip">Install</span> (or <span className="hb-kbd-chip">Add</span>) on the prompt that appears.</li>
+              </ol>
+              <div className="hb-callout">
+                <strong>Already signed in stays signed in</strong>
+                Installing doesn&apos;t start you over — open the installed icon and you&apos;ll
+                land right back on your calendar, still signed in from the browser.
+              </div>
               <p>
                 From Menu → &quot;Enable notifications,&quot; you can get a push alert straight to
                 your phone when: a job is assigned or posted open, a cleaner declines a job, a
-                dispute message is posted, or a cleaning gets rated.
+                dispute message is posted, or a cleaning gets rated. Turn this on from inside the
+                installed app for the most reliable delivery.
               </p>
             </section>
 

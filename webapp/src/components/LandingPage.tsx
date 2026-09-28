@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Logo from "./Logo";
+import DeviceShowcase from "./DeviceShowcase";
 
 const FEATURES = [
   {
@@ -85,6 +86,14 @@ export default function LandingPage() {
             </Link>
           </div>
           <p className="landing-hero-note">No credit card required to start.</p>
+          <DeviceShowcase
+            monitorSrc="/handbook/calendar-example.png"
+            monitorAlt="The CleanCal calendar, month view, open in a desktop browser"
+            monitorCaption="Run the whole portfolio from a desktop browser."
+            phoneSrc="/handbook/calendar-example.png"
+            phoneAlt="CleanCal installed on a phone"
+            phoneCaption="Installs right onto a phone's home screen -- no app store."
+          />
         </section>
 
         <section className="landing-features" id="features">
