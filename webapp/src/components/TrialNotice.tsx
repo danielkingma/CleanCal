@@ -70,10 +70,10 @@ export default function TrialNotice({ trialEndsAt }: { trialEndsAt: string | nul
     <div className={`trial-notice${ended ? " ended" : ""}`}>
       <span>
         {ended
-          ? "Your free trial period has ended. Billing isn't turned on yet, so nothing has been charged -- but plan to add a payment method soon."
+          ? "Your free trial period has ended. Billing isn't turned on yet, so nothing has been charged -- but pricing is coming soon, so plan to add a payment method."
           : daysRemaining === 0
-            ? "Your free trial ends today. Billing isn't turned on yet, so nothing will be charged automatically -- but plan to add a payment method soon."
-            : `Your free trial ends in ${daysRemaining} day${daysRemaining === 1 ? "" : "s"}. Billing isn't turned on yet, so nothing will be charged automatically -- but plan to add a payment method soon.`}
+            ? "Your free trial ends today. Billing isn't turned on yet, so nothing will be charged automatically -- but pricing is coming soon, so enjoy full access for free while it lasts."
+            : `Your free trial ends in ${daysRemaining} day${daysRemaining === 1 ? "" : "s"}. Billing isn't turned on yet, so nothing will be charged automatically -- but pricing is coming soon, so enjoy full access for free while it lasts.`}
       </span>
       <button type="button" className="trial-notice-dismiss" onClick={handleDismiss} aria-label="Dismiss">
         ✕

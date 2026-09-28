@@ -121,8 +121,8 @@ export default function LandingPage() {
           <h2 className="landing-section-title">Your first 3 properties, free for 6 months</h2>
           <p className="landing-pricing-sub">
             No credit card required to start. After your first 3 properties, pricing scales with
-            how many properties you run -- never per booking, never per cleaner. (We&apos;re still
-            finishing our billing rollout, so nothing is charged automatically yet.)
+            how many properties you run -- never per booking, never per cleaner. Billing is
+            coming soon, so enjoy full access for free while it lasts.
           </p>
           <div className="landing-pricing-table">
             {PRICING.map((row) => (

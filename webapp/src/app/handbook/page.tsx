@@ -514,10 +514,10 @@ export default function HandbookPage() {
               </div>
               <p>As your free trial period nears its end, CleanCal shows an in-app reminder before anything would ever be billed — no surprise charges.</p>
               <div className="hb-callout warn">
-                <strong>Not billed yet</strong>
-                This is the intended pricing structure — CleanCal doesn&apos;t yet charge anyone
-                or enforce these tiers. Nothing about your account access changes based on
-                property count today.
+                <strong>Not billed yet — but coming soon</strong>
+                This is the intended pricing structure. Billing isn&apos;t turned on yet and
+                nothing about your account access changes based on property count today, but
+                that&apos;s starting soon — enjoy full access for free while it lasts.
               </div>
             </section>
 
