@@ -717,6 +717,40 @@ Vercel project's env vars). Twilio bills per SMS segment sent (a few
 cents each) plus a small monthly fee for the number -- there's no
 CleanCal-side cost beyond that.
 
+## Labor trends & cross-property benchmarking (slice 22)
+
+Reports (slice 10) only ever showed point-in-time totals for whatever
+date range was filtered -- no sense of trend, and no way to directly
+answer "which property costs the most to turn over" or "which cleaner
+is fastest" without eyeballing two tables sorted by volume.
+
+- **Trend over time**: the same filtered set of completed cleans,
+  bucketed by month, shown as a plain-CSS bar chart (no charting
+  library) with cleans-per-month and that month's average rating.
+  Needs 2+ distinct months in the filtered range to be worth showing.
+- **Cross-property cost benchmarking**: "By property" now shows an
+  estimated average cost per clean (that property's current
+  `payout_rate_cents`, plus its linen fee when a booking had
+  `linen_pickup` set) -- an estimate at *today's* rates, not
+  necessarily what was actually paid historically, since either can
+  change. The priciest property is called out directly as its own stat
+  tile.
+- **Cross-cleaner speed benchmarking**: needs knowing how long a clean
+  actually took, which nothing tracked before now. Two new columns on
+  `bookings` -- `cleaning_started_at`, `cleaning_completed_at`
+  (`supabase/migrations/0033_cleaning_duration_tracking.sql`) -- are
+  stamped by `cleaner_update_booking`, the RPC a cleaner's own phone
+  calls to move a job through "in-progress"/"complete" (0001, reshaped
+  in 0020). Each stamps once, the first time only, so re-opening a
+  checklist afterward never overwrites it. Deliberately **not** stamped
+  when staff edit a booking's status directly (`updateBookingAdmin`,
+  a correction/override path, not a real cleaning session) -- so
+  duration data only exists for jobs a cleaner actually ran start-to-
+  finish from their own phone, from this slice onward. Every
+  already-completed booking has both columns null, same as a missing
+  rating; "By cleaner" and the fastest-cleaner stat tile just show "—"
+  until enough new data exists.
+
 ## Backlog
 
 Waiting on something outside this repo before there's anything to build:

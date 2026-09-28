@@ -118,4 +118,10 @@ export interface Booking {
   payout_status?: "none" | "paid";
   stripe_transfer_id?: string | null;
   linen_pickup?: boolean;
+  // Stamped by cleaner_update_booking the first time a cleaner moves
+  // their own job through "in-progress"/"complete" -- null on any
+  // booking completed before that existed, or set by a staff override
+  // rather than the cleaner's own phone. See 0033_cleaning_duration_tracking.sql.
+  cleaning_started_at?: string | null;
+  cleaning_completed_at?: string | null;
 }
