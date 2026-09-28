@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import InviteLink from "@/components/InviteLink";
 import Logo from "@/components/Logo";
 import TeamRoles from "@/components/TeamRoles";
-import { RemoveCleanerButton, RestoreCleanerButton } from "@/components/CleanerRemoval";
+import { RemoveCleanerButton, RestoreCleanerButton, DeleteCleanerButton } from "@/components/CleanerRemoval";
 import { isStaff, type Profile } from "@/lib/types";
 
 export default async function CleanersPage() {
@@ -223,7 +223,10 @@ export default async function CleanersPage() {
                     Removed {new Date(cleaner.deactivated_at as string).toLocaleDateString()}
                   </div>
                 </div>
-                <RestoreCleanerButton cleanerId={cleaner.id} />
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
+                  <RestoreCleanerButton cleanerId={cleaner.id} />
+                  <DeleteCleanerButton cleanerId={cleaner.id} cleanerName={cleaner.name} />
+                </div>
               </div>
             ))}
           </div>

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { notifyUsers } from "@/lib/notify";
 import type { Role } from "@/lib/types";
 
@@ -123,4 +124,58 @@ export async function restoreCleaner(userId: string) {
   const { error } = await supabase.from("profiles").update({ deactivated_at: null }).eq("id", userId);
   if (error) throw new Error(error.message);
   revalidatePath("/cleaners");
+}
+
+// Permanent, unlike removeCleaner above -- deletes the auth user outright
+// (cascading to their profiles row, see 0001_init.sql), which needs the
+// service-role client since the Admin API isn't reachable through a
+// normal RLS-scoped session. Because that bypasses RLS entirely, the
+// owner/same-org/cleaner-role checks below are load-bearing here in a way
+// they aren't for the other actions in this file, which lean on RLS for
+// that. Only allowed once already removed (deactivated_at set), so this
+// is always a second, deliberate step after "Remove from team" --
+// upcoming jobs are already off this person by then (removeCleaner
+// reopens them), never a surprise side effect of a delete.
+export async function deleteCleaner(userId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not signed in.");
+  if (user.id === userId) throw new Error("You can't delete your own account this way.");
+
+  const { data: caller } = await supabase
+    .from("profiles")
+    .select("role, organization_id")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (caller?.role !== "owner") throw new Error("Only an owner can delete a cleaner account.");
+
+  const { data: target } = await supabase
+    .from("profiles")
+    .select("role, organization_id, deactivated_at")
+    .eq("id", userId)
+    .maybeSingle();
+  if (!target || target.organization_id !== caller.organization_id) {
+    throw new Error("Cleaner not found.");
+  }
+  if (target.role !== "cleaner") throw new Error("Only cleaner accounts can be deleted here.");
+  if (!target.deactivated_at) {
+    throw new Error("Remove this cleaner from the team first, then you can delete their account.");
+  }
+
+  let service;
+  try {
+    service = createServiceClient();
+  } catch {
+    throw new Error(
+      "Account deletion isn't set up yet -- SUPABASE_SERVICE_ROLE_KEY is missing from the deployment.",
+    );
+  }
+
+  const { error } = await service.auth.admin.deleteUser(userId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/cleaners");
+  revalidatePath("/calendar");
 }
