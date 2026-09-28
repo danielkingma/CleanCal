@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import Logo from "@/components/Logo";
 import SignOutButton from "@/components/SignOutButton";
+import NavMenus from "@/components/NavMenus";
 import { getPlatformBadge } from "@/lib/platform-badge";
 import { isStaff, type Booking, type Profile } from "@/lib/types";
 
@@ -66,9 +67,12 @@ export default async function HistoryPage() {
         </div>
         <div className="topbar-row">
           <div style={{ color: "var(--muted)", fontSize: 14 }}>Cleaning history</div>
-          <Link href="/calendar" className="today-btn">
-            ← Calendar
-          </Link>
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <NavMenus isStaffUser={staffView} />
+            <Link href="/calendar" className="today-btn">
+              ← Calendar
+            </Link>
+          </div>
         </div>
       </div>
 

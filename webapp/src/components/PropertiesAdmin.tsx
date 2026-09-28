@@ -17,6 +17,7 @@ import {
 } from "@/app/properties/actions";
 import Logo from "./Logo";
 import SignOutButton from "./SignOutButton";
+import NavMenus from "./NavMenus";
 import type { IcalFeed, Property } from "@/lib/types";
 
 interface PropertiesAdminProps {
@@ -90,6 +91,7 @@ export default function PropertiesAdmin({
             <button className="today-btn" onClick={handleSyncAll} disabled={syncingAll}>
               {syncingAll ? "Syncing…" : "Sync all feeds"}
             </button>
+            <NavMenus isStaffUser={true} />
             <Link href="/calendar" className="today-btn">
               ← Calendar
             </Link>

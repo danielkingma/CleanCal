@@ -3,7 +3,9 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import Logo from "@/components/Logo";
 import SignOutButton from "@/components/SignOutButton";
+import NavMenus from "@/components/NavMenus";
 import AvailabilityCalendar from "@/components/AvailabilityCalendar";
+import { isStaff } from "@/lib/types";
 
 export default async function AvailabilityPage() {
   const supabase = await createClient();
@@ -12,6 +14,16 @@ export default async function AvailabilityPage() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  // Only used to decide whether to show the staff-only "Manage" menu --
+  // this page itself works the same for any role, since it's always
+  // scoped to the caller's own dates (cleaner_unavailable_* RLS).
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+  const isStaffUser = isStaff(profile?.role);
 
   const { data: rows } = await supabase
     .from("cleaner_unavailable_dates")
@@ -31,9 +43,12 @@ export default async function AvailabilityPage() {
         </div>
         <div className="topbar-row">
           <div style={{ color: "var(--muted)", fontSize: 14 }}>My availability</div>
-          <Link href="/calendar" className="today-btn">
-            ← Calendar
-          </Link>
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <NavMenus isStaffUser={isStaffUser} />
+            <Link href="/calendar" className="today-btn">
+              ← Calendar
+            </Link>
+          </div>
         </div>
       </div>
 

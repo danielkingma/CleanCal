@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import Logo from "@/components/Logo";
 import SignOutButton from "@/components/SignOutButton";
+import NavMenus from "@/components/NavMenus";
 import { addDays, checkoutDate, isoDate } from "@/lib/calendar-utils";
 import { isStaff, type Booking } from "@/lib/types";
 
@@ -93,9 +94,12 @@ export default async function DashboardPage() {
         </div>
         <div className="topbar-row">
           <div style={{ color: "var(--muted)", fontSize: 14 }}>Dashboard</div>
-          <Link href="/calendar" className="today-btn">
-            ← Calendar
-          </Link>
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <NavMenus isStaffUser={true} />
+            <Link href="/calendar" className="today-btn">
+              ← Calendar
+            </Link>
+          </div>
         </div>
       </div>
 

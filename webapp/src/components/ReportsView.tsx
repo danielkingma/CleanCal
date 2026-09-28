@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import Logo from "./Logo";
 import SignOutButton from "./SignOutButton";
+import NavMenus from "./NavMenus";
 import { getPlatformBadge } from "@/lib/platform-badge";
 import type { Booking, Profile, Property } from "@/lib/types";
 
@@ -127,9 +128,12 @@ export default function ReportsView({ completed, properties, profiles }: Reports
         </div>
         <div className="topbar-row">
           <div style={{ color: "var(--muted)", fontSize: 14 }}>Reports</div>
-          <Link href="/calendar" className="today-btn">
-            ← Calendar
-          </Link>
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <NavMenus isStaffUser={true} />
+            <Link href="/calendar" className="today-btn">
+              ← Calendar
+            </Link>
+          </div>
         </div>
       </div>
 

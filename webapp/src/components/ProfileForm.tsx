@@ -5,7 +5,8 @@ import Link from "next/link";
 import { startConnectOnboarding, startIdentityVerification, updateOwnProfile } from "@/app/profile/actions";
 import Logo from "./Logo";
 import SignOutButton from "./SignOutButton";
-import type { Profile } from "@/lib/types";
+import NavMenus from "./NavMenus";
+import { isStaff, type Profile } from "@/lib/types";
 
 export default function ProfileForm({
   profile,
@@ -79,9 +80,12 @@ export default function ProfileForm({
         </div>
         <div className="topbar-row">
           <div style={{ color: "var(--muted)", fontSize: 14 }}>My Profile</div>
-          <Link href="/calendar" className="today-btn">
-            ← Calendar
-          </Link>
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <NavMenus isStaffUser={isStaff(profile.role)} />
+            <Link href="/calendar" className="today-btn">
+              ← Calendar
+            </Link>
+          </div>
         </div>
       </div>
 
