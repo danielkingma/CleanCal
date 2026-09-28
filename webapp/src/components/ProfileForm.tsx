@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { startConnectOnboarding, startIdentityVerification, updateOwnProfile } from "@/app/profile/actions";
 import Logo from "./Logo";
+import SignOutButton from "./SignOutButton";
 import type { Profile } from "@/lib/types";
 
 export default function ProfileForm({
@@ -74,10 +75,11 @@ export default function ProfileForm({
           Clean<span>Cal</span>
         </div>
         <div style={{ color: "var(--muted)", fontSize: 14 }}>My Profile</div>
-        <div style={{ marginLeft: "auto" }}>
+        <div style={{ marginLeft: "auto", display: "flex", gap: 10, alignItems: "center" }}>
           <Link href="/calendar" className="today-btn">
             ← Calendar
           </Link>
+          <SignOutButton />
         </div>
       </div>
 

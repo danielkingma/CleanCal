@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import Logo from "@/components/Logo";
+import SignOutButton from "@/components/SignOutButton";
 import AvailabilityCalendar from "@/components/AvailabilityCalendar";
 
 export default async function AvailabilityPage() {
@@ -26,10 +27,11 @@ export default async function AvailabilityPage() {
           Clean<span>Cal</span>
         </div>
         <div style={{ color: "var(--muted)", fontSize: 14 }}>My availability</div>
-        <div style={{ marginLeft: "auto" }}>
+        <div style={{ marginLeft: "auto", display: "flex", gap: 10, alignItems: "center" }}>
           <Link href="/calendar" className="today-btn">
             ← Calendar
           </Link>
+          <SignOutButton />
         </div>
       </div>
 

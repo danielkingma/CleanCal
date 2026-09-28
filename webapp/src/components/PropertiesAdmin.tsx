@@ -16,6 +16,7 @@ import {
   updatePropertyProfile,
 } from "@/app/properties/actions";
 import Logo from "./Logo";
+import SignOutButton from "./SignOutButton";
 import type { IcalFeed, Property } from "@/lib/types";
 
 interface PropertiesAdminProps {
@@ -88,6 +89,7 @@ export default function PropertiesAdmin({
           <Link href="/calendar" className="today-btn">
             ← Calendar
           </Link>
+          <SignOutButton />
         </div>
       </div>
 

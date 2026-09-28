@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createOrganization, redeemInvite } from "@/app/onboarding/actions";
 import Logo from "./Logo";
+import SignOutButton from "./SignOutButton";
 
 export default function OnboardingForm({
   inviteToken,
@@ -90,6 +91,9 @@ export default function OnboardingForm({
             <p className="auth-error">This invite link is invalid or has already been used.</p>
           )}
           {error ? <p className="auth-error">{error}</p> : null}
+          <div style={{ marginTop: 20, textAlign: "center" }}>
+            <SignOutButton />
+          </div>
         </div>
       </div>
     );
@@ -125,6 +129,9 @@ export default function OnboardingForm({
           </button>
         </div>
         {error ? <p className="auth-error">{error}</p> : null}
+        <div style={{ marginTop: 20, textAlign: "center" }}>
+          <SignOutButton />
+        </div>
       </div>
     </div>
   );

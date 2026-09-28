@@ -5,6 +5,7 @@ import InviteLink from "@/components/InviteLink";
 import Logo from "@/components/Logo";
 import TeamRoles from "@/components/TeamRoles";
 import { RemoveCleanerButton, RestoreCleanerButton, DeleteCleanerButton } from "@/components/CleanerRemoval";
+import SignOutButton from "@/components/SignOutButton";
 import { isStaff, type Profile } from "@/lib/types";
 
 export default async function CleanersPage() {
@@ -110,10 +111,11 @@ export default async function CleanersPage() {
           Clean<span>Cal</span>
         </div>
         <div style={{ color: "var(--muted)", fontSize: 14 }}>Cleaners</div>
-        <div style={{ marginLeft: "auto" }}>
+        <div style={{ marginLeft: "auto", display: "flex", gap: 10, alignItems: "center" }}>
           <Link href="/calendar" className="today-btn">
             ← Calendar
           </Link>
+          <SignOutButton />
         </div>
       </div>
 

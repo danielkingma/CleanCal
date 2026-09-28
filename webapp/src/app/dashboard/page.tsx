@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import Logo from "@/components/Logo";
+import SignOutButton from "@/components/SignOutButton";
 import { addDays, checkoutDate, isoDate } from "@/lib/calendar-utils";
 import { isStaff, type Booking } from "@/lib/types";
 
@@ -88,10 +89,11 @@ export default async function DashboardPage() {
           Clean<span>Cal</span>
         </div>
         <div style={{ color: "var(--muted)", fontSize: 14 }}>Dashboard</div>
-        <div style={{ marginLeft: "auto" }}>
+        <div style={{ marginLeft: "auto", display: "flex", gap: 10, alignItems: "center" }}>
           <Link href="/calendar" className="today-btn">
             ← Calendar
           </Link>
+          <SignOutButton />
         </div>
       </div>
 

@@ -14,6 +14,7 @@ import DayPickerSheet from "./DayPickerSheet";
 import PropertyYearView from "./PropertyYearView";
 import BookingModal from "./BookingModal";
 import TrialNotice from "./TrialNotice";
+import SignOutButton from "./SignOutButton";
 import {
   DAY_W_MONTH,
   DAY_W_WEEK,
@@ -253,11 +254,7 @@ export default function CalendarApp({
             <Logo />
             Clean<span>Cal</span>
           </div>
-          <form action="/logout" method="post">
-            <button type="submit" className="signout-btn">
-              Sign out
-            </button>
-          </form>
+          <SignOutButton />
         </div>
 
         <div className="topbar-row">
