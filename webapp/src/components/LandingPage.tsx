@@ -90,7 +90,7 @@ export default function LandingPage() {
             monitorSrc="/handbook/calendar-example.png"
             monitorAlt="The CleanCal calendar, month view, open in a desktop browser"
             monitorCaption="Run the whole portfolio from a desktop browser."
-            phoneSrc="/handbook/calendar-example.png"
+            phoneSrc="/handbook/app-mobile-example.png"
             phoneAlt="CleanCal installed on a phone"
             phoneCaption="Installs right onto a phone's home screen -- no app store."
           />

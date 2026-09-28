@@ -3,19 +3,28 @@
 import { useState } from "react";
 import Link from "next/link";
 import { startConnectOnboarding, startIdentityVerification, updateOwnProfile } from "@/app/profile/actions";
+import { createClient } from "@/lib/supabase/client";
 import Logo from "./Logo";
 import SignOutButton from "./SignOutButton";
 import NavMenus from "./NavMenus";
 import { isStaff, type Profile } from "@/lib/types";
 
+interface KnownDevice {
+  id: string;
+  label: string;
+  last_seen_at: string;
+}
+
 export default function ProfileForm({
   profile,
   email,
   smsAvailable,
+  devices,
 }: {
   profile: Profile;
   email: string;
   smsAvailable: boolean;
+  devices: KnownDevice[];
 }) {
   const [name, setName] = useState(profile.name);
   const [bio, setBio] = useState(profile.bio ?? "");
@@ -29,6 +38,9 @@ export default function ProfileForm({
   const [verifyError, setVerifyError] = useState<string | null>(null);
   const [onboarding, setOnboarding] = useState(false);
   const [onboardError, setOnboardError] = useState<string | null>(null);
+  const [signingOutOthers, setSigningOutOthers] = useState(false);
+  const [signedOutOthers, setSignedOutOthers] = useState(false);
+  const [signOutError, setSignOutError] = useState<string | null>(null);
 
   async function handleSave() {
     setSaving(true);
@@ -53,6 +65,25 @@ export default function ProfileForm({
     } catch (e) {
       setVerifyError(e instanceof Error ? e.message : "Couldn't start verification.");
       setVerifying(false);
+    }
+  }
+
+  async function handleSignOutOthers() {
+    if (!window.confirm("Sign out every other device or browser signed into this account? This one stays signed in.")) {
+      return;
+    }
+    setSigningOutOthers(true);
+    setSignOutError(null);
+    setSignedOutOthers(false);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signOut({ scope: "others" });
+      if (error) throw error;
+      setSignedOutOthers(true);
+    } catch (e) {
+      setSignOutError(e instanceof Error ? e.message : "Couldn't sign out other devices.");
+    } finally {
+      setSigningOutOthers(false);
     }
   }
 
@@ -226,6 +257,62 @@ export default function ProfileForm({
             </div>
           </div>
         ) : null}
+
+        <div className="property-card" style={{ maxWidth: 480, marginTop: 16 }}>
+          <div className="field">
+            <label>Devices &amp; sessions</label>
+            <p className="access-note">
+              You can be signed in on more than one device at once -- a computer and a phone at
+              the same time is fine. Whenever this account signs in somewhere new, you&apos;ll get
+              a notification (if you have them enabled) naming the device.
+            </p>
+            {devices.length > 0 ? (
+              <ul style={{ margin: "8px 0 0", padding: 0, listStyle: "none" }}>
+                {devices.map((d) => (
+                  <li
+                    key={d.id}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      fontSize: 13,
+                      padding: "6px 0",
+                      borderBottom: "1px solid var(--line)",
+                    }}
+                  >
+                    <span>{d.label}</span>
+                    <span style={{ color: "var(--muted)" }}>
+                      last seen {new Date(d.last_seen_at).toLocaleDateString()}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            <button
+              type="button"
+              className="btn btn-secondary"
+              style={{ marginTop: 12 }}
+              onClick={handleSignOutOthers}
+              disabled={signingOutOthers}
+            >
+              {signingOutOthers ? "Signing out…" : "Sign out other devices"}
+            </button>
+            <p className="access-note" style={{ marginTop: 6 }}>
+              Ends every other session on this account -- this device stays signed in. Use this if
+              you don&apos;t recognize a device that signed in, or just want to close out an old
+              one.
+            </p>
+            {signedOutOthers ? (
+              <p style={{ fontSize: 12.5, color: "var(--teal-deep)", marginTop: 4 }}>
+                Done -- every other session has been signed out.
+              </p>
+            ) : null}
+            {signOutError ? (
+              <div className="error-banner" style={{ marginTop: 10 }}>
+                {signOutError}
+              </div>
+            ) : null}
+          </div>
+        </div>
       </main>
     </div>
   );

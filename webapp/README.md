@@ -785,6 +785,44 @@ per-photo cost, none of which exist in this codebase yet. Not built
 in this slice; worth a separate conversation before committing to a
 vendor and a recurring bill.
 
+## Device mockups on the Handbook & landing page (slice 24)
+
+Both pages now show a phone + monitor showcase (`DeviceShowcase.tsx`)
+of what CleanCal actually looks like, built as plain CSS frames (no
+image-processing dependency) around real screenshots -- the desktop
+calendar screenshot in the monitor frame, a real phone screenshot
+(`public/handbook/app-mobile-example.png`) in the phone frame. The
+Handbook's mobile-install section also got expanded step-by-step
+"Add to Home Screen" instructions for iPhone (Safari) and Android
+(Chrome), since CleanCal installs as a PWA rather than through an app
+store.
+
+## Multi-device sign-in recognition (slice 25)
+
+Supabase Auth already allows more than one concurrent session per
+account by default -- a phone and a computer signed in at the same
+time needs no change there. What was missing was any way for the
+account holder to know when that happened, and a way to end a session
+they don't recognize.
+
+- **`known_devices`** (`supabase/migrations/0035_known_devices.sql`) --
+  one row per (user, device), where "device" is a random id in a
+  long-lived cookie (`src/lib/device-session.ts`), independent of the
+  Supabase session itself so it survives signing out and back in on the
+  same browser.
+- The first time a given user+device pairing is seen -- checked right
+  after a session is established, from both the magic-link callback and
+  the typed-code fallback -- it's recorded and the account holder is
+  notified (reusing the existing push/SMS fan-out in `notify.ts`)
+  naming the device (e.g. "an iPhone," "a Windows PC"). An account's
+  very first-ever sign-in is never treated as "another device," so
+  signing up doesn't notify itself.
+- **My Profile** now has a "Devices & sessions" card listing known
+  devices and a **Sign out other devices** button
+  (`supabase.auth.signOut({ scope: "others" })`) that ends every other
+  session on the account while leaving the current one signed in --
+  the direct answer to "close the account on another device."
+
 ## Backlog
 
 Waiting on something outside this repo before there's anything to build:

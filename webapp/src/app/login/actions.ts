@@ -2,6 +2,7 @@
 
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+import { registerDeviceAndNotify } from "@/lib/device-session";
 
 export interface MagicLinkState {
   status: "idle" | "sent" | "error";
@@ -55,6 +56,7 @@ export async function sendMagicLink(
 // for that scanning to consume.
 export async function verifyLoginCode(email: string, code: string) {
   const supabase = await createClient();
-  const { error } = await supabase.auth.verifyOtp({ email, token: code, type: "email" });
+  const { data, error } = await supabase.auth.verifyOtp({ email, token: code, type: "email" });
   if (error) throw new Error(error.message);
+  if (data.user) await registerDeviceAndNotify(data.user.id);
 }

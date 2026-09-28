@@ -75,8 +75,8 @@ export default function HandbookPage() {
                 monitorSrc="/handbook/calendar-example.png"
                 monitorAlt="The CleanCal calendar, month view, open in a desktop browser"
                 monitorCaption="On desktop -- the full portfolio calendar."
-                phoneSrc="/handbook/calendar-example.png"
-                phoneAlt="The CleanCal calendar as installed on a phone"
+                phoneSrc="/handbook/app-mobile-example.png"
+                phoneAlt="The CleanCal calendar's month view, installed on an Android phone"
                 phoneCaption="Installed on a phone -- same calendar, built for one hand."
               />
             </div>
