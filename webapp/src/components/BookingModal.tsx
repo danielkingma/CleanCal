@@ -45,6 +45,61 @@ interface PhotoItem {
   id: string;
   path: string;
   url: string;
+  isBlurry: boolean;
+}
+
+// Laplacian-variance blur heuristic, computed client-side (no npm deps, no
+// server round-trip). Below this threshold an image is flagged as likely
+// blurry -- tuned loosely against typical phone-camera photos, not a precise
+// measurement. Detection failures fail OPEN (never block an upload) since a
+// missed blur flag just means the retake prompt doesn't show, while a false
+// block would stop a cleaner from finishing a real job.
+const BLUR_VARIANCE_THRESHOLD = 60;
+
+async function detectBlur(file: File): Promise<boolean> {
+  try {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, 200 / Math.max(bitmap.width, bitmap.height));
+    const w = Math.max(1, Math.round(bitmap.width * scale));
+    const h = Math.max(1, Math.round(bitmap.height * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    if (!ctx) return false;
+    ctx.drawImage(bitmap, 0, 0, w, h);
+    const { data } = ctx.getImageData(0, 0, w, h);
+
+    // Grayscale.
+    const gray = new Float32Array(w * h);
+    for (let i = 0; i < w * h; i++) {
+      const r = data[i * 4];
+      const g = data[i * 4 + 1];
+      const b = data[i * 4 + 2];
+      gray[i] = 0.299 * r + 0.587 * g + 0.114 * b;
+    }
+
+    // 4-neighbor Laplacian, then variance of the response.
+    let sum = 0;
+    let sumSq = 0;
+    let count = 0;
+    for (let y = 1; y < h - 1; y++) {
+      for (let x = 1; x < w - 1; x++) {
+        const idx = y * w + x;
+        const lap =
+          4 * gray[idx] - gray[idx - 1] - gray[idx + 1] - gray[idx - w] - gray[idx + w];
+        sum += lap;
+        sumSq += lap * lap;
+        count++;
+      }
+    }
+    if (count === 0) return false;
+    const mean = sum / count;
+    const variance = sumSq / count - mean * mean;
+    return variance < BLUR_VARIANCE_THRESHOLD;
+  } catch {
+    return false;
+  }
 }
 
 interface BookingModalProps {
@@ -354,7 +409,7 @@ export default function BookingModal({
     (async () => {
       const { data, error: fetchError } = await supabase
         .from("photos")
-        .select("id, storage_path")
+        .select("id, storage_path, is_blurry")
         .eq("booking_id", booking.id)
         .order("created_at");
       if (fetchError || !data) {
@@ -366,7 +421,12 @@ export default function BookingModal({
           const { data: signed } = await supabase.storage
             .from(PHOTOS_BUCKET)
             .createSignedUrl(p.storage_path, 3600);
-          return { id: p.id as string, path: p.storage_path as string, url: signed?.signedUrl ?? "" };
+          return {
+            id: p.id as string,
+            path: p.storage_path as string,
+            url: signed?.signedUrl ?? "",
+            isBlurry: !!p.is_blurry,
+          };
         }),
       );
       if (!cancelled) {
@@ -388,19 +448,20 @@ export default function BookingModal({
 
     for (const file of Array.from(fileList)) {
       try {
+        const isBlurry = await detectBlur(file);
         const path = `${booking.id}/${crypto.randomUUID()}-${file.name}`;
         const { error: uploadError } = await supabase.storage.from(PHOTOS_BUCKET).upload(path, file);
         if (uploadError) throw uploadError;
 
         const { data: row, error: insertError } = await supabase
           .from("photos")
-          .insert({ booking_id: booking.id, storage_path: path, uploaded_by: currentUserId })
+          .insert({ booking_id: booking.id, storage_path: path, uploaded_by: currentUserId, is_blurry: isBlurry })
           .select("id")
           .single();
         if (insertError) throw insertError;
 
         const { data: signed } = await supabase.storage.from(PHOTOS_BUCKET).createSignedUrl(path, 3600);
-        setPhotos((prev) => [...prev, { id: row.id as string, path, url: signed?.signedUrl ?? "" }]);
+        setPhotos((prev) => [...prev, { id: row.id as string, path, url: signed?.signedUrl ?? "", isBlurry }]);
       } catch (e) {
         setError(e instanceof Error ? e.message : "Photo upload failed.");
       }
@@ -482,6 +543,14 @@ export default function BookingModal({
           await updateBookingAdmin(booking.id, input);
         }
       } else if (booking && isAssignedCleaner) {
+        if (status === "complete") {
+          if (photos.length === 0) {
+            throw new Error("Add at least one photo before marking this job complete.");
+          }
+          if (photos.some((p) => p.isBlurry)) {
+            throw new Error("Retake the blurry photo(s) before marking this job complete.");
+          }
+        }
         await updateBookingCleaner(booking.id, status, checklist);
       }
       onDone();
@@ -868,7 +937,7 @@ export default function BookingModal({
             ) : (
               <div className="photo-strip">
                 {photos.map((p) => (
-                  <div className="photo-thumb" key={p.id}>
+                  <div className={`photo-thumb${p.isBlurry ? " blurry" : ""}`} key={p.id}>
                     {/* eslint-disable-next-line @next/next/no-img-element -- short-lived signed URLs, not a static asset */}
                     <img
                       src={p.url}
@@ -877,6 +946,11 @@ export default function BookingModal({
                       onMouseLeave={closeLightboxOnHoverEnd}
                       onClick={() => openLightboxPinned(p)}
                     />
+                    {p.isBlurry ? (
+                      <span className="photo-blur-badge" title="This photo looks blurry — consider retaking it">
+                        Blurry
+                      </span>
+                    ) : null}
                     {canEditCleaning ? (
                       <button
                         type="button"
@@ -901,6 +975,11 @@ export default function BookingModal({
                 ) : null}
               </div>
             )}
+            {isAssignedCleaner && photos.some((p) => p.isBlurry) ? (
+              <p className="photo-note" style={{ color: "var(--amber)" }}>
+                One or more photos look blurry — retake them before marking this job complete.
+              </p>
+            ) : null}
             <input
               ref={fileInputRef}
               type="file"

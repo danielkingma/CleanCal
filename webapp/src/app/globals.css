@@ -1252,6 +1252,24 @@ main {
   display: block;
   cursor: pointer;
 }
+.photo-thumb.blurry {
+  border-color: var(--amber);
+  box-shadow: 0 0 0 1px var(--amber) inset;
+}
+.photo-blur-badge {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--amber);
+  color: white;
+  font-size: 9px;
+  font-weight: 600;
+  text-align: center;
+  letter-spacing: 0.02em;
+  padding: 1px 0;
+  pointer-events: none;
+}
 .photo-thumb .rm {
   position: absolute;
   top: 2px;

@@ -751,6 +751,40 @@ is fastest" without eyeballing two tables sorted by volume.
   rating; "By cleaner" and the fastest-cleaner stat tile just show "—"
   until enough new data exists.
 
+## Photo blur detection (slice 23)
+
+Cleaners could always upload photos to a booking, but nothing checked
+whether they were any good -- a blurry or missing photo made it into
+the record just as easily as a clear one. This adds a free, offline
+check that runs entirely in the browser (no new dependency, no paid
+API, no server round-trip):
+
+- On upload, each photo is run through a Laplacian-variance blur
+  heuristic (`detectBlur()` in `BookingModal.tsx`) using nothing but
+  `createImageBitmap` and a `<canvas>` -- downsample to ~200px,
+  grayscale, take a 4-neighbor Laplacian, and flag low-variance images
+  as blurry. It's a heuristic, not a guarantee, and if detection itself
+  throws for any reason it fails **open** (not flagged) rather than
+  blocking the upload.
+- The result is stored per-photo on a new `photos.is_blurry` column
+  (`supabase/migrations/0034_photo_blur_flag.sql`).
+- Blurry photos get a visible "Blurry" badge in the photo strip, plus a
+  note prompting a retake.
+- A cleaner can no longer mark their own job **complete** with zero
+  photos attached, or while any attached photo is flagged blurry --
+  both are checked in `handleSave` before calling
+  `updateBookingCleaner`. This only applies to the cleaner's own
+  save path; staff can still set a booking to "complete" directly
+  (`updateBookingAdmin`) as a correction/override, same precedent as
+  duration tracking above.
+
+Computer-vision *quality* scoring (grading the actual contents of a
+photo, not just whether it's in focus) is a separate, bigger ask --
+it needs a paid vision API, a defined quality rubric, and ongoing
+per-photo cost, none of which exist in this codebase yet. Not built
+in this slice; worth a separate conversation before committing to a
+vendor and a recurring bill.
+
 ## Backlog
 
 Waiting on something outside this repo before there's anything to build:
