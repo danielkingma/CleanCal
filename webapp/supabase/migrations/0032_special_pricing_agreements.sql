@@ -1,0 +1,35 @@
+-- Special/negotiated pricing per organization -- for a business you've
+-- struck a custom deal with (a flat rate that doesn't match the public
+-- tiers, an extended or indefinite trial, whatever was agreed) instead
+-- of the standard per-property-count pricing on the landing page and
+-- Handbook.
+--
+-- There's no platform-admin role or screen in CleanCal -- every "owner"
+-- is scoped to their own organization only, and pricing deals are
+-- something *you* (running CleanCal itself) negotiate with a customer,
+-- not something a customer can grant themselves. So, same as
+-- trial_ends_at already works (set only by create_organization, with no
+-- in-app editor), these are plain columns you set directly in the
+-- Supabase table editor or SQL editor when a deal is agreed:
+--
+--   update public.organizations
+--   set custom_monthly_price_cents = 9900,
+--       pricing_agreement_notes = 'Flat $99/mo agreed 28 Sep 2026 -- unlimited properties.'
+--   where name = 'Their Business Name';
+--
+--   -- Extending or removing their trial countdown is just trial_ends_at,
+--   -- which already existed (0017_trial_period.sql):
+--   update public.organizations
+--   set trial_ends_at = '2027-09-28'  -- or `null` for no countdown at all
+--   where name = 'Their Business Name';
+--
+-- Once billing is actually built, custom_monthly_price_cents (when set)
+-- should override the tiered pricing entirely for that organization.
+-- Until then it's inert data, same as everything else pricing-related --
+-- see TrialNotice.tsx, which reads it purely to show the organization's
+-- own owner/manager a plain-language record of what was agreed, instead
+-- of the generic "pricing is coming soon" message that no longer applies
+-- to them.
+alter table public.organizations
+  add column custom_monthly_price_cents integer,
+  add column pricing_agreement_notes text;

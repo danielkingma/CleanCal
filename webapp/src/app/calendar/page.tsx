@@ -57,6 +57,8 @@ export default async function CalendarPage() {
   let cleanerRatings: Record<string, CleanerRating> = {};
   let cleanerUnavailableDates: Record<string, string[]> = {};
   let trialEndsAt: string | null = null;
+  let customMonthlyPriceCents: number | null = null;
+  let pricingAgreementNotes: string | null = null;
   if (isStaff(currentProfile.role)) {
     const { data } = await supabase
       .from("profiles")
@@ -67,10 +69,18 @@ export default async function CalendarPage() {
     cleaners = data ?? [];
 
     // Staff-only: a cleaner has no reason to see the business's own
-    // billing countdown. `organizations_select_own` RLS (0016) already
-    // narrows this to exactly the caller's own org row.
-    const { data: org } = await supabase.from("organizations").select("trial_ends_at").maybeSingle();
+    // billing countdown or pricing terms. `organizations_select_own` RLS
+    // (0016) already narrows this to exactly the caller's own org row.
+    // custom_monthly_price_cents/pricing_agreement_notes (0032) are only
+    // ever set directly in Supabase when a special deal is negotiated --
+    // there's no in-app way for an owner to grant this to themselves.
+    const { data: org } = await supabase
+      .from("organizations")
+      .select("trial_ends_at, custom_monthly_price_cents, pricing_agreement_notes")
+      .maybeSingle();
     trialEndsAt = org?.trial_ends_at ?? null;
+    customMonthlyPriceCents = org?.custom_monthly_price_cents ?? null;
+    pricingAgreementNotes = org?.pricing_agreement_notes ?? null;
 
     const { data: ratedBookings } = await supabase
       .from("bookings")
@@ -128,6 +138,8 @@ export default async function CalendarPage() {
         cleanerRatings={cleanerRatings}
         cleanerUnavailableDates={cleanerUnavailableDates}
         trialEndsAt={trialEndsAt}
+        customMonthlyPriceCents={customMonthlyPriceCents}
+        pricingAgreementNotes={pricingAgreementNotes}
       />
     </div>
   );

@@ -44,6 +44,8 @@ interface CalendarAppProps {
   cleanerRatings: Record<string, CleanerRating>;
   cleanerUnavailableDates: Record<string, string[]>;
   trialEndsAt: string | null;
+  customMonthlyPriceCents: number | null;
+  pricingAgreementNotes: string | null;
 }
 
 type View = "assigned" | "completed" | "week" | "month" | "year";
@@ -63,6 +65,8 @@ export default function CalendarApp({
   cleanerRatings,
   cleanerUnavailableDates,
   trialEndsAt,
+  customMonthlyPriceCents,
+  pricingAgreementNotes,
 }: CalendarAppProps) {
   const router = useRouter();
   const isMobile = useMediaQuery("(max-width: 720px)");
@@ -389,7 +393,13 @@ export default function CalendarApp({
         </div>
       </div>
 
-      {isStaffUser ? <TrialNotice trialEndsAt={trialEndsAt} /> : null}
+      {isStaffUser ? (
+        <TrialNotice
+          trialEndsAt={trialEndsAt}
+          customMonthlyPriceCents={customMonthlyPriceCents}
+          pricingAgreementNotes={pricingAgreementNotes}
+        />
+      ) : null}
 
       <main>
         <div className="legend">

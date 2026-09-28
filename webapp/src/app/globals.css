@@ -1945,6 +1945,10 @@ main {
   background: rgba(217, 104, 59, 0.14);
   color: var(--coral);
 }
+.trial-notice.custom {
+  background: rgba(31, 111, 99, 0.12);
+  color: var(--teal-deep);
+}
 .trial-notice-dismiss {
   flex-shrink: 0;
   background: none;
