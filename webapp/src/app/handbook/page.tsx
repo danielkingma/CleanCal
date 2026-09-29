@@ -49,6 +49,7 @@ export default function HandbookPage() {
           <a className="hb-side-link" href="#checklist">Cleaning checklist &amp; photos</a>
           <a className="hb-side-link" href="#team">Managing the cleaning team</a>
           <a className="hb-side-link" href="#disputes">Disputes</a>
+          <a className="hb-side-link" href="#maintenance">Maintenance &amp; supplies</a>
           <a className="hb-side-link" href="#mobile">Mobile app &amp; notifications</a>
 
           <div className="hb-side-group-title">Trust &amp; money</div>
@@ -241,8 +242,8 @@ export default function HandbookPage() {
               <h2>Finding your way around</h2>
               <p>The calendar&apos;s top bar has two dropdowns, color-coded so they&apos;re easy to tell apart at a glance:</p>
               <ul>
-                <li><strong>Manage</strong> (Owner/Manager only) — Dashboard, Reports, Properties, Cleaners.</li>
-                <li><strong>Menu</strong> (everyone) — this Handbook, your Cleaning History, your Availability calendar, My Profile, and the notifications toggle.</li>
+                <li><strong>Manage</strong> (Owner/Manager only) — Dashboard, Reports, Properties, Cleaners, Maintenance, Supplies.</li>
+                <li><strong>Menu</strong> (everyone) — this Handbook, your Cleaning History, your Availability calendar, Maintenance, Supplies, My Profile, and the notifications toggle.</li>
               </ul>
             </section>
 
@@ -435,6 +436,52 @@ export default function HandbookPage() {
                 else. Posting a reply reopens the thread even if it was marked resolved, so
                 nothing quietly gets buried.
               </p>
+            </section>
+
+            <section className="hb-section" id="maintenance">
+              <h2>Maintenance &amp; supplies</h2>
+              <p>
+                Two things that live outside the cleaning calendar entirely, both under{" "}
+                <strong>Menu</strong> (or <strong>Manage</strong>, for Owners/Managers).
+              </p>
+              <h3>Work orders</h3>
+              <p>
+                A standalone task on a property — a broken dishwasher, a squeaky door — that
+                isn&apos;t tied to any specific cleaning booking. Owners/Managers create one with a
+                title, description, priority, and optionally assign it to a cleaner; a cleaner sees
+                anything assigned to them and can move it between <strong>In progress</strong> and{" "}
+                <strong>Done</strong> themselves, without needing to go through staff.
+              </p>
+              <p>
+                A rating of 2★ or lower on a booking automatically creates an <strong>urgent</strong>{" "}
+                work order for a re-clean and notifies Owners/Managers — nothing to remember to do
+                by hand.
+              </p>
+              <h3>Preventative maintenance</h3>
+              <p>
+                A recurring task per property — &quot;replace HVAC filter every 90 days,&quot; say —
+                independent of any booking. Once it goes overdue, a work order gets created for it
+                automatically (checked once a day); completing that work order rolls the schedule&apos;s
+                due date forward on its own. Owners/Managers can also mark one done directly, or spin
+                up its work order early without waiting for it to go overdue.
+              </p>
+              <h3>Supplies</h3>
+              <p>
+                A running list of consumables per property — toilet paper, coffee, soap, whatever
+                you stock — each with a quantity and a &quot;low at or below&quot; threshold.
+                Anyone, staff or a cleaner on the job, can tap <strong>Used one</strong> to report
+                using an item up; the count can only ever go down this way, never up, so it&apos;s
+                safe for anyone to tap. Once an item crosses its low-stock line, Owners/Managers get
+                notified automatically. Restocking — setting the count back up once you&apos;ve
+                actually bought more — is an Owner/Manager action, kept deliberately separate from
+                usage reports so the two can never be mixed up.
+              </p>
+              <div className="hb-callout">
+                <strong>No automatic reordering yet</strong>
+                Restocking is you telling CleanCal you bought more — it doesn&apos;t place a real
+                order with a supplier on its own. That would need a supplier with an API to order
+                against first.
+              </div>
             </section>
 
             <section className="hb-section" id="mobile">
