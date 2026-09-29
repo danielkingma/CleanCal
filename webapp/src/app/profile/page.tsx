@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { smsConfigured } from "@/lib/sms";
 import ProfileForm from "@/components/ProfileForm";
-import type { Profile } from "@/lib/types";
+import { isOwner, type Profile } from "@/lib/types";
 
 export default async function ProfilePage() {
   const supabase = await createClient();
@@ -14,11 +14,21 @@ export default async function ProfilePage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, name, role, bio, phone, sms_opt_in, service_area, identity_status, stripe_connect_status")
+    .select("id, name, role, bio, phone, sms_opt_in, service_area, identity_status, stripe_connect_status, organization_id")
     .eq("id", user.id)
     .single();
 
   if (!profile) redirect("/calendar");
+
+  let organizationName: string | null = null;
+  if (isOwner(profile.role) && profile.organization_id) {
+    const { data: org } = await supabase
+      .from("organizations")
+      .select("name")
+      .eq("id", profile.organization_id)
+      .maybeSingle();
+    organizationName = org?.name ?? null;
+  }
 
   const { data: devices } = await supabase
     .from("known_devices")
@@ -35,6 +45,7 @@ export default async function ProfilePage() {
       email={user.email ?? ""}
       smsAvailable={smsConfigured()}
       devices={devices ?? []}
+      organizationName={organizationName}
     />
   );
 }

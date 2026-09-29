@@ -2,12 +2,17 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { startConnectOnboarding, startIdentityVerification, updateOwnProfile } from "@/app/profile/actions";
+import {
+  startConnectOnboarding,
+  startIdentityVerification,
+  updateOrganizationName,
+  updateOwnProfile,
+} from "@/app/profile/actions";
 import { createClient } from "@/lib/supabase/client";
 import Logo from "./Logo";
 import SignOutButton from "./SignOutButton";
 import NavMenus from "./NavMenus";
-import { isStaff, type Profile } from "@/lib/types";
+import { isOwner, isStaff, type Profile } from "@/lib/types";
 
 interface KnownDevice {
   id: string;
@@ -20,13 +25,19 @@ export default function ProfileForm({
   email,
   smsAvailable,
   devices,
+  organizationName,
 }: {
   profile: Profile;
   email: string;
   smsAvailable: boolean;
   devices: KnownDevice[];
+  organizationName: string | null;
 }) {
   const [name, setName] = useState(profile.name);
+  const [orgName, setOrgName] = useState(organizationName ?? "");
+  const [savingOrgName, setSavingOrgName] = useState(false);
+  const [orgNameSaved, setOrgNameSaved] = useState(false);
+  const [orgNameError, setOrgNameError] = useState<string | null>(null);
   const [bio, setBio] = useState(profile.bio ?? "");
   const [phone, setPhone] = useState(profile.phone ?? "");
   const [smsOptIn, setSmsOptIn] = useState(profile.sms_opt_in ?? false);
@@ -65,6 +76,21 @@ export default function ProfileForm({
     } catch (e) {
       setVerifyError(e instanceof Error ? e.message : "Couldn't start verification.");
       setVerifying(false);
+    }
+  }
+
+  async function handleSaveOrgName() {
+    if (!orgName.trim()) return;
+    setSavingOrgName(true);
+    setOrgNameSaved(false);
+    setOrgNameError(null);
+    try {
+      await updateOrganizationName(orgName);
+      setOrgNameSaved(true);
+    } catch (e) {
+      setOrgNameError(e instanceof Error ? e.message : "Couldn't save.");
+    } finally {
+      setSavingOrgName(false);
     }
   }
 
@@ -187,6 +213,37 @@ export default function ProfileForm({
             {saved ? <span style={{ fontSize: 12.5, color: "var(--teal-deep)" }}>Saved</span> : null}
           </div>
         </div>
+
+        {isOwner(profile.role) ? (
+          <div className="property-card" style={{ maxWidth: 480, marginTop: 16 }}>
+            <div className="field">
+              <label htmlFor="pOrgName">Business name</label>
+              <p className="access-note">
+                Shown to your team on invite messages and the Handbook. Signing up doesn&apos;t ask
+                for this up front any more -- set or change it here whenever you like.
+              </p>
+              <input
+                id="pOrgName"
+                type="text"
+                value={orgName}
+                placeholder="e.g. Sunny Coast Cleaning"
+                onChange={(e) => setOrgName(e.target.value)}
+              />
+              {orgNameError ? <div className="error-banner" style={{ marginTop: 10 }}>{orgNameError}</div> : null}
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10 }}>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={handleSaveOrgName}
+                  disabled={savingOrgName || !orgName.trim()}
+                >
+                  {savingOrgName ? "Saving…" : "Save"}
+                </button>
+                {orgNameSaved ? <span style={{ fontSize: 12.5, color: "var(--teal-deep)" }}>Saved</span> : null}
+              </div>
+            </div>
+          </div>
+        ) : null}
 
         {profile.role === "cleaner" ? (
           <div className="property-card" style={{ maxWidth: 480, marginTop: 16 }}>

@@ -823,6 +823,27 @@ they don't recognize.
   session on the account while leaving the current one signed in --
   the direct answer to "close the account on another device."
 
+## Sign-up asks for your name, not a business name (slice 26)
+
+Starting a brand-new business (the no-invite-token branch of onboarding)
+used to ask for a business name before anything else -- confusing for
+someone who was actually trying to join a team, most likely via an
+invite link that didn't carry through cleanly. Brought in line with how
+`redeem_invite` (joining an existing business) already worked:
+
+- **`create_organization(p_name)`** (`supabase/migrations/0036_signup_
+  asks_for_name_not_business.sql`) now takes the *person's* own name, not
+  a business name -- it sets `profiles.name` immediately (same as
+  `redeem_invite` has since 0028) and gives the new organization a
+  friendly placeholder name (`"<name>'s Business"`) instead of asking for
+  one up front.
+- **`update_organization_name(p_name)`** -- a new Owner-only RPC -- lets
+  the actual business name be set or changed afterward. My Profile has a
+  "Business name" field for Owners that calls it.
+- The onboarding screen for starting a new business now just asks "Your
+  name," same as joining one does, with a note that the business name
+  can be set later from My Profile.
+
 ## Backlog
 
 Waiting on something outside this repo before there's anything to build:

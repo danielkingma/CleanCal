@@ -14,11 +14,14 @@ export default function OnboardingForm({
   inviteOrgName: string | null;
 }) {
   const router = useRouter();
+  // The person's own name -- required in both branches so it never falls
+  // back to handle_new_user()'s email-derived default (see
+  // 0028_require_name_on_invite.sql, and 0036_signup_asks_for_name_not_
+  // business.sql which brought the create-a-business branch in line with
+  // it). Neither branch asks for a business name up front any more --
+  // create_organization() gives a new business a placeholder name, which
+  // an Owner can change afterward from My Profile.
   const [name, setName] = useState("");
-  // Separate from `name` above (that one's the business name, used only
-  // in the create-a-business branch below) -- this is the person's own
-  // name, required so it never falls back to handle_new_user()'s
-  // email-derived default (see 0028_require_name_on_invite.sql for why).
   const [joinName, setJoinName] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +35,7 @@ export default function OnboardingForm({
       router.push("/calendar");
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Couldn't create your business.");
+      setError(e instanceof Error ? e.message : "Couldn't get you set up.");
       setSaving(false);
     }
   }
@@ -106,15 +109,15 @@ export default function OnboardingForm({
           <Logo />
           Clean<span>Cal</span>
         </div>
-        <p className="auth-sub">Set up your business to get started.</p>
+        <p className="auth-sub">Tell us your name to get started.</p>
         <div className="auth-form">
           <div className="field">
-            <label htmlFor="orgName">Business name</label>
+            <label htmlFor="orgName">Your name</label>
             <input
               id="orgName"
               type="text"
               required
-              placeholder="e.g. Sunny Coast Cleaning"
+              placeholder="e.g. Alex Nguyen"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
@@ -125,9 +128,12 @@ export default function OnboardingForm({
             onClick={handleCreate}
             disabled={saving || !name.trim()}
           >
-            {saving ? "Creating…" : "Create my business"}
+            {saving ? "Setting up…" : "Continue"}
           </button>
         </div>
+        <p className="auth-sub" style={{ marginTop: 10, fontSize: 13 }}>
+          You can name your business afterward from My Profile.
+        </p>
         {error ? <p className="auth-error">{error}</p> : null}
         <div style={{ marginTop: 20, textAlign: "center" }}>
           <SignOutButton />

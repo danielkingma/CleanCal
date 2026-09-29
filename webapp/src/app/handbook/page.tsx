@@ -123,8 +123,9 @@ export default function HandbookPage() {
               </p>
               <ul>
                 <li>
-                  <strong>Starting your own business</strong> — give it a name and you become its
-                  Owner immediately.
+                  <strong>Starting your own business</strong> — enter your name and you become its
+                  Owner immediately. There&apos;s no business name to give up front; set one
+                  whenever you like from Menu → My Profile.
                 </li>
                 <li>
                   <strong>Joining an existing one</strong> — if someone sent you an invite link,

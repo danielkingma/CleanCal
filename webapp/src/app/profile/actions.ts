@@ -27,6 +27,17 @@ export async function updateOwnProfile(
   revalidatePath("/cleaners");
 }
 
+// Owner-only (enforced in update_organization_name() itself, not just
+// hidden in the UI) -- see 0036_signup_asks_for_name_not_business.sql.
+// Signing up no longer asks for a business name up front, so this is how
+// an Owner sets or changes it afterward.
+export async function updateOrganizationName(name: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("update_organization_name", { p_name: name });
+  if (error) throw new Error(error.message);
+  revalidatePath("/profile");
+}
+
 // Starts a Stripe-hosted ID verification session for the signed-in
 // cleaner and returns the URL to redirect them to. The *result* of
 // verification only ever comes back through the Stripe webhook
