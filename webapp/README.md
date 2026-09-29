@@ -106,6 +106,12 @@ exactly the same as an OTA: just another URL.
   what stands in for auth instead. Skip all of this entirely if you'd
   rather just click "Sync now"/"Sync all feeds" by hand — everything
   else works exactly the same either way.
+
+  `/api/cron/maintenance-due` (see "Maintenance, separate from cleaning"
+  below) reuses this exact same `CRON_SECRET` — once it's set, add a
+  second cron-job.org job pointed at
+  `https://<your-app>.vercel.app/api/cron/maintenance-due`, once a day is
+  plenty, with the same `Authorization: Bearer <CRON_SECRET>` header.
 - **Access instructions**: door codes, parking, wifi — set per property on
   `/properties`, shown read-only inside the booking modal to whoever opens
   a booking at that property (including the assigned cleaner).
@@ -843,6 +849,43 @@ invite link that didn't carry through cleanly. Brought in line with how
 - The onboarding screen for starting a new business now just asks "Your
   name," same as joining one does, with a note that the business name
   can be set later from My Profile.
+
+## Maintenance, separate from cleaning (slice 27)
+
+CleanCal's ops loop was entirely about cleaning jobs -- there was nowhere
+to track a broken dishwasher, a recurring HVAC filter swap, or the fact
+that a bad rating usually means the property needs another pass. New
+`/maintenance` page (`MaintenanceView.tsx`), staff-facing for management,
+cleaner-facing for their own assigned items:
+
+- **Work orders** (`work_orders` table, `supabase/migrations/0037_
+  maintenance.sql`) -- a standalone task on a property: title,
+  description, priority (normal/urgent), status (open/in-progress/done),
+  optionally assigned to a cleaner. Not tied to any booking. Staff manage
+  everything directly; a cleaner can only move their own assigned work
+  order between in-progress/done, via a narrow `update_own_work_order_
+  status()` RPC (same pattern as `cleaner_update_booking` for bookings) --
+  RLS is row-level, not column-level, so a direct table policy couldn't
+  have stopped a cleaner from editing the title or reassigning it to
+  someone else.
+- **Preventative maintenance schedules** (`maintenance_schedules` table)
+  -- a recurring task per property ("replace HVAC filter every 90 days"),
+  independent of bookings. `next_due_at` is stored, not computed on read.
+  A new daily cron, `/api/cron/maintenance-due`, follows the exact same
+  external-scheduler pattern as `/api/cron/sync-ical` (same `CRON_SECRET`
+  works for both -- just add a second cron-job.org job pointed at this
+  route) -- it finds every overdue schedule without an open work order
+  already, creates one, and notifies staff. Completing that work order
+  (by staff or the assigned cleaner) rolls the schedule's due date
+  forward automatically (`work_orders_before_write` trigger) -- the same
+  whether it's completed by hand or via the cron-created one. Staff can
+  also mark a schedule done directly, or spin up its work order early,
+  without waiting for it to go overdue.
+- **Auto-flagged re-cleans**: `rateBooking` (`calendar/actions.ts`) now
+  creates an urgent, unassigned work order (`source: 'low_rating'`,
+  linked back to the booking) whenever a rating comes in at 2★ or below,
+  and notifies the organization's Owners/Managers -- best-effort, so a
+  notification hiccup can never block the rating itself from saving.
 
 ## Backlog
 

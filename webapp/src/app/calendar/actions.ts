@@ -105,13 +105,17 @@ export async function deleteBooking(id: string) {
   revalidatePath("/calendar");
 }
 
+// A rating this low or lower gets an urgent re-clean work order flagged
+// automatically -- see the low-rating branch below.
+const LOW_RATING_THRESHOLD = 2;
+
 // Admin rates the cleaner's work on a booking. Covered by the same
 // `bookings_admin_write` RLS policy as everything else admin-only here.
 export async function rateBooking(id: string, rating: number, comment: string) {
   const supabase = await createClient();
   const { data: booking } = await supabase
     .from("bookings")
-    .select("assigned_cleaner_id")
+    .select("assigned_cleaner_id, property_id, organization_id")
     .eq("id", id)
     .maybeSingle();
   const { error } = await supabase
@@ -128,6 +132,45 @@ export async function rateBooking(id: string, rating: number, comment: string) {
       body: `★ ${rating}${comment ? ` — ${comment}` : ""}`,
       url: "/history",
     });
+  }
+
+  // A low rating almost always means the property needs a re-clean --
+  // flag it as an urgent, unassigned work order for staff to pick up,
+  // rather than relying on someone noticing the rating on their own.
+  // Best-effort: a failure here should never surface as a failed rating.
+  if (booking?.property_id && rating <= LOW_RATING_THRESHOLD) {
+    try {
+      const { data: property } = await supabase
+        .from("properties")
+        .select("name")
+        .eq("id", booking.property_id)
+        .maybeSingle();
+      await supabase.from("work_orders").insert({
+        property_id: booking.property_id,
+        title: `Re-clean needed — ${rating}★ rating`,
+        description: comment ? `Rating comment: ${comment}` : "",
+        priority: "urgent",
+        source: "low_rating",
+        related_booking_id: id,
+      });
+      revalidatePath("/maintenance");
+
+      const { data: staffProfiles } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("organization_id", booking.organization_id)
+        .in("role", ["owner", "manager"]);
+      const staffIds = (staffProfiles ?? []).map((p) => p.id as string);
+      if (staffIds.length > 0) {
+        await notifyUsers(staffIds, {
+          title: "Re-clean flagged",
+          body: `${property?.name ?? "A property"} got a ${rating}★ rating — a re-clean work order was created.`,
+          url: "/maintenance",
+        });
+      }
+    } catch {
+      // Best-effort -- the rating itself already succeeded above.
+    }
   }
 }
 

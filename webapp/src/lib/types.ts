@@ -81,6 +81,35 @@ export interface Checklist {
   [itemKey: string]: boolean | OvenChecklistEntry | AttentionFlag | undefined;
 }
 
+export type WorkOrderStatus = "open" | "in-progress" | "done";
+export type WorkOrderPriority = "normal" | "urgent";
+export type WorkOrderSource = "manual" | "low_rating" | "preventative";
+
+export interface WorkOrder {
+  id: string;
+  property_id: string;
+  title: string;
+  description: string;
+  status: WorkOrderStatus;
+  priority: WorkOrderPriority;
+  source: WorkOrderSource;
+  assigned_to: string | null;
+  related_booking_id: string | null;
+  schedule_id: string | null;
+  due_date: string | null;
+  completed_at: string | null;
+  created_at: string;
+}
+
+export interface MaintenanceSchedule {
+  id: string;
+  property_id: string;
+  title: string;
+  interval_days: number;
+  last_completed_at: string | null;
+  next_due_at: string;
+}
+
 export type BookingSource = "manual" | "ical";
 export type DisputeStatus = "none" | "open" | "resolved";
 
