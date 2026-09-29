@@ -110,6 +110,16 @@ export interface MaintenanceSchedule {
   next_due_at: string;
 }
 
+export interface SupplyItem {
+  id: string;
+  property_id: string;
+  name: string;
+  unit: string;
+  quantity: number;
+  low_threshold: number;
+  last_restocked_at: string | null;
+}
+
 export type BookingSource = "manual" | "ical";
 export type DisputeStatus = "none" | "open" | "resolved";
 

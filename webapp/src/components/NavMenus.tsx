@@ -28,6 +28,9 @@ export default function NavMenus({ isStaffUser }: { isStaffUser: boolean }) {
           <Link href="/maintenance" className="dropdown-item">
             Maintenance
           </Link>
+          <Link href="/supplies" className="dropdown-item">
+            Supplies
+          </Link>
         </Dropdown>
       ) : null}
       <Dropdown label="Menu" triggerClassName="today-btn" align="left">
@@ -42,6 +45,9 @@ export default function NavMenus({ isStaffUser }: { isStaffUser: boolean }) {
         </Link>
         <Link href="/maintenance" className="dropdown-item">
           Maintenance
+        </Link>
+        <Link href="/supplies" className="dropdown-item">
+          Supplies
         </Link>
         <Link href="/profile" className="dropdown-item">
           My Profile

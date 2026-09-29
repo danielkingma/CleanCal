@@ -887,6 +887,44 @@ cleaner-facing for their own assigned items:
   and notifies the organization's Owners/Managers -- best-effort, so a
   notification hiccup can never block the rating itself from saving.
 
+## Supply/inventory tracking (slice 28)
+
+General consumables per property (toilet paper, coffee, soap, ...), not
+tied to any specific booking. New `/supplies` page (`SuppliesView.tsx`),
+linked from the same Menu/Manage dropdowns as Maintenance.
+
+- **`supply_items` table** (`supabase/migrations/0038_supply_
+  inventory.sql`) -- name, unit (rolls/bottles/bags/...), quantity, and a
+  low-stock threshold, scoped to a property the same way work orders are
+  (`organization_id` derived server-side from `property_id`, never
+  trusted from the client). Everyone in the org can *see* the list (a
+  cleaner needs to know what's already low before they show up); adding,
+  renaming, or removing an item, and changing its threshold, stays
+  staff-only.
+- **Reporting usage**: "Used one" is available to anyone (staff or
+  cleaner) and goes through a narrow `report_supply_usage()` RPC that can
+  only ever decrement quantity (clamped at zero) -- same reasoning as
+  `update_own_work_order_status`: RLS alone can't stop a direct write
+  policy from also letting a cleaner rename items or raise the threshold,
+  so the RPC is the only path that touches quantity downward.
+- **Restocking** is a plain staff-only update (`restockSupplyItem`) that
+  sets the quantity back up and stamps `last_restocked_at` -- deliberately
+  a different path than usage-reporting, so "someone used the last one"
+  and "staff just bought more" can never be confused with each other.
+- **Low-stock flag**: computed as `quantity <= low_threshold`, shown
+  inline per item (no separate cron needed, unlike maintenance schedules
+  -- there's no "due date" to poll for, just a running count). Whenever a
+  usage report crosses an item at or below its threshold,
+  `reportSupplyUsage` (`supplies/actions.ts`) notifies the organization's
+  Owners/Managers, best-effort, the same way the low-rating re-clean flag
+  does.
+- **Reordering**: deliberately not automatic. There's no supplier API
+  integration to place a real order against -- "Restock" is staff marking
+  it done by hand once they've actually bought more. Wiring up real
+  automatic reordering needs you to pick a supplier with an API first
+  (e.g. Amazon Business), the same "waiting on something outside this
+  repo" situation as the Backlog items below.
+
 ## Backlog
 
 Waiting on something outside this repo before there's anything to build:

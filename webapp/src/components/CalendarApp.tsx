@@ -364,6 +364,12 @@ export default function CalendarApp({
               <Link href="/cleaners" className="dropdown-item">
                 Cleaners
               </Link>
+              <Link href="/maintenance" className="dropdown-item">
+                Maintenance
+              </Link>
+              <Link href="/supplies" className="dropdown-item">
+                Supplies
+              </Link>
             </Dropdown>
           ) : null}
           {isStaffUser ? (
@@ -383,6 +389,12 @@ export default function CalendarApp({
             </Link>
             <Link href="/availability" className="dropdown-item">
               Availability
+            </Link>
+            <Link href="/maintenance" className="dropdown-item">
+              Maintenance
+            </Link>
+            <Link href="/supplies" className="dropdown-item">
+              Supplies
             </Link>
             <Link href="/profile" className="dropdown-item">
               My Profile
