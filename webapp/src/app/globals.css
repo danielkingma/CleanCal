@@ -2446,7 +2446,9 @@ main {
 .monitor-frame {
   width: 420px;
   max-width: 62vw;
-  aspect-ratio: 16 / 10;
+  /* Matches the calendar screenshot's own proportions (1400x659) so it
+     fills the frame edge to edge instead of leaving letterbox bars. */
+  aspect-ratio: 1400 / 659;
   background: #1b1b1d;
   border-radius: 14px;
   padding: 14px 14px 20px;
@@ -2473,8 +2475,11 @@ main {
 .monitor-screen img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: top;
+  /* contain, not cover -- the calendar screenshot is wider (relative to
+     its height) than the monitor frame, so "cover" was cropping its left
+     and right edges off. "contain" always shows the whole screenshot,
+     letterboxed top/bottom against the screen's own background instead. */
+  object-fit: contain;
   display: block;
 }
 .monitor-stand-neck {
