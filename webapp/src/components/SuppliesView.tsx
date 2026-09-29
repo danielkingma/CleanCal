@@ -21,8 +21,15 @@ export default function SuppliesView({ isStaffUser, items, properties }: Supplie
   const [propertyId, setPropertyId] = useState(properties[0]?.id ?? "");
   const [name, setName] = useState("");
   const [unit, setUnit] = useState("unit");
-  const [quantity, setQuantity] = useState(10);
-  const [lowThreshold, setLowThreshold] = useState(2);
+  // Kept as raw strings, not numbers -- an onChange that coerces on every
+  // keystroke (Number(e.target.value) || 0) forces the field back to "0"
+  // the instant it's cleared to type a fresh value, which is what caused
+  // typing "6" over a cleared/zeroed field to come out as "06" (the
+  // input got reset to "0" out from under the user mid-keystroke). This
+  // way the field can sit genuinely empty while editing; parsing only
+  // happens on submit, same pattern restockValues below already used.
+  const [quantity, setQuantity] = useState("10");
+  const [lowThreshold, setLowThreshold] = useState("2");
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
 
@@ -41,12 +48,12 @@ export default function SuppliesView({ isStaffUser, items, properties }: Supplie
         property_id: propertyId,
         name: name.trim(),
         unit: unit.trim() || "unit",
-        quantity,
-        low_threshold: lowThreshold,
+        quantity: Math.max(0, Number(quantity) || 0),
+        low_threshold: Math.max(0, Number(lowThreshold) || 0),
       });
       setName("");
-      setQuantity(10);
-      setLowThreshold(2);
+      setQuantity("10");
+      setLowThreshold("2");
     } catch (e) {
       setCreateError(e instanceof Error ? e.message : "Couldn't add that item.");
     } finally {
@@ -174,7 +181,8 @@ export default function SuppliesView({ isStaffUser, items, properties }: Supplie
                   type="number"
                   min={0}
                   value={quantity}
-                  onChange={(e) => setQuantity(Number(e.target.value) || 0)}
+                  onChange={(e) => setQuantity(e.target.value)}
+                  onFocus={(e) => e.target.select()}
                 />
               </div>
               <div className="field">
@@ -184,7 +192,8 @@ export default function SuppliesView({ isStaffUser, items, properties }: Supplie
                   type="number"
                   min={0}
                   value={lowThreshold}
-                  onChange={(e) => setLowThreshold(Number(e.target.value) || 0)}
+                  onChange={(e) => setLowThreshold(e.target.value)}
+                  onFocus={(e) => e.target.select()}
                 />
               </div>
             </div>

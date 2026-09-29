@@ -66,7 +66,12 @@ export default function MaintenanceView({
   // New schedule form
   const [schedPropertyId, setSchedPropertyId] = useState(properties[0]?.id ?? "");
   const [schedTitle, setSchedTitle] = useState("");
-  const [schedIntervalDays, setSchedIntervalDays] = useState(90);
+  // A raw string, not a number -- see SuppliesView.tsx's quantity/
+  // lowThreshold fields for why: coercing on every keystroke
+  // (Number(e.target.value) || 90) snaps the field back to a non-empty
+  // value the instant it's cleared to type something else, which reads
+  // as the field being stuck or doubling digits.
+  const [schedIntervalDays, setSchedIntervalDays] = useState("90");
   const [creatingSched, setCreatingSched] = useState(false);
   const [schedError, setSchedError] = useState<string | null>(null);
 
@@ -99,18 +104,20 @@ export default function MaintenanceView({
     }
   }
 
+  const schedIntervalDaysNum = Number(schedIntervalDays) || 0;
+
   async function handleCreateSchedule() {
-    if (!schedPropertyId || !schedTitle.trim() || schedIntervalDays < 1) return;
+    if (!schedPropertyId || !schedTitle.trim() || schedIntervalDaysNum < 1) return;
     setCreatingSched(true);
     setSchedError(null);
     try {
       await createMaintenanceSchedule({
         property_id: schedPropertyId,
         title: schedTitle.trim(),
-        interval_days: schedIntervalDays,
+        interval_days: schedIntervalDaysNum,
       });
       setSchedTitle("");
-      setSchedIntervalDays(90);
+      setSchedIntervalDays("90");
     } catch (e) {
       setSchedError(e instanceof Error ? e.message : "Couldn't create the schedule.");
     } finally {
@@ -421,7 +428,8 @@ export default function MaintenanceView({
                   type="number"
                   min={1}
                   value={schedIntervalDays}
-                  onChange={(e) => setSchedIntervalDays(Number(e.target.value) || 1)}
+                  onChange={(e) => setSchedIntervalDays(e.target.value)}
+                  onFocus={(e) => e.target.select()}
                 />
               </div>
             </div>
