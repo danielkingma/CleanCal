@@ -64,19 +64,18 @@ export function hasAttention(b: Booking): boolean {
   return b.checklist?.oven?.outcome === "attention" || Boolean(b.checklist?.attention?.flagged);
 }
 
-// Any cleaner who isn't already confirmed onto a job can tick the box and
-// claim it immediately for themselves -- whether the job has no cleaner
-// at all or is currently assigned to someone else who hasn't started it
-// yet. Picking a cleaner in the admin dropdown is a starting suggestion,
-// not an exclusive lock -- an Owner/Manager can always reassign a job
-// directly (the "Assigned cleaner" dropdown works on any booking). See
-// supabase/migrations/0022_remove_approval_instant_claim.sql. Deliberately
-// excludes the open job board (is_open_job), which has its own identical
+// Only a genuinely unassigned to-clean job can be self-claimed by any
+// cleaner on the team -- once an Owner/Manager has put a specific
+// cleaner on it, it's theirs until it's reassigned or cleared (an
+// Owner/Manager can always do that directly via the "Assigned cleaner"
+// dropdown, which works on any booking). See
+// supabase/migrations/0041_lock_assigned_jobs.sql. Deliberately excludes
+// the open job board (is_open_job), which has its own identical
 // instant-claim flow (claim_open_booking).
 export function isClaimableBooking(b: Booking, viewerId: string | undefined, isStaffViewer: boolean): boolean {
   if (isStaffViewer || viewerId == null) return false;
   if (b.is_open_job) return false;
-  if (b.assigned_cleaner_id === viewerId) return false;
+  if (b.assigned_cleaner_id != null) return false;
   return b.status === "to-clean";
 }
 

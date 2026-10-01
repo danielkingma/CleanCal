@@ -159,13 +159,13 @@ export default function BookingModal({
   const isPendingConfirmation =
     role === "cleaner" && !!booking && isAssignedCleaner && !booking.is_open_job && !booking.assignment_confirmed;
   // A cleaner now sees every booking in the portfolio for schedule
-  // awareness. One that isn't confirmed as theirs -- whether it has no
-  // cleaner at all or is currently assigned to someone else -- reads as
-  // unassigned to them, with a checkbox that claims it immediately (see
-  // isClaimableBooking in calendar-utils.ts). An Owner/Manager can always
-  // reassign it afterwards via the "Assigned cleaner" dropdown below if
-  // the wrong cleaner ends up on it. calendar/page.tsx and the realtime
-  // handler already strip guest/notes/checklist/rating/dispute data from
+  // awareness. A genuinely unassigned to-clean one reads as claimable to
+  // them, with a checkbox that claims it immediately (see
+  // isClaimableBooking in calendar-utils.ts); one already assigned to a
+  // specific cleaner -- even unconfirmed -- is locked to that cleaner.
+  // An Owner/Manager can always reassign it via the "Assigned cleaner"
+  // dropdown below if the wrong cleaner ends up on it. calendar/page.tsx
+  // and the realtime handler already strip guest/notes/checklist/rating/dispute data from
   // a booking that isn't theirs or open before it ever reaches this
   // component, so render a minimal, read-only summary below instead of
   // the full form.
