@@ -42,8 +42,8 @@ const STEPS = [
 
 const PRICING = [
   { tier: "1 – 99 properties", price: "Free for 3 months, then $5/property/mo" },
-  { tier: "100 – 199 properties", price: "$500 / mo flat" },
-  { tier: "200 – 499 properties", price: "$1,000 / mo flat" },
+  { tier: "100 – 199 properties", price: "$450 / mo flat" },
+  { tier: "200 – 499 properties", price: "$900 / mo flat" },
   { tier: "500+ properties", price: "Custom enterprise pricing" },
 ];
 
