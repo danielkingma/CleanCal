@@ -18,7 +18,15 @@ export type ConnectStatus = "not_started" | "pending" | "active";
 
 export interface Profile {
   id: string;
+  // The combined "Given [Middle] Surname" string -- kept in sync from
+  // given_name/middle_name/surname below by update_own_profile, and still
+  // what everywhere else in the app (nav, notifications, invites, the
+  // calendar) displays. Editing a name happens through the three parts
+  // below, not this field directly.
   name: string;
+  given_name?: string | null;
+  middle_name?: string | null;
+  surname?: string | null;
   role: Role;
   bio?: string;
   phone?: string;
@@ -28,8 +36,8 @@ export interface Profile {
   stripe_connect_status?: ConnectStatus;
   deactivated_at?: string | null;
   // Shown instead of the full name on a booking bar too narrow to fit
-  // it -- self-chosen, 1-2 characters, falls back to the first letter of
-  // `name` when unset. Not used anywhere a full name fits.
+  // it -- one letter per filled name part (given/middle/surname),
+  // computed server-side by update_own_profile, never typed directly.
   preferred_initial?: string | null;
   // A hex colour (e.g. "#2f6f6f"), used only in the Assigned/Completed
   // lists to colour that cleaner's name -- never on the calendar bars

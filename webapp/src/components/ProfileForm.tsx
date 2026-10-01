@@ -33,9 +33,23 @@ export default function ProfileForm({
   devices: KnownDevice[];
   organizationName: string | null;
 }) {
-  const [name, setName] = useState(profile.name);
-  const [preferredInitial, setPreferredInitial] = useState(profile.preferred_initial ?? "");
+  // Falls back to splitting the combined `name` the same way the
+  // 0042_split_name_fields.sql backfill does, in case this profile's
+  // given_name/surname haven't been filled in yet for some reason.
+  const nameParts = profile.name.trim().split(/\s+/).filter(Boolean);
+  const [givenName, setGivenName] = useState(profile.given_name ?? nameParts[0] ?? "");
+  const [middleName, setMiddleName] = useState(
+    profile.middle_name ?? (nameParts.length > 2 ? nameParts.slice(1, -1).join(" ") : ""),
+  );
+  const [surname, setSurname] = useState(
+    profile.surname ?? (nameParts.length > 1 ? nameParts[nameParts.length - 1] : ""),
+  );
   const [favoriteColor, setFavoriteColor] = useState(profile.favorite_color ?? "#2f6f6f");
+  // Preview only -- the server derives the real preferred_initial the
+  // same way (see update_own_profile), this just shows what it'll be
+  // before Save is pressed.
+  const previewInitial =
+    (givenName.trim().charAt(0) + middleName.trim().charAt(0) + surname.trim().charAt(0)).toUpperCase();
   const [orgName, setOrgName] = useState(organizationName ?? "");
   const [savingOrgName, setSavingOrgName] = useState(false);
   const [orgNameSaved, setOrgNameSaved] = useState(false);
@@ -61,12 +75,13 @@ export default function ProfileForm({
     setError(null);
     try {
       await updateOwnProfile(
-        name,
+        givenName,
+        middleName,
+        surname,
         bio,
         phone,
         serviceArea,
         smsOptIn,
-        preferredInitial,
         profile.role === "cleaner" ? favoriteColor : null,
       );
       setSaved(true);
@@ -164,26 +179,40 @@ export default function ProfileForm({
           </div>
 
           <div className="field">
-            <label htmlFor="pName">Name</label>
-            <input id="pName" type="text" value={name} onChange={(e) => setName(e.target.value)} />
+            <label htmlFor="pGivenName">Given name</label>
+            <input
+              id="pGivenName"
+              type="text"
+              value={givenName}
+              onChange={(e) => setGivenName(e.target.value)}
+            />
+          </div>
+
+          <div className="field">
+            <label htmlFor="pMiddleName">Middle name</label>
+            <input
+              id="pMiddleName"
+              type="text"
+              placeholder="Optional"
+              value={middleName}
+              onChange={(e) => setMiddleName(e.target.value)}
+            />
+          </div>
+
+          <div className="field">
+            <label htmlFor="pSurname">Surname</label>
+            <input id="pSurname" type="text" value={surname} onChange={(e) => setSurname(e.target.value)} />
           </div>
 
           {profile.role === "cleaner" ? (
             <div className="field">
-              <label htmlFor="pInitial">Preferred initial</label>
-              <input
-                id="pInitial"
-                type="text"
-                maxLength={2}
-                value={preferredInitial}
-                placeholder={name ? name.charAt(0).toUpperCase() : "e.g. F"}
-                style={{ maxWidth: 80 }}
-                onChange={(e) => setPreferredInitial(e.target.value.toUpperCase())}
-              />
-              <p className="access-note" style={{ marginTop: 6 }}>
-                A booking bar can be too short to fit your full name -- when that happens, this
-                initial is shown in its place instead of cutting your name off mid-word. Leave it
-                blank to just use the first letter of your name.
+              <label>Preferred initial</label>
+              <p className="access-note">
+                A booking bar can be too short to fit your full name -- when that happens, your
+                initial is shown in its place instead of cutting your name off mid-word. It&apos;s
+                made up of one letter per name above that you&apos;ve filled in (no middle name,
+                no middle initial) -- right now that&apos;s{" "}
+                <strong>{previewInitial || "—"}</strong>.
               </p>
               <label htmlFor="pColor" style={{ display: "block", marginTop: 14 }}>
                 Favourite colour
