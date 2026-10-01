@@ -34,6 +34,8 @@ export default function ProfileForm({
   organizationName: string | null;
 }) {
   const [name, setName] = useState(profile.name);
+  const [preferredInitial, setPreferredInitial] = useState(profile.preferred_initial ?? "");
+  const [favoriteColor, setFavoriteColor] = useState(profile.favorite_color ?? "#2f6f6f");
   const [orgName, setOrgName] = useState(organizationName ?? "");
   const [savingOrgName, setSavingOrgName] = useState(false);
   const [orgNameSaved, setOrgNameSaved] = useState(false);
@@ -58,7 +60,15 @@ export default function ProfileForm({
     setSaved(false);
     setError(null);
     try {
-      await updateOwnProfile(name, bio, phone, serviceArea, smsOptIn);
+      await updateOwnProfile(
+        name,
+        bio,
+        phone,
+        serviceArea,
+        smsOptIn,
+        preferredInitial,
+        profile.role === "cleaner" ? favoriteColor : null,
+      );
       setSaved(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Couldn't save.");
@@ -157,6 +167,45 @@ export default function ProfileForm({
             <label htmlFor="pName">Name</label>
             <input id="pName" type="text" value={name} onChange={(e) => setName(e.target.value)} />
           </div>
+
+          {profile.role === "cleaner" ? (
+            <div className="field">
+              <label htmlFor="pInitial">Preferred initial</label>
+              <input
+                id="pInitial"
+                type="text"
+                maxLength={2}
+                value={preferredInitial}
+                placeholder={name ? name.charAt(0).toUpperCase() : "e.g. F"}
+                style={{ maxWidth: 80 }}
+                onChange={(e) => setPreferredInitial(e.target.value.toUpperCase())}
+              />
+              <p className="access-note" style={{ marginTop: 6 }}>
+                A booking bar can be too short to fit your full name -- when that happens, this
+                initial is shown in its place instead of cutting your name off mid-word. Leave it
+                blank to just use the first letter of your name.
+              </p>
+              <label htmlFor="pColor" style={{ display: "block", marginTop: 14 }}>
+                Favourite colour
+              </label>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 4 }}>
+                <input
+                  id="pColor"
+                  type="color"
+                  value={favoriteColor}
+                  style={{ width: 44, height: 32, padding: 0, border: "1px solid var(--line)", borderRadius: 6 }}
+                  onChange={(e) => setFavoriteColor(e.target.value)}
+                />
+                <span style={{ fontSize: 12.5, color: "var(--muted)", fontFamily: "monospace" }}>
+                  {favoriteColor}
+                </span>
+              </div>
+              <p className="access-note" style={{ marginTop: 6 }}>
+                Your name is shown in this colour in the Assigned and Completed lists, so it&apos;s
+                easier to pick out your jobs at a glance.
+              </p>
+            </div>
+          ) : null}
 
           <div className="field">
             <label htmlFor="pPhone">Phone</label>

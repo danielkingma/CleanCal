@@ -35,6 +35,10 @@ interface MonthGridProps {
   // Staff view only -- resolves booking.assigned_cleaner_id to a name,
   // shown next to the broom mark below.
   cleanerNameById?: Record<string, string>;
+  // Staff view only -- resolves booking.assigned_cleaner_id to the
+  // cleaner's preferred initial, shown in place of their name on a
+  // single-day segment (barely wide enough for a couple of characters).
+  cleanerInitialById?: Record<string, string>;
 }
 
 interface BarSegment {
@@ -118,6 +122,7 @@ export default function MonthGrid({
   viewerId,
   isStaffViewer = false,
   cleanerNameById,
+  cleanerInitialById,
 }: MonthGridProps) {
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
 
@@ -199,6 +204,17 @@ export default function MonthGrid({
                   const assignedCleanerName = isAssignedToCleaner
                     ? (cleanerNameById?.[seg.booking.assigned_cleaner_id!] ?? "Cleaner")
                     : null;
+                  // A single-day segment is barely wide enough for a
+                  // couple of characters, so it shows the cleaner's
+                  // initial instead of a name that would just get
+                  // ellipsis-truncated down to one letter anyway.
+                  const assignedCleanerInitial = isAssignedToCleaner
+                    ? (cleanerInitialById?.[seg.booking.assigned_cleaner_id!] ||
+                      assignedCleanerName?.charAt(0).toUpperCase() ||
+                      "?")
+                    : null;
+                  const showCleanerInitial = isAssignedToCleaner && seg.span <= 1;
+                  const displayCleanerName = showCleanerInitial ? assignedCleanerInitial : assignedCleanerName;
                   // Which cleaner is on it is the most useful thing to show
                   // an Owner/Manager at a glance, so it wins over the guest
                   // name once assigned. The platform's color is already the
@@ -207,7 +223,7 @@ export default function MonthGrid({
                   // it never shows twice on the same booking.
                   const label = isOpenUnclaimed
                     ? "Open"
-                    : (assignedCleanerName ?? (seg.booking.guests || platform?.name || ""));
+                    : (displayCleanerName ?? (seg.booking.guests || platform?.name || ""));
                   return (
                     <div
                       role="button"

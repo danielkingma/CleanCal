@@ -14,6 +14,12 @@ interface MobileAgendaProps {
   // Staff view only -- resolves an assigned booking's cleaner id to a
   // name for the card (see AgendaCard.tsx).
   cleanerNameById?: Record<string, string>;
+  // Only meaningful together with showCleanerColor below.
+  cleanerColorById?: Record<string, string>;
+  // Set only by the Assigned/Completed tabs -- that's the one place a
+  // cleaner's chosen colour is shown against their name (see
+  // AgendaCard.tsx); the day-by-day agenda views leave it off.
+  showCleanerColor?: boolean;
 }
 
 // A vertically-stacked day-by-day list, standing in for the property-row
@@ -30,6 +36,8 @@ export default function MobileAgenda({
   viewerId,
   isStaffViewer,
   cleanerNameById,
+  cleanerColorById,
+  showCleanerColor,
 }: MobileAgendaProps) {
   const today = new Date();
   const propertyNameById = Object.fromEntries(properties.map((p) => [p.id, p.name]));
@@ -73,6 +81,8 @@ export default function MobileAgenda({
                   viewerId={viewerId}
                   isStaffViewer={isStaffViewer}
                   cleanerNameById={cleanerNameById}
+                  cleanerColorById={cleanerColorById}
+                  showCleanerColor={showCleanerColor}
                 />
               ))}
             </div>

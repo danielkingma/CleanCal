@@ -229,6 +229,23 @@ export default function CalendarApp({
     () => Object.fromEntries(cleaners.map((c) => [c.id, c.name || c.id])),
     [cleaners],
   );
+  // Stands in for the full name on a booking bar too narrow to fit it
+  // (Timeline/MonthGrid) -- falls back to the first letter of their name
+  // when a cleaner hasn't set their own preferred_initial.
+  const cleanerInitialById = useMemo(
+    () =>
+      Object.fromEntries(
+        cleaners.map((c) => [c.id, c.preferred_initial || (c.name || "?").charAt(0).toUpperCase()]),
+      ),
+    [cleaners],
+  );
+  // Used only in the Assigned/Completed lists (AgendaCard, via
+  // MobileAgenda's showCleanerColor) to colour a cleaner's name -- never
+  // on the calendar bars themselves, which have no room to spare.
+  const cleanerColorById = useMemo(
+    () => Object.fromEntries(cleaners.filter((c) => c.favorite_color).map((c) => [c.id, c.favorite_color as string])),
+    [cleaners],
+  );
   // Shown wherever there's nothing to display because `properties` is
   // empty -- a cleaner only ever sees properties tied to a booking
   // assigned to them or posted Open (see calendar/page.tsx), so "add a
@@ -479,6 +496,8 @@ export default function CalendarApp({
             viewerId={currentProfile.id}
             isStaffViewer={isStaffUser}
             cleanerNameById={cleanerNameById}
+            cleanerColorById={cleanerColorById}
+            showCleanerColor
           />
         ) : derivedView === "completed" ? (
           <MobileAgenda
@@ -489,6 +508,8 @@ export default function CalendarApp({
             viewerId={currentProfile.id}
             isStaffViewer={isStaffUser}
             cleanerNameById={cleanerNameById}
+            cleanerColorById={cleanerColorById}
+            showCleanerColor
           />
         ) : derivedView === "year" ? (
           yearPropertyId ? (
@@ -503,6 +524,7 @@ export default function CalendarApp({
               viewerId={currentProfile.id}
               isStaffViewer={isStaffUser}
               cleanerNameById={cleanerNameById}
+              cleanerInitialById={cleanerInitialById}
             />
           ) : (
             <p className="photo-note">{noPropertiesMessage}</p>
@@ -519,6 +541,7 @@ export default function CalendarApp({
               viewerId={currentProfile.id}
               isStaffViewer={isStaffUser}
               cleanerNameById={cleanerNameById}
+              cleanerInitialById={cleanerInitialById}
             />
           ) : (
             <p className="photo-note">{noPropertiesMessage}</p>
@@ -548,6 +571,7 @@ export default function CalendarApp({
             viewerId={currentProfile.id}
             isStaffViewer={isStaffUser}
             cleanerNameById={cleanerNameById}
+            cleanerInitialById={cleanerInitialById}
           />
         )}
       </main>

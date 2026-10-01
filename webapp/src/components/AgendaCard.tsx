@@ -20,6 +20,12 @@ interface AgendaCardProps {
   // Staff view only -- resolves booking.assigned_cleaner_id to a name,
   // shown next to the broom mark below.
   cleanerNameById?: Record<string, string>;
+  // Only applied when showCleanerColor is set.
+  cleanerColorById?: Record<string, string>;
+  // Set only for the Assigned/Completed tabs (see MobileAgenda.tsx) --
+  // the one place a cleaner's own favourite colour tints their name,
+  // since that's the dedicated spot for scanning "who's doing what".
+  showCleanerColor?: boolean;
 }
 
 // A single clean, shown as a full-width tappable card -- used by
@@ -32,6 +38,8 @@ export default function AgendaCard({
   viewerId,
   isStaffViewer,
   cleanerNameById,
+  cleanerColorById,
+  showCleanerColor,
 }: AgendaCardProps) {
   const [pending, setPending] = useState(false);
   const isOpenUnclaimed = b.is_open_job && !b.assigned_cleaner_id;
@@ -46,6 +54,8 @@ export default function AgendaCard({
   // by name (not just a marker) since this list has the room for it.
   const assignedCleanerName =
     isStaffViewer && b.assigned_cleaner_id ? (cleanerNameById?.[b.assigned_cleaner_id] ?? "Cleaner") : null;
+  const assignedCleanerColor =
+    showCleanerColor && b.assigned_cleaner_id ? cleanerColorById?.[b.assigned_cleaner_id] : undefined;
 
   async function handleClaim() {
     setPending(true);
@@ -94,7 +104,12 @@ export default function AgendaCard({
             {isOpenUnclaimed ? "Open job" : STATUS_LABEL[b.status]}
           </span>
           {assignedCleanerName ? (
-            <span className="agenda-cleaner-tag">🧹 {assignedCleanerName}</span>
+            <span
+              className="agenda-cleaner-tag"
+              style={assignedCleanerColor ? { color: assignedCleanerColor } : undefined}
+            >
+              🧹 {assignedCleanerName}
+            </span>
           ) : null}
           {b.guests ? <span className="agenda-guests">{b.guests}</span> : null}
           {hasAttention(b) ? <span className="attn-marker agenda-inline-marker">!</span> : null}

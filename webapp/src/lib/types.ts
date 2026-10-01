@@ -27,6 +27,14 @@ export interface Profile {
   identity_status?: IdentityStatus;
   stripe_connect_status?: ConnectStatus;
   deactivated_at?: string | null;
+  // Shown instead of the full name on a booking bar too narrow to fit
+  // it -- self-chosen, 1-2 characters, falls back to the first letter of
+  // `name` when unset. Not used anywhere a full name fits.
+  preferred_initial?: string | null;
+  // A hex colour (e.g. "#2f6f6f"), used only in the Assigned/Completed
+  // lists to colour that cleaner's name -- never on the calendar bars
+  // themselves.
+  favorite_color?: string | null;
 }
 
 export interface CleanerRating {

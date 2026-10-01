@@ -62,7 +62,7 @@ export default async function CalendarPage() {
   if (isStaff(currentProfile.role)) {
     const { data } = await supabase
       .from("profiles")
-      .select("id, name, role, stripe_connect_status")
+      .select("id, name, role, stripe_connect_status, preferred_initial, favorite_color")
       .eq("role", "cleaner")
       .is("deactivated_at", null)
       .order("name");

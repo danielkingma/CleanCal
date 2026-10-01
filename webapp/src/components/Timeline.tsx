@@ -40,6 +40,10 @@ interface TimelineProps {
   // Staff view only -- resolves booking.assigned_cleaner_id to a name,
   // shown next to the broom mark below.
   cleanerNameById?: Record<string, string>;
+  // Staff view only -- resolves booking.assigned_cleaner_id to the
+  // cleaner's preferred initial, shown in place of their name when the
+  // bar's too narrow for it (see NARROW_BAR_PX below).
+  cleanerInitialById?: Record<string, string>;
 }
 
 export default function Timeline({
@@ -54,6 +58,7 @@ export default function Timeline({
   viewerId,
   isStaffViewer = false,
   cleanerNameById,
+  cleanerInitialById,
 }: TimelineProps) {
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
 
@@ -177,7 +182,18 @@ export default function Timeline({
                   const assignedCleanerName = isAssignedToCleaner
                     ? (cleanerNameById?.[b.assigned_cleaner_id!] ?? "Cleaner")
                     : null;
-                  const broomPrefix = assignedCleanerName ? `🧹 ${assignedCleanerName} · ` : "";
+                  // A short stay's bar isn't wide enough for the full name
+                  // plus the status text next to it -- below this width,
+                  // show just their initial instead of letting the name
+                  // get cut off mid-word.
+                  const NARROW_BAR_PX = 76;
+                  const assignedCleanerInitial = isAssignedToCleaner
+                    ? (cleanerInitialById?.[b.assigned_cleaner_id!] || assignedCleanerName?.charAt(0).toUpperCase() || "?")
+                    : null;
+                  const showCleanerInitial = isAssignedToCleaner && width < NARROW_BAR_PX;
+                  const broomPrefix = assignedCleanerName
+                    ? `🧹 ${showCleanerInitial ? assignedCleanerInitial : assignedCleanerName} · `
+                    : "";
                   const label = isOpenUnclaimed
                     ? weekly
                       ? "Open — tap to claim"

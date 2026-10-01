@@ -11,6 +11,7 @@ interface PropertyYearViewProps {
   viewerId?: string;
   isStaffViewer?: boolean;
   cleanerNameById?: Record<string, string>;
+  cleanerInitialById?: Record<string, string>;
 }
 
 export default function PropertyYearView({
@@ -21,6 +22,7 @@ export default function PropertyYearView({
   viewerId,
   isStaffViewer,
   cleanerNameById,
+  cleanerInitialById,
 }: PropertyYearViewProps) {
   return (
     <div className="py-year-grid">
@@ -35,6 +37,7 @@ export default function PropertyYearView({
           viewerId={viewerId}
           isStaffViewer={isStaffViewer}
           cleanerNameById={cleanerNameById}
+          cleanerInitialById={cleanerInitialById}
         />
       ))}
     </div>
