@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createOrganization, redeemInvite } from "@/app/onboarding/actions";
+import { createOrganization, forgetInviteToken, redeemInvite } from "@/app/onboarding/actions";
 import Logo from "./Logo";
 import SignOutButton from "./SignOutButton";
 
@@ -37,6 +37,21 @@ export default function OnboardingForm({
     } catch (e) {
       setError(e instanceof Error ? e.message : "Couldn't get you set up.");
       setSaving(false);
+    }
+  }
+
+  // The invite shown here might be a day-old cookie fallback (see
+  // login/actions.ts's sendMagicLink) rather than today's actual link --
+  // this lets someone who doesn't recognize the business name, or who
+  // really does want to start their own, get out of it instead of being
+  // stuck joining whatever that cookie remembered.
+  async function handleNotThisInvite() {
+    setSaving(true);
+    try {
+      await forgetInviteToken();
+    } finally {
+      router.push("/onboarding");
+      router.refresh();
     }
   }
 
@@ -89,9 +104,26 @@ export default function OnboardingForm({
               >
                 {saving ? "Joining…" : "Join"}
               </button>
+              <p className="auth-sub" style={{ marginTop: 10, fontSize: 13 }}>
+                Not your business?{" "}
+                <button
+                  type="button"
+                  onClick={handleNotThisInvite}
+                  disabled={saving}
+                  style={{ background: "none", border: "none", padding: 0, color: "var(--teal)", textDecoration: "underline", font: "inherit", cursor: "pointer" }}
+                >
+                  Start your own instead
+                </button>
+                .
+              </p>
             </>
           ) : (
-            <p className="auth-error">This invite link is invalid or has already been used.</p>
+            <>
+              <p className="auth-error">This invite link is invalid or has already been used.</p>
+              <button type="button" className="btn btn-secondary" onClick={handleNotThisInvite} disabled={saving}>
+                Start your own business instead
+              </button>
+            </>
           )}
           {error ? <p className="auth-error">{error}</p> : null}
           <div style={{ marginTop: 20, textAlign: "center" }}>

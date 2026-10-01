@@ -1,11 +1,18 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import OnboardingForm from "@/components/OnboardingForm";
+import { readInviteCookie } from "@/lib/invite-cookie";
 
 export default async function OnboardingPage({ searchParams }: PageProps<"/onboarding">) {
   const params = await searchParams;
   const rawInvite = params.invite;
-  const inviteToken = typeof rawInvite === "string" ? rawInvite : null;
+  // Same URL-first, cookie-fallback reasoning as /login (see
+  // login/actions.ts's sendMagicLink) -- this is what actually closes the
+  // gap: /auth/callback's own fallback redirect already preserves the URL
+  // param when it has one, but a user who verified via the typed-in code
+  // (verifyLoginCode) can land here with no query string survived from
+  // anywhere, having only ever had the token in that cookie.
+  const inviteToken = typeof rawInvite === "string" ? rawInvite : await readInviteCookie();
 
   const supabase = await createClient();
 

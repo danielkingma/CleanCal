@@ -1,9 +1,23 @@
 "use server";
 
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { registerDeviceAndNotify } from "@/lib/device-session";
+import { INVITE_COOKIE } from "@/lib/invite-cookie";
 
+// A cleaner's invite token otherwise lives only in the ?invite= query
+// param, carried along by hand through /login -> emailRedirectTo ->
+// /auth/callback -> /onboarding. That chain breaks the moment someone
+// leaves the actual /login?invite=... tab -- e.g. the Gmail-scanner
+// problem below pushes people toward "request a code, then come back
+// and type it in," and if "come back" means reopening cleancal.net fresh
+// instead of returning to that exact tab, the query param is just gone.
+// They land on plain /onboarding, see "create a new business," and
+// (reasonably) do that -- which is how a cleaner ends up as the Owner of
+// an empty organization of their own instead of joining yours. This
+// cookie is a second, more durable place the token lives for a little
+// while, so the onboarding/login pages can recover it even when the URL
+// itself didn't make the trip.
 export interface MagicLinkState {
   status: "idle" | "sent" | "error";
   message?: string;
@@ -18,6 +32,14 @@ export async function sendMagicLink(
     return { status: "error", message: "Enter an email address." };
   }
   const inviteToken = String(formData.get("invite") || "").trim();
+  if (inviteToken) {
+    (await cookies()).set(INVITE_COOKIE, inviteToken, {
+      maxAge: 60 * 60 * 24, // a day is plenty to finish signing in
+      path: "/",
+      httpOnly: true,
+      sameSite: "lax",
+    });
+  }
 
   const supabase = await createClient();
   const origin =
