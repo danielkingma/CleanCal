@@ -588,7 +588,7 @@ export default function HandbookPage() {
                     <tr><th>Properties</th><th>Price</th></tr>
                     <tr><td>1 – 99</td><td>Free for 3 months, then $5/property/month</td></tr>
                     <tr><td>100 – 199</td><td>$500/month (flat)</td></tr>
-                    <tr><td>200 – 500</td><td>$1,000/month (flat)</td></tr>
+                    <tr><td>200 – 499</td><td>$1,000/month (flat)</td></tr>
                     <tr><td>500+</td><td>Custom enterprise pricing</td></tr>
                   </tbody>
                 </table>
