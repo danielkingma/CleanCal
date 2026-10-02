@@ -39,9 +39,10 @@ export interface Profile {
   // it -- one letter per filled name part (given/middle/surname),
   // computed server-side by update_own_profile, never typed directly.
   preferred_initial?: string | null;
-  // A hex colour (e.g. "#2f6f6f"), used only in the Assigned/Completed
-  // lists to colour that cleaner's name -- never on the calendar bars
-  // themselves.
+  // A hex colour (e.g. "#2f6f6f") -- tints that cleaner's name/initial in
+  // the Assigned/Completed lists and on the calendar bars (Timeline,
+  // MonthGrid), but not the generic "has-cleaner" outline in the Year
+  // view, which is deliberately colour-blind.
   favorite_color?: string | null;
 }
 

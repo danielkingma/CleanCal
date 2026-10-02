@@ -21,6 +21,7 @@ import {
   MONTH_NAMES,
   addDays,
   checkoutDate,
+  computeNameInitial,
   fromISO,
   isoDate,
   scopeBookingForViewer,
@@ -237,12 +238,15 @@ export default function CalendarApp({
     [allKnownCleaners],
   );
   // Stands in for the full name on a booking bar too narrow to fit it
-  // (Timeline/MonthGrid) -- falls back to the first letter of their name
-  // when a cleaner hasn't set their own preferred_initial.
+  // (Timeline/MonthGrid). preferred_initial only gets set once a cleaner
+  // has actually opened My Profile and hit Save -- until then, compute
+  // the same one-letter-per-name-part initial from their given/middle/
+  // surname fields directly, rather than falling back to just the first
+  // letter of their full name.
   const cleanerInitialById = useMemo(
     () =>
       Object.fromEntries(
-        allKnownCleaners.map((c) => [c.id, c.preferred_initial || (c.name || "?").charAt(0).toUpperCase()]),
+        allKnownCleaners.map((c) => [c.id, c.preferred_initial || computeNameInitial(c) || "?"]),
       ),
     [allKnownCleaners],
   );

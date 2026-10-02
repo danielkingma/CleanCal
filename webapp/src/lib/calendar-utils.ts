@@ -1,4 +1,22 @@
-import type { Booking } from "./types";
+import type { Booking, Profile } from "./types";
+
+// One letter per filled name part (given/middle/surname), same formula as
+// update_own_profile's own computed_initial -- but computed here too so a
+// cleaner who's never actually opened My Profile and hit Save still shows
+// their real initial everywhere else (the calendar bars among them)
+// instead of falling back to just the first letter of their full name.
+// The DB column (profile.preferred_initial) only gets populated by that
+// RPC, so it lags behind the given/middle/surname fields a backfill
+// migration can set directly.
+export function computeNameInitial(
+  profile: Pick<Profile, "given_name" | "middle_name" | "surname" | "name">,
+): string | null {
+  const parts = [profile.given_name, profile.middle_name, profile.surname]
+    .map((p) => p?.trim())
+    .filter((p): p is string => Boolean(p));
+  if (parts.length > 0) return parts.map((p) => p.charAt(0).toUpperCase()).join("");
+  return profile.name ? profile.name.trim().charAt(0).toUpperCase() || null : null;
+}
 
 export const CHECKIN_FRAC = 14 / 24;
 export const CHECKOUT_FRAC = 10 / 24;
