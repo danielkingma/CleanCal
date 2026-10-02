@@ -842,6 +842,12 @@ main {
   font-weight: 600;
   border-radius: 4px;
   box-shadow: 0 0 0 1px var(--slate);
+  /* Every cell but the last in its row gets a 1px grid-line border-right
+     (see .py-day-cell:not(:last-child) above) -- left in place here, it
+     shows through as a thin line cutting across this cell's own right
+     edge instead of a solid black square. Drop it; the box-shadow above
+     already draws this cell's own edge. */
+  border-right: none;
 }
 .py-day-cell.unavailable {
   background: var(--coral);
