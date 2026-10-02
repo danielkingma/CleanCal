@@ -94,9 +94,17 @@ function weekSegments(weekStart: Date, bookings: Booking[]): BarSegment[] {
   // Lanes only matter if two bookings on the same property overlap, which
   // shouldn't normally happen -- but a bad iCal double-sync or manual entry
   // error could still produce it, so stack rather than hide the overlap.
+  // A segment's span includes a column for its checkout-day sliver, so a
+  // normal same-day handoff -- one stay checking out the same day the next
+  // checks in -- has its last column equal to the next segment's first
+  // column. That's not a real overlap (the bars don't touch: the first
+  // ends at the 10am checkout mark, the second starts at 2pm), so it
+  // shouldn't claim a second lane and puff up the day cell's height. Only
+  // a *span* of columns actually in common -- two or more shared days --
+  // counts as an overlap worth stacking.
   const laneEnds: number[] = [];
   for (const seg of segments) {
-    let lane = laneEnds.findIndex((end) => end <= seg.startCol);
+    let lane = laneEnds.findIndex((end) => end <= seg.startCol + 1);
     if (lane === -1) {
       lane = laneEnds.length;
       laneEnds.push(0);
