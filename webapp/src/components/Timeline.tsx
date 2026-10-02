@@ -182,18 +182,15 @@ export default function Timeline({
                   const assignedCleanerName = isAssignedToCleaner
                     ? (cleanerNameById?.[b.assigned_cleaner_id!] ?? "Cleaner")
                     : null;
-                  // A short stay's bar isn't wide enough for the full name
-                  // plus the status text next to it -- below this width,
-                  // show just their initial instead of letting the name
-                  // get cut off mid-word.
-                  const NARROW_BAR_PX = 76;
+                  // Always the initial, never the full name -- the bar's
+                  // color already says the status, so once a cleaner's on
+                  // it the initial plus the night count is the useful part,
+                  // and dropping "To Clean"/"In Progress" is what makes
+                  // room for both on a short stay's narrow bar.
                   const assignedCleanerInitial = isAssignedToCleaner
                     ? (cleanerInitialById?.[b.assigned_cleaner_id!] || assignedCleanerName?.charAt(0).toUpperCase() || "?")
                     : null;
-                  const showCleanerInitial = isAssignedToCleaner && width < NARROW_BAR_PX;
-                  const broomPrefix = assignedCleanerName
-                    ? `🧹 ${showCleanerInitial ? assignedCleanerInitial : assignedCleanerName} · `
-                    : "";
+                  const broomPrefix = assignedCleanerInitial ? `🧹 ${assignedCleanerInitial}` : "";
                   const label = isOpenUnclaimed
                     ? weekly
                       ? "Open — tap to claim"
@@ -201,9 +198,11 @@ export default function Timeline({
                         ? "Open"
                         : ""
                     : weekly
-                      ? `${broomPrefix}${STATUS_LABEL[b.status]} · ${b.nights}n`
+                      ? broomPrefix
+                        ? `${broomPrefix} · ${b.nights}n`
+                        : `${STATUS_LABEL[b.status]} · ${b.nights}n`
                       : isStart
-                        ? `${broomPrefix}${STATUS_LABEL[b.status]}`
+                        ? broomPrefix || STATUS_LABEL[b.status]
                         : "";
                   // Nothing about who's on it, or where it came from, shows
                   // on a bar the viewer can only request -- it isn't theirs
