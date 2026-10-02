@@ -38,6 +38,11 @@ export default function PropertyYearView({
           isStaffViewer={isStaffViewer}
           cleanerNameById={cleanerNameById}
           cleanerInitialById={cleanerInitialById}
+          // These 12 panels are too small to usefully show who's on a job
+          // -- the booking platform (colour + badge) is the more useful
+          // thing to show at this scale, same as it already did before
+          // cleaner names/colours existed.
+          showCleanerLabel={false}
         />
       ))}
     </div>

@@ -39,6 +39,13 @@ interface MonthGridProps {
   // cleaner's preferred initial, shown in place of their name on a
   // single-day segment (barely wide enough for a couple of characters).
   cleanerInitialById?: Record<string, string>;
+  // Tints that name/initial in the cleaner's own favourite colour.
+  cleanerColorById?: Record<string, string>;
+  // Off only for the Year view's 12 tiny month panels (see
+  // PropertyYearView) -- there's no room there to usefully show who's on
+  // a job, so those bars fall back to showing the booking platform
+  // instead, same as an unassigned bar.
+  showCleanerLabel?: boolean;
 }
 
 interface BarSegment {
@@ -139,6 +146,8 @@ export default function MonthGrid({
   isStaffViewer = false,
   cleanerNameById,
   cleanerInitialById,
+  cleanerColorById,
+  showCleanerLabel = true,
 }: MonthGridProps) {
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
 
@@ -211,13 +220,23 @@ export default function MonthGrid({
                   const isOpenUnclaimed = seg.booking.is_open_job && !seg.booking.assigned_cleaner_id;
                   const isMine = viewerId != null && seg.booking.assigned_cleaner_id === viewerId;
                   const needsConfirmation = isMine && !seg.booking.is_open_job && !seg.booking.assignment_confirmed;
+                  // The Year view's 12 tiny panels drop the cleaner's
+                  // name/colour entirely (showCleanerLabel below) since
+                  // there's no room for it -- this outline is what's left
+                  // to show, at a glance and for every viewer (not just
+                  // the viewer's own job, which already gets the teal
+                  // "mine" treatment below), which bookings already have
+                  // someone on them.
+                  const hasAnyCleaner = !isOpenUnclaimed && !!seg.booking.assigned_cleaner_id;
+                  const showHasCleanerOutline = !showCleanerLabel && hasAnyCleaner && !isMine;
                   const isClaimable = isClaimableBooking(seg.booking, viewerId, isStaffViewer);
                   const isPending = pendingIds.has(seg.booking.id);
                   // Nothing about who's on it, or where it came from, shows
                   // on a segment the viewer can only claim -- it isn't
                   // theirs to see yet, only to take for themselves.
                   const platform = isClaimable ? undefined : getPlatformBadge(seg.booking.platform_label);
-                  const isAssignedToCleaner = isStaffViewer && !isOpenUnclaimed && !!seg.booking.assigned_cleaner_id;
+                  const isAssignedToCleaner =
+                    isStaffViewer && showCleanerLabel && !isOpenUnclaimed && !!seg.booking.assigned_cleaner_id;
                   const assignedCleanerName = isAssignedToCleaner
                     ? (cleanerNameById?.[seg.booking.assigned_cleaner_id!] ?? "Cleaner")
                     : null;
@@ -232,6 +251,9 @@ export default function MonthGrid({
                     : null;
                   const showCleanerInitial = isAssignedToCleaner && seg.span <= 1;
                   const displayCleanerName = showCleanerInitial ? assignedCleanerInitial : assignedCleanerName;
+                  const assignedCleanerColor = isAssignedToCleaner
+                    ? cleanerColorById?.[seg.booking.assigned_cleaner_id!]
+                    : undefined;
                   // Which cleaner is on it is the most useful thing to show
                   // an Owner/Manager at a glance, so it wins over the guest
                   // name once assigned. The platform's color is already the
@@ -246,7 +268,7 @@ export default function MonthGrid({
                       role="button"
                       tabIndex={0}
                       key={seg.booking.id}
-                      className={`py-bar${seg.roundLeft ? " round-left" : ""}${seg.roundRight ? " round-right" : ""}${isOpenUnclaimed ? " open-job" : ""}${isMine ? " mine" : ""}${needsConfirmation ? " needs-confirmation" : ""}${isClaimable ? " requestable" : ""}`}
+                      className={`py-bar${seg.roundLeft ? " round-left" : ""}${seg.roundRight ? " round-right" : ""}${isOpenUnclaimed ? " open-job" : ""}${isMine ? " mine" : ""}${showHasCleanerOutline ? " has-cleaner" : ""}${needsConfirmation ? " needs-confirmation" : ""}${isClaimable ? " requestable" : ""}`}
                       style={{
                         gridColumn: `${seg.startCol + 1} / span ${seg.span}`,
                         gridRow: seg.lane + 1,
@@ -285,7 +307,13 @@ export default function MonthGrid({
                         <span className="py-bar-label">
                           {assignedCleanerName ? "🧹 " : ""}
                           {needsConfirmation ? "? " : ""}
-                          {label}
+                          {assignedCleanerName ? (
+                            <span style={assignedCleanerColor ? { color: assignedCleanerColor } : undefined}>
+                              {displayCleanerName}
+                            </span>
+                          ) : (
+                            label
+                          )}
                         </span>
                       )}
                     </div>

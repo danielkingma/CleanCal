@@ -903,6 +903,9 @@ main {
   outline-offset: -1.5px;
   font-style: italic;
 }
+.py-bar.has-cleaner {
+  box-shadow: 0 0 0 1.5px var(--ink) inset;
+}
 .py-bar.mine {
   box-shadow: 0 0 0 2px var(--teal-deep) inset;
 }

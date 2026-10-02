@@ -553,6 +553,7 @@ export default function CalendarApp({
               isStaffViewer={isStaffUser}
               cleanerNameById={cleanerNameById}
               cleanerInitialById={cleanerInitialById}
+              cleanerColorById={cleanerColorById}
             />
           ) : (
             <p className="photo-note">{noPropertiesMessage}</p>
