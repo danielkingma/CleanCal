@@ -585,6 +585,7 @@ export default function CalendarApp({
             isStaffViewer={isStaffUser}
             cleanerNameById={cleanerNameById}
             cleanerInitialById={cleanerInitialById}
+            cleanerColorById={cleanerColorById}
           />
         )}
       </main>

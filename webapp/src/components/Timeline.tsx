@@ -41,9 +41,10 @@ interface TimelineProps {
   // shown next to the broom mark below.
   cleanerNameById?: Record<string, string>;
   // Staff view only -- resolves booking.assigned_cleaner_id to the
-  // cleaner's preferred initial, shown in place of their name when the
-  // bar's too narrow for it (see NARROW_BAR_PX below).
+  // cleaner's preferred initial, shown in place of their name on the bar.
   cleanerInitialById?: Record<string, string>;
+  // Tints that initial in the cleaner's own favourite colour.
+  cleanerColorById?: Record<string, string>;
 }
 
 export default function Timeline({
@@ -59,6 +60,7 @@ export default function Timeline({
   isStaffViewer = false,
   cleanerNameById,
   cleanerInitialById,
+  cleanerColorById,
 }: TimelineProps) {
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
 
@@ -190,20 +192,28 @@ export default function Timeline({
                   const assignedCleanerInitial = isAssignedToCleaner
                     ? (cleanerInitialById?.[b.assigned_cleaner_id!] || assignedCleanerName?.charAt(0).toUpperCase() || "?")
                     : null;
-                  const broomPrefix = assignedCleanerInitial ? `🧹 ${assignedCleanerInitial}` : "";
+                  // Tints just the initial, not the whole bar label -- the
+                  // rest of the text (night count) stays the bar's normal
+                  // white so the colour reads as "whose job" rather than
+                  // just recoloring the bar.
+                  const assignedCleanerColor =
+                    isAssignedToCleaner && b.assigned_cleaner_id ? cleanerColorById?.[b.assigned_cleaner_id] : undefined;
+                  // A non-weekly bar only ever labels its start segment --
+                  // later segments of a multi-day bar stay blank.
+                  const showBroomLabel = Boolean(assignedCleanerInitial) && (weekly || isStart);
                   const label = isOpenUnclaimed
                     ? weekly
                       ? "Open — tap to claim"
                       : isStart
                         ? "Open"
                         : ""
-                    : weekly
-                      ? broomPrefix
-                        ? `${broomPrefix} · ${b.nights}n`
-                        : `${STATUS_LABEL[b.status]} · ${b.nights}n`
-                      : isStart
-                        ? broomPrefix || STATUS_LABEL[b.status]
-                        : "";
+                    : showBroomLabel
+                      ? "" // rendered as coloured JSX below instead of plain text
+                      : weekly
+                        ? `${STATUS_LABEL[b.status]} · ${b.nights}n`
+                        : isStart
+                          ? STATUS_LABEL[b.status]
+                          : "";
                   // Nothing about who's on it, or where it came from, shows
                   // on a bar the viewer can only request -- it isn't theirs
                   // to see yet, only to claim for themselves.
@@ -249,6 +259,14 @@ export default function Timeline({
                             />
                             {isStart || weekly ? "Assign" : ""}
                           </label>
+                        ) : showBroomLabel ? (
+                          <>
+                            🧹{" "}
+                            <span style={assignedCleanerColor ? { color: assignedCleanerColor } : undefined}>
+                              {assignedCleanerInitial}
+                            </span>
+                            {weekly ? ` · ${b.nights}n` : null}
+                          </>
                         ) : (
                           label
                         )}
