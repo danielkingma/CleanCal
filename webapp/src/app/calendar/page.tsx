@@ -17,7 +17,7 @@ export default async function CalendarPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, name, role")
+    .select("id, name, role, preferred_initial, favorite_color")
     .eq("id", user.id)
     .maybeSingle();
 

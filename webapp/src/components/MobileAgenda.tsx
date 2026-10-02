@@ -11,14 +11,14 @@ interface MobileAgendaProps {
   onBarClick: (booking: Booking) => void;
   viewerId?: string;
   isStaffViewer?: boolean;
-  // Staff view only -- resolves an assigned booking's cleaner id to a
-  // name for the card (see AgendaCard.tsx).
+  // Resolves an assigned booking's cleaner id to a name for the card (see
+  // AgendaCard.tsx) -- shown to staff for any cleaner, and to a cleaner
+  // viewer for their own jobs.
   cleanerNameById?: Record<string, string>;
   // Only meaningful together with showCleanerColor below.
   cleanerColorById?: Record<string, string>;
-  // Set only by the Assigned/Completed tabs -- that's the one place a
-  // cleaner's chosen colour is shown against their name (see
-  // AgendaCard.tsx); the day-by-day agenda views leave it off.
+  // Tints the name above in that cleaner's own favourite colour (see
+  // AgendaCard.tsx). Left off only where there's no name shown at all.
   showCleanerColor?: boolean;
 }
 

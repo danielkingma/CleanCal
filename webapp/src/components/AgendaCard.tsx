@@ -51,9 +51,15 @@ export default function AgendaCard({
   // themselves.
   const platform = isClaimable ? undefined : getPlatformBadge(b.platform_label);
   // Staff can't tell who's on a job without opening it otherwise -- shown
-  // by name (not just a marker) since this list has the room for it.
+  // by name (not just a marker) since this list has the room for it. A
+  // cleaner viewing their own assigned job gets the same treatment, since
+  // seeing their own name in their own colour is the whole point of
+  // showCleanerColor below -- it just never applies to a card that's
+  // someone else's job on a cleaner's shared-schedule views.
   const assignedCleanerName =
-    isStaffViewer && b.assigned_cleaner_id ? (cleanerNameById?.[b.assigned_cleaner_id] ?? "Cleaner") : null;
+    b.assigned_cleaner_id && (isStaffViewer || isMine)
+      ? (cleanerNameById?.[b.assigned_cleaner_id] ?? "Cleaner")
+      : null;
   const assignedCleanerColor =
     showCleanerColor && b.assigned_cleaner_id ? cleanerColorById?.[b.assigned_cleaner_id] : undefined;
 

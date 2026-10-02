@@ -222,12 +222,19 @@ export default function CalendarApp({
   }
 
   const isStaffUser = isStaff(currentProfile.role);
-  // Looked up by the mobile agenda list (staff view) to show which
-  // cleaner is on a job by name, next to the broom mark -- see
-  // AgendaCard.tsx.
+  // `cleaners` only comes populated for a staff viewer (calendar/page.tsx
+  // only runs that query for an Owner/Manager) -- a cleaner viewer needs
+  // their own name/initial/colour in these maps too, for their own cards
+  // and bars, so their own profile is folded in here regardless of role.
+  const allKnownCleaners = useMemo(
+    () => (isStaffUser || cleaners.some((c) => c.id === currentProfile.id) ? cleaners : [...cleaners, currentProfile]),
+    [cleaners, currentProfile, isStaffUser],
+  );
+  // Looked up by the mobile agenda list to show which cleaner is on a
+  // job by name, next to the broom mark -- see AgendaCard.tsx.
   const cleanerNameById = useMemo(
-    () => Object.fromEntries(cleaners.map((c) => [c.id, c.name || c.id])),
-    [cleaners],
+    () => Object.fromEntries(allKnownCleaners.map((c) => [c.id, c.name || c.id])),
+    [allKnownCleaners],
   );
   // Stands in for the full name on a booking bar too narrow to fit it
   // (Timeline/MonthGrid) -- falls back to the first letter of their name
@@ -235,16 +242,20 @@ export default function CalendarApp({
   const cleanerInitialById = useMemo(
     () =>
       Object.fromEntries(
-        cleaners.map((c) => [c.id, c.preferred_initial || (c.name || "?").charAt(0).toUpperCase()]),
+        allKnownCleaners.map((c) => [c.id, c.preferred_initial || (c.name || "?").charAt(0).toUpperCase()]),
       ),
-    [cleaners],
+    [allKnownCleaners],
   );
-  // Used only in the Assigned/Completed lists (AgendaCard, via
-  // MobileAgenda's showCleanerColor) to colour a cleaner's name -- never
-  // on the calendar bars themselves, which have no room to spare.
+  // Used wherever a cleaner's name is spelled out as text (AgendaCard, via
+  // MobileAgenda's showCleanerColor) to tint it in their own favourite
+  // colour -- never on the calendar bars themselves, which have no room
+  // to spare.
   const cleanerColorById = useMemo(
-    () => Object.fromEntries(cleaners.filter((c) => c.favorite_color).map((c) => [c.id, c.favorite_color as string])),
-    [cleaners],
+    () =>
+      Object.fromEntries(
+        allKnownCleaners.filter((c) => c.favorite_color).map((c) => [c.id, c.favorite_color as string]),
+      ),
+    [allKnownCleaners],
   );
   // Shown wherever there's nothing to display because `properties` is
   // empty -- a cleaner only ever sees properties tied to a booking
@@ -557,6 +568,8 @@ export default function CalendarApp({
             viewerId={currentProfile.id}
             isStaffViewer={isStaffUser}
             cleanerNameById={cleanerNameById}
+            cleanerColorById={cleanerColorById}
+            showCleanerColor
           />
         ) : (
           <Timeline
