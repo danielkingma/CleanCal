@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createOrganization, forgetInviteToken, redeemInvite } from "@/app/onboarding/actions";
+import InstallAppStep from "./InstallAppStep";
 import Logo from "./Logo";
 import SignOutButton from "./SignOutButton";
 
@@ -25,6 +26,15 @@ export default function OnboardingForm({
   const [joinName, setJoinName] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Set once the account itself is created/joined -- gates the "install
+  // the app" step in front of the redirect below, rather than sending a
+  // brand-new person straight into a browser tab with no nudge to install.
+  const [readyToInstall, setReadyToInstall] = useState(false);
+
+  function goToCalendar() {
+    router.push("/calendar");
+    router.refresh();
+  }
 
   async function handleCreate() {
     if (!name.trim()) return;
@@ -32,8 +42,7 @@ export default function OnboardingForm({
     setError(null);
     try {
       await createOrganization(name);
-      router.push("/calendar");
-      router.refresh();
+      setReadyToInstall(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Couldn't get you set up.");
       setSaving(false);
@@ -61,12 +70,15 @@ export default function OnboardingForm({
     setError(null);
     try {
       await redeemInvite(inviteToken, joinName);
-      router.push("/calendar");
-      router.refresh();
+      setReadyToInstall(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Couldn't join that business.");
       setSaving(false);
     }
+  }
+
+  if (readyToInstall) {
+    return <InstallAppStep onContinue={goToCalendar} />;
   }
 
   if (inviteToken) {
