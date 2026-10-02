@@ -60,7 +60,7 @@ const NEUTRAL_BAR_COLOR = "#5B6560";
 // below -- on the edge that's the real start/end of the stay, so a bar
 // crossing a row boundary reads as one continuous booking rather than
 // several, matching the Month/Week timeline's check-in/checkout overlap.
-function weekSegments(weekStart: Date, bookings: Booking[]): BarSegment[] {
+function weekSegments(weekStart: Date, bookings: Booking[], monthStart: Date, monthEnd: Date): BarSegment[] {
   const weekEndInclusive = addDays(weekStart, 6);
 
   const segments = bookings
@@ -70,8 +70,16 @@ function weekSegments(weekStart: Date, bookings: Booking[]): BarSegment[] {
       // The checkout day itself gets a column too -- the bar only fills a
       // sliver of it (up to CHECKOUT_FRAC), same as the Month/Week bars.
       if (checkout < weekStart || checkin > weekEndInclusive) return null;
-      const segStart = checkin < weekStart ? weekStart : checkin;
-      const segEndInclusive = checkout > weekEndInclusive ? weekEndInclusive : checkout;
+      let segStart = checkin < weekStart ? weekStart : checkin;
+      let segEndInclusive = checkout > weekEndInclusive ? weekEndInclusive : checkout;
+      // A stay that spills into the faded lead-in/trail-off days from the
+      // adjoining month is real, but those days belong to that other
+      // month's own panel -- drawing a bar across them here just repeats
+      // it a second time right next to the actual one. Clip the segment to
+      // this month's own days; if nothing's left, there's nothing to draw.
+      if (segStart < monthStart) segStart = monthStart;
+      if (segEndInclusive > monthEnd) segEndInclusive = monthEnd;
+      if (segStart > segEndInclusive) return null;
       const startCol = daysBetween(weekStart, segStart);
       const span = daysBetween(segStart, segEndInclusive) + 1;
       if (span <= 0) return null;
@@ -153,7 +161,8 @@ export default function MonthGrid({
 
   const today = new Date();
   const first = new Date(year, month, 1);
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const last = new Date(year, month + 1, 0);
+  const daysInMonth = last.getDate();
   const gridStart = addDays(first, -first.getDay());
   const weeksNeeded = Math.ceil((first.getDay() + daysInMonth) / 7);
   const weekStarts = Array.from({ length: weeksNeeded }, (_, w) => addDays(gridStart, w * 7));
@@ -169,7 +178,7 @@ export default function MonthGrid({
         </div>
         {weekStarts.map((weekStart, weekIdx) => {
           const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
-          const segments = weekSegments(weekStart, bookings);
+          const segments = weekSegments(weekStart, bookings, first, last);
 
           return (
             <div
