@@ -235,8 +235,13 @@ export default function MonthGrid({
                   // on a segment the viewer can only claim -- it isn't
                   // theirs to see yet, only to take for themselves.
                   const platform = isClaimable ? undefined : getPlatformBadge(seg.booking.platform_label);
+                  // Staff see this for any cleaner; a cleaner viewer sees
+                  // it too, but only for their own job -- same broom +
+                  // initial either way, since seeing your own initial on
+                  // your own booking is exactly what makes it recognizable
+                  // at a glance on a bar too narrow for your full name.
                   const isAssignedToCleaner =
-                    isStaffViewer && showCleanerLabel && !isOpenUnclaimed && !!seg.booking.assigned_cleaner_id;
+                    (isStaffViewer || isMine) && showCleanerLabel && !isOpenUnclaimed && !!seg.booking.assigned_cleaner_id;
                   const assignedCleanerName = isAssignedToCleaner
                     ? (cleanerNameById?.[seg.booking.assigned_cleaner_id!] ?? "Cleaner")
                     : null;

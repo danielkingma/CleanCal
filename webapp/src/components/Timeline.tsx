@@ -179,8 +179,11 @@ export default function Timeline({
                   if (isClaimable) cls.push("requestable");
                   // A staff viewer otherwise has no way to tell, at a
                   // glance, whether a cleaner is actually on a job -- the
-                  // bar looks the same either way.
-                  const isAssignedToCleaner = isStaffViewer && !isOpenUnclaimed && !!b.assigned_cleaner_id;
+                  // bar looks the same either way. A cleaner viewer gets
+                  // the same broom + initial too, but only for their own
+                  // job -- someone else's assigned bar stays unmarked to
+                  // them, same as everywhere else on the shared schedule.
+                  const isAssignedToCleaner = (isStaffViewer || isMine) && !isOpenUnclaimed && !!b.assigned_cleaner_id;
                   const assignedCleanerName = isAssignedToCleaner
                     ? (cleanerNameById?.[b.assigned_cleaner_id!] ?? "Cleaner")
                     : null;
