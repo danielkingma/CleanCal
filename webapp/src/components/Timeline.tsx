@@ -9,7 +9,6 @@ import {
   HEADER_H,
   LABEL_W,
   ROW_H,
-  STATUS_LABEL,
   WD,
   checkoutDate,
   daysBetween,
@@ -204,6 +203,11 @@ export default function Timeline({
                   // A non-weekly bar only ever labels its start segment --
                   // later segments of a multi-day bar stay blank.
                   const showBroomLabel = Boolean(assignedCleanerInitial) && (weekly || isStart);
+                  // No cleaner on it yet -- rather than spell out "To
+                  // Clean"/"In Progress"/"Complete" (which just repeats what
+                  // the bar's own colour already says, and clutters a narrow
+                  // bar), an unassigned bar stays blank aside from the night
+                  // count on the weekly view.
                   const label = isOpenUnclaimed
                     ? weekly
                       ? "Open — tap to claim"
@@ -213,10 +217,8 @@ export default function Timeline({
                     : showBroomLabel
                       ? "" // rendered as coloured JSX below instead of plain text
                       : weekly
-                        ? `${STATUS_LABEL[b.status]} · ${b.nights}n`
-                        : isStart
-                          ? STATUS_LABEL[b.status]
-                          : "";
+                        ? `${b.nights}n`
+                        : "";
                   // Nothing about who's on it, or where it came from, shows
                   // on a bar the viewer can only request -- it isn't theirs
                   // to see yet, only to claim for themselves.
