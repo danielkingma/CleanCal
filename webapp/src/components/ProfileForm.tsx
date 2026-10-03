@@ -389,8 +389,8 @@ export default function ProfileForm({
                   {onboardError}
                 </div>
               ) : null}
-              <p className="access-note" style={{ marginTop: 8, fontSize: 12.5 }}>
-                Real money moves through this once it&apos;s set up — it&apos;s live, not a demo.
+              <p className="access-note" style={{ marginTop: 8, fontSize: 12.5, color: "var(--amber)" }}>
+                Coming soon — payouts aren&apos;t operational yet.
               </p>
             </div>
           </div>

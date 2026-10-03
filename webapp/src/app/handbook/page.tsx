@@ -586,10 +586,10 @@ export default function HandbookPage() {
                 your Owner or Manager if you&apos;re unsure whether a job&apos;s been paid.
               </div>
               <div className="hb-callout warn">
-                <strong>This moves real money</strong>
-                Payouts are live, not a placeholder — clicking &quot;Pay&quot; sends an actual
-                Stripe transfer to the cleaner&apos;s connected account. This part of CleanCal is
-                still new, so double-check the amount before confirming.
+                <strong>Not live yet</strong>
+                Payouts aren&apos;t operational yet — Stripe isn&apos;t connected on this account.
+                This is coming soon; the steps above are what it&apos;ll look like once it&apos;s
+                switched on.
               </div>
             </section>
 

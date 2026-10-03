@@ -455,9 +455,12 @@ function PropertyCard({
 
       <div className="field">
         <label htmlFor={`payout-${property.id}`}>
-          Cleaner payout rate for this property (paid via Stripe once a booking is marked complete,
-          and sent for real — not a placeholder) — owner only
+          Cleaner payout rate for this property (paid via Stripe once a booking is marked
+          complete) — owner only
         </label>
+        <p className="access-note" style={{ marginTop: -4, marginBottom: 8, color: "var(--amber)" }}>
+          Coming soon — payouts aren&apos;t operational yet.
+        </p>
         {isOwner ? (
           <>
             <input

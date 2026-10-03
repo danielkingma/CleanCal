@@ -141,10 +141,10 @@ export default function CleanerGuidePage() {
                 </li>
               </ol>
               <div className="hb-callout warn">
-                <strong>This is real money, not a test</strong>
-                Payouts are live — once your host clicks &quot;Pay,&quot; a real transfer goes to
-                your connected account. This part of CleanCal is still new, so flag anything that
-                looks off right away.
+                <strong>Not live yet</strong>
+                Payouts aren&apos;t operational yet — this is coming soon. The steps above are
+                what it&apos;ll look like once it&apos;s switched on; check with your Owner or
+                Manager about getting paid in the meantime.
               </div>
             </section>
 

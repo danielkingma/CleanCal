@@ -1064,8 +1064,9 @@ export default function BookingModal({
               </div>
             )}
             {booking.payout_status !== "paid" && !justPaid ? (
-              <p className="photo-note" style={{ marginTop: 8 }}>
-                This sends a real payment through Stripe — there&apos;s no undo.
+              <p className="photo-note" style={{ marginTop: 8, color: "var(--amber)" }}>
+                Coming soon — payouts aren&apos;t operational yet (Stripe isn&apos;t connected on
+                this account).
               </p>
             ) : null}
             {payError ? (
