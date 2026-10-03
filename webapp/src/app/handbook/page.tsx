@@ -585,6 +585,12 @@ export default function HandbookPage() {
                 Today, payout status isn&apos;t shown to cleaners directly in the app — check with
                 your Owner or Manager if you&apos;re unsure whether a job&apos;s been paid.
               </div>
+              <div className="hb-callout warn">
+                <strong>This moves real money</strong>
+                Payouts are live, not a placeholder — clicking &quot;Pay&quot; sends an actual
+                Stripe transfer to the cleaner&apos;s connected account. This part of CleanCal is
+                still new, so double-check the amount before confirming.
+              </div>
             </section>
 
             <section className="hb-section" id="pricing">

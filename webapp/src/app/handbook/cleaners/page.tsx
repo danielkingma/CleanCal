@@ -140,6 +140,12 @@ export default function CleanerGuidePage() {
                   Owner or Manager if you&apos;re ever unsure.
                 </li>
               </ol>
+              <div className="hb-callout warn">
+                <strong>This is real money, not a test</strong>
+                Payouts are live — once your host clicks &quot;Pay,&quot; a real transfer goes to
+                your connected account. This part of CleanCal is still new, so flag anything that
+                looks off right away.
+              </div>
             </section>
 
             <section className="hb-section">

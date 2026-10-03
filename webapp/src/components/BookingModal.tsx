@@ -1063,6 +1063,11 @@ export default function BookingModal({
                 </button>
               </div>
             )}
+            {booking.payout_status !== "paid" && !justPaid ? (
+              <p className="photo-note" style={{ marginTop: 8 }}>
+                This sends a real payment through Stripe — there&apos;s no undo.
+              </p>
+            ) : null}
             {payError ? (
               <div className="error-banner" style={{ marginTop: 10 }}>
                 {payError}
