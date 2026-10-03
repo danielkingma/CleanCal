@@ -137,7 +137,11 @@ export default function OnboardingForm({
               </button>
             </>
           )}
-          {error ? <p className="auth-error">{error}</p> : null}
+          {error ? (
+            <p className="auth-error">
+              {error} Still stuck? Email <a href="mailto:support@cleancal.net">support@cleancal.net</a>.
+            </p>
+          ) : null}
           <div style={{ marginTop: 20, textAlign: "center" }}>
             <SignOutButton />
           </div>
@@ -178,7 +182,11 @@ export default function OnboardingForm({
         <p className="auth-sub" style={{ marginTop: 10, fontSize: 13 }}>
           You can name your business afterward from My Profile.
         </p>
-        {error ? <p className="auth-error">{error}</p> : null}
+        {error ? (
+          <p className="auth-error">
+            {error} Still stuck? Email <a href="mailto:support@cleancal.net">support@cleancal.net</a>.
+          </p>
+        ) : null}
         <div style={{ marginTop: 20, textAlign: "center" }}>
           <SignOutButton />
         </div>

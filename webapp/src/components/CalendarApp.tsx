@@ -432,6 +432,9 @@ export default function CalendarApp({
               My Profile
             </Link>
             <NotificationsToggle className="dropdown-item" />
+            <a href="mailto:support@cleancal.net" className="dropdown-item">
+              Contact support
+            </a>
           </Dropdown>
           </div>
         </div>

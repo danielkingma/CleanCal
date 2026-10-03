@@ -105,6 +105,9 @@ export default function LoginForm({
       <Link href="/handbook" className="auth-footer-link">
         New here? Read the CleanCal Handbook
       </Link>
+      <a href="mailto:support@cleancal.net" className="auth-footer-link">
+        Trouble signing in? Reach us at support@cleancal.net
+      </a>
     </div>
   );
 }

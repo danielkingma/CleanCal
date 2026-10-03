@@ -140,6 +140,10 @@ export default function InstallAppStep({ onContinue }: { onContinue: () => void 
         >
           {installed ? "Continue to calendar" : "I'll do this later"}
         </button>
+
+        <p className="auth-sub" style={{ marginTop: 16, fontSize: 13, textAlign: "center" }}>
+          Stuck installing? Email <a href="mailto:support@cleancal.net">support@cleancal.net</a>.
+        </p>
       </div>
     </div>
   );
