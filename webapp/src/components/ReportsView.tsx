@@ -12,6 +12,7 @@ interface ReportsViewProps {
   completed: Booking[];
   properties: Property[];
   profiles: Profile[];
+  isSuperadmin?: boolean;
 }
 
 function csvEscape(value: string | number): string {
@@ -49,7 +50,7 @@ function estimatedCostCents(b: Booking, property: Property | undefined): number 
   return property.payout_rate_cents + linenCents;
 }
 
-export default function ReportsView({ completed, properties, profiles }: ReportsViewProps) {
+export default function ReportsView({ completed, properties, profiles, isSuperadmin = false }: ReportsViewProps) {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [propertyId, setPropertyId] = useState("");
@@ -249,7 +250,7 @@ export default function ReportsView({ completed, properties, profiles }: Reports
         <div className="topbar-row">
           <div style={{ color: "var(--muted)", fontSize: 14 }}>Reports</div>
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <NavMenus isStaffUser={true} />
+            <NavMenus isStaffUser={true} isSuperadmin={isSuperadmin} />
             <Link href="/calendar" className="today-btn">
               ← Calendar
             </Link>

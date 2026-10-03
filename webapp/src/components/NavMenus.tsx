@@ -8,7 +8,16 @@ import NotificationsToggle from "./NotificationsToggle";
 // factored out so every other signed-in page can link to the rest of
 // the app too -- previously getting from, say, Reports to Cleaners
 // meant going back to the calendar first to reach these menus.
-export default function NavMenus({ isStaffUser }: { isStaffUser: boolean }) {
+export default function NavMenus({
+  isStaffUser,
+  isSuperadmin = false,
+}: {
+  isStaffUser: boolean;
+  // Daniel's own account only -- see src/lib/superadmin.ts. Links to the
+  // hidden platform-wide stats page, which isn't relevant to any normal
+  // Owner/Manager/Cleaner.
+  isSuperadmin?: boolean;
+}) {
   return (
     <>
       {isStaffUser ? (
@@ -31,6 +40,11 @@ export default function NavMenus({ isStaffUser }: { isStaffUser: boolean }) {
           <Link href="/supplies" className="dropdown-item">
             Supplies
           </Link>
+          {isSuperadmin ? (
+            <a href="/admin/stats" target="_blank" rel="noopener noreferrer" className="dropdown-item">
+              Platform stats ↗
+            </a>
+          ) : null}
         </Dropdown>
       ) : null}
       <Dropdown label="Menu" triggerClassName="today-btn" align="left">

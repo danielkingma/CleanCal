@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import ReportsView from "@/components/ReportsView";
 import { isStaff, type Booking, type Profile, type Property } from "@/lib/types";
+import { isSuperadmin } from "@/lib/superadmin";
 
 export default async function ReportsPage() {
   const supabase = await createClient();
@@ -37,6 +38,7 @@ export default async function ReportsPage() {
       completed={(bookingsData ?? []) as Booking[]}
       properties={(propertiesData ?? []) as Property[]}
       profiles={(profilesData ?? []) as Profile[]}
+      isSuperadmin={isSuperadmin(user.email)}
     />
   );
 }

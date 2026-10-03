@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import SuppliesView from "@/components/SuppliesView";
 import { isStaff, type Property, type SupplyItem } from "@/lib/types";
+import { isSuperadmin } from "@/lib/superadmin";
 
 export default async function SuppliesPage() {
   const supabase = await createClient();
@@ -30,6 +31,7 @@ export default async function SuppliesPage() {
       isStaffUser={staffUser}
       items={(items ?? []) as SupplyItem[]}
       properties={(properties ?? []) as Property[]}
+      isSuperadmin={isSuperadmin(user.email)}
     />
   );
 }

@@ -8,6 +8,7 @@ import { RemoveCleanerButton, RestoreCleanerButton, DeleteCleanerButton } from "
 import SignOutButton from "@/components/SignOutButton";
 import NavMenus from "@/components/NavMenus";
 import { isStaff, type Profile } from "@/lib/types";
+import { isSuperadmin } from "@/lib/superadmin";
 
 export default async function CleanersPage() {
   const supabase = await createClient();
@@ -117,7 +118,7 @@ export default async function CleanersPage() {
         <div className="topbar-row">
           <div style={{ color: "var(--muted)", fontSize: 14 }}>Cleaners</div>
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <NavMenus isStaffUser={true} />
+            <NavMenus isStaffUser={true} isSuperadmin={isSuperadmin(user.email)} />
             <Link href="/calendar" className="today-btn">
               ← Calendar
             </Link>

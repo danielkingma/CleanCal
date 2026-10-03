@@ -13,6 +13,7 @@ import Logo from "./Logo";
 import SignOutButton from "./SignOutButton";
 import NavMenus from "./NavMenus";
 import { isOwner, isStaff, type Profile } from "@/lib/types";
+import { isSuperadmin } from "@/lib/superadmin";
 
 interface KnownDevice {
   id: string;
@@ -163,7 +164,7 @@ export default function ProfileForm({
         <div className="topbar-row">
           <div style={{ color: "var(--muted)", fontSize: 14 }}>My Profile</div>
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <NavMenus isStaffUser={isStaff(profile.role)} />
+            <NavMenus isStaffUser={isStaff(profile.role)} isSuperadmin={isSuperadmin(email)} />
             <Link href="/calendar" className="today-btn">
               ← Calendar
             </Link>

@@ -24,6 +24,7 @@ interface MaintenanceViewProps {
   schedules: MaintenanceSchedule[];
   properties: Property[];
   cleaners: Profile[];
+  isSuperadmin?: boolean;
 }
 
 const SOURCE_LABEL: Record<WorkOrder["source"], string> = {
@@ -49,6 +50,7 @@ export default function MaintenanceView({
   schedules,
   properties,
   cleaners,
+  isSuperadmin = false,
 }: MaintenanceViewProps) {
   const propertyNameById = useMemo(() => Object.fromEntries(properties.map((p) => [p.id, p.name])), [properties]);
   const cleanerNameById = useMemo(() => Object.fromEntries(cleaners.map((c) => [c.id, c.name])), [cleaners]);
@@ -223,7 +225,7 @@ export default function MaintenanceView({
         <div className="topbar-row">
           <div style={{ color: "var(--muted)", fontSize: 14 }}>Maintenance</div>
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <NavMenus isStaffUser={isStaffUser} />
+            <NavMenus isStaffUser={isStaffUser} isSuperadmin={isSuperadmin} />
             <Link href="/calendar" className="today-btn">
               ← Calendar
             </Link>

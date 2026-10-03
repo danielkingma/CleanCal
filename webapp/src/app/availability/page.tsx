@@ -6,6 +6,7 @@ import SignOutButton from "@/components/SignOutButton";
 import NavMenus from "@/components/NavMenus";
 import AvailabilityCalendar from "@/components/AvailabilityCalendar";
 import { isStaff } from "@/lib/types";
+import { isSuperadmin } from "@/lib/superadmin";
 
 export default async function AvailabilityPage() {
   const supabase = await createClient();
@@ -44,7 +45,7 @@ export default async function AvailabilityPage() {
         <div className="topbar-row">
           <div style={{ color: "var(--muted)", fontSize: 14 }}>My availability</div>
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <NavMenus isStaffUser={isStaffUser} />
+            <NavMenus isStaffUser={isStaffUser} isSuperadmin={isSuperadmin(user.email)} />
             <Link href="/calendar" className="today-btn">
               ← Calendar
             </Link>

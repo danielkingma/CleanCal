@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import MaintenanceView from "@/components/MaintenanceView";
 import { isStaff, type MaintenanceSchedule, type Profile, type Property, type WorkOrder } from "@/lib/types";
+import { isSuperadmin } from "@/lib/superadmin";
 
 export default async function MaintenancePage() {
   const supabase = await createClient();
@@ -54,6 +55,7 @@ export default async function MaintenancePage() {
       schedules={schedules}
       properties={(properties ?? []) as Property[]}
       cleaners={cleaners}
+      isSuperadmin={isSuperadmin(user.email)}
     />
   );
 }

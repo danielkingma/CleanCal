@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import PropertiesAdmin from "@/components/PropertiesAdmin";
 import { isStaff, type IcalFeed, type Property } from "@/lib/types";
+import { isSuperadmin } from "@/lib/superadmin";
 
 export default async function PropertiesPage() {
   const supabase = await createClient();
@@ -49,6 +50,7 @@ export default async function PropertiesPage() {
       isOwner={isOwner}
       exportTokenByPropertyId={exportTokenByPropertyId}
       exportBaseUrl={exportBaseUrl}
+      isSuperadmin={isSuperadmin(user.email)}
     />
   );
 }

@@ -6,6 +6,7 @@ import SignOutButton from "@/components/SignOutButton";
 import NavMenus from "@/components/NavMenus";
 import { addDays, checkoutDate, isoDate } from "@/lib/calendar-utils";
 import { isStaff, type Booking } from "@/lib/types";
+import { isSuperadmin } from "@/lib/superadmin";
 
 interface AttentionItem {
   type: "Dispute" | "Unclaimed";
@@ -95,7 +96,7 @@ export default async function DashboardPage() {
         <div className="topbar-row">
           <div style={{ color: "var(--muted)", fontSize: 14 }}>Dashboard</div>
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <NavMenus isStaffUser={true} />
+            <NavMenus isStaffUser={true} isSuperadmin={isSuperadmin(user.email)} />
             <Link href="/calendar" className="today-btn">
               ← Calendar
             </Link>

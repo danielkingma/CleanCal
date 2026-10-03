@@ -26,6 +26,7 @@ interface PropertiesAdminProps {
   isOwner: boolean;
   exportTokenByPropertyId: Record<string, string>;
   exportBaseUrl: string;
+  isSuperadmin?: boolean;
 }
 
 export default function PropertiesAdmin({
@@ -34,6 +35,7 @@ export default function PropertiesAdmin({
   isOwner,
   exportTokenByPropertyId,
   exportBaseUrl,
+  isSuperadmin = false,
 }: PropertiesAdminProps) {
   const [syncingAll, setSyncingAll] = useState(false);
   const [syncAllMessage, setSyncAllMessage] = useState<string | null>(null);
@@ -91,7 +93,7 @@ export default function PropertiesAdmin({
             <button className="today-btn" onClick={handleSyncAll} disabled={syncingAll}>
               {syncingAll ? "Syncing…" : "Sync all feeds"}
             </button>
-            <NavMenus isStaffUser={true} />
+            <NavMenus isStaffUser={true} isSuperadmin={isSuperadmin} />
             <Link href="/calendar" className="today-btn">
               ← Calendar
             </Link>

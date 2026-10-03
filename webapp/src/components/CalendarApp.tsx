@@ -47,6 +47,11 @@ interface CalendarAppProps {
   trialEndsAt: string | null;
   customMonthlyPriceCents: number | null;
   pricingAgreementNotes: string | null;
+  // Daniel's own account only -- see src/lib/superadmin.ts. Shows a
+  // "Platform stats" link in the Manage menu; irrelevant to every other
+  // Owner/Manager/Cleaner, so it's computed server-side in
+  // calendar/page.tsx rather than this component needing the raw email.
+  isSuperadmin: boolean;
 }
 
 type View = "assigned" | "completed" | "week" | "month" | "year";
@@ -68,6 +73,7 @@ export default function CalendarApp({
   trialEndsAt,
   customMonthlyPriceCents,
   pricingAgreementNotes,
+  isSuperadmin,
 }: CalendarAppProps) {
   const router = useRouter();
   const isMobile = useMediaQuery("(max-width: 720px)");
@@ -441,6 +447,11 @@ export default function CalendarApp({
               <Link href="/supplies" className="dropdown-item">
                 Supplies
               </Link>
+              {isSuperadmin ? (
+                <a href="/admin/stats" target="_blank" rel="noopener noreferrer" className="dropdown-item">
+                  Platform stats ↗
+                </a>
+              ) : null}
             </Dropdown>
           ) : null}
           {isStaffUser ? (

@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import CalendarApp from "@/components/CalendarApp";
 import { scopeBookingForViewer } from "@/lib/calendar-utils";
 import { isStaff, type Booking, type CleanerRating, type Profile, type Property } from "@/lib/types";
+import { isSuperadmin } from "@/lib/superadmin";
 
 export default async function CalendarPage() {
   const supabase = await createClient();
@@ -140,6 +141,7 @@ export default async function CalendarPage() {
         trialEndsAt={trialEndsAt}
         customMonthlyPriceCents={customMonthlyPriceCents}
         pricingAgreementNotes={pricingAgreementNotes}
+        isSuperadmin={isSuperadmin(user.email)}
       />
     </div>
   );

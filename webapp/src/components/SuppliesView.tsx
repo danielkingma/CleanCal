@@ -12,9 +12,10 @@ interface SuppliesViewProps {
   isStaffUser: boolean;
   items: SupplyItem[];
   properties: Property[];
+  isSuperadmin?: boolean;
 }
 
-export default function SuppliesView({ isStaffUser, items, properties }: SuppliesViewProps) {
+export default function SuppliesView({ isStaffUser, items, properties, isSuperadmin = false }: SuppliesViewProps) {
   const propertyNameById = useMemo(() => Object.fromEntries(properties.map((p) => [p.id, p.name])), [properties]);
 
   // New item form (staff only)
@@ -127,7 +128,7 @@ export default function SuppliesView({ isStaffUser, items, properties }: Supplie
         <div className="topbar-row">
           <div style={{ color: "var(--muted)", fontSize: 14 }}>Supplies</div>
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <NavMenus isStaffUser={isStaffUser} />
+            <NavMenus isStaffUser={isStaffUser} isSuperadmin={isSuperadmin} />
             <Link href="/calendar" className="today-btn">
               ← Calendar
             </Link>

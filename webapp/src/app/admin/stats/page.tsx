@@ -1,19 +1,18 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { isSuperadmin } from "@/lib/superadmin";
 
-// Hidden, owner-only page -- deliberately not linked from anywhere in
-// the app's own nav (NavMenus.tsx etc.), just bookmark the URL. This is
-// the one place that looks across every organization on the whole
-// platform at once, which is why it reads through the service-role
-// client (bypassing RLS) rather than a normal signed-in session -- every
-// other query in this app is intentionally scoped to the caller's own
-// organization (see supabase/migrations/0016_organizations.sql's own
-// comment: "nobody outside your team ever sees your properties,
-// bookings, or cleaners"). Gated on Daniel's own email rather than a
-// role, since "owns the whole CleanCal business" isn't a role that
-// exists inside any one organization's Owner/Manager/Cleaner hierarchy.
-const SUPERADMIN_EMAIL = "danielkingma@gmail.com";
+// Owner-only page -- not in the main site nav since it isn't relevant to
+// any normal Owner/Manager/Cleaner, but linked from the Menu dropdown
+// (NavMenus.tsx / CalendarApp.tsx's own copy of it) whenever the signed-in
+// account is the superadmin one. This is the one place that looks across
+// every organization on the whole platform at once, which is why it
+// reads through the service-role client (bypassing RLS) rather than a
+// normal signed-in session -- every other query in this app is
+// intentionally scoped to the caller's own organization (see
+// supabase/migrations/0016_organizations.sql's own comment: "nobody
+// outside your team ever sees your properties, bookings, or cleaners").
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -27,7 +26,7 @@ export default async function AdminStatsPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user || user.email !== SUPERADMIN_EMAIL) {
+  if (!user || !isSuperadmin(user.email)) {
     redirect("/calendar");
   }
 

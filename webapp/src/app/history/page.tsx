@@ -6,6 +6,7 @@ import SignOutButton from "@/components/SignOutButton";
 import NavMenus from "@/components/NavMenus";
 import { getPlatformBadge } from "@/lib/platform-badge";
 import { isStaff, type Booking, type Profile } from "@/lib/types";
+import { isSuperadmin } from "@/lib/superadmin";
 
 export default async function HistoryPage() {
   const supabase = await createClient();
@@ -68,7 +69,7 @@ export default async function HistoryPage() {
         <div className="topbar-row">
           <div style={{ color: "var(--muted)", fontSize: 14 }}>Cleaning history</div>
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <NavMenus isStaffUser={staffView} />
+            <NavMenus isStaffUser={staffView} isSuperadmin={isSuperadmin(user.email)} />
             <Link href="/calendar" className="today-btn">
               ← Calendar
             </Link>
