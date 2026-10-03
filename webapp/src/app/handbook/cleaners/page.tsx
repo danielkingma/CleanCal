@@ -15,6 +15,9 @@ export default function CleanerGuidePage() {
       <div className="hb-shell">
         <main className="hb-main" style={{ width: "100%" }}>
           <div className="hb-content" style={{ maxWidth: 720 }}>
+            <Link href="/calendar" style={{ fontSize: 13.5, fontWeight: 600 }}>
+              ← Back to Calendar
+            </Link>
             <div className="hb-hero">
               <span className="hb-eyebrow">Cleaner quick guide</span>
               <h1>Everything you need, in five minutes.</h1>
@@ -155,6 +158,9 @@ export default function CleanerGuidePage() {
                 The <Link href="/handbook#faq">full Handbook&apos;s FAQ</Link> covers more ground,
                 or just email <a href="mailto:support@cleancal.net">support@cleancal.net</a> and
                 we&apos;ll sort it out.
+              </p>
+              <p style={{ marginTop: 20 }}>
+                <Link href="/calendar">← Back to Calendar</Link>
               </p>
             </section>
           </div>
