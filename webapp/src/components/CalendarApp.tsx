@@ -109,37 +109,76 @@ export default function CalendarApp({
   useEffect(() => {
     const supabase = createClient();
     const staffViewer = isStaff(currentProfile.role);
-    const channel = supabase
-      .channel("bookings-changes")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "bookings" },
-        (payload) => {
-          if (payload.eventType === "DELETE") {
-            const oldId = (payload.old as { id: string }).id;
-            setBookings((prev) => prev.filter((b) => b.id !== oldId));
-            return;
-          }
 
-          // Realtime broadcasts the raw row straight from Postgres --
-          // every org member can now SELECT every booking (see
-          // supabase/migrations/0020_cleaner_full_calendar.sql), so this
-          // has to apply the same redaction calendar/page.tsx applies on
-          // first load, or a live update would hand a cleaner guest/
-          // rating/dispute detail on a job that isn't theirs.
-          const next = scopeBookingForViewer(payload.new as Booking, currentProfile.id, staffViewer);
-          setBookings((prev) => {
-            const exists = prev.some((b) => b.id === next.id);
-            return exists ? prev.map((b) => (b.id === next.id ? next : b)) : [...prev, next];
-          });
-        },
-      )
-      .subscribe();
+    function handlePayload(payload: {
+      eventType: string;
+      old: unknown;
+      new: unknown;
+    }) {
+      if (payload.eventType === "DELETE") {
+        const oldId = (payload.old as { id: string }).id;
+        setBookings((prev) => prev.filter((b) => b.id !== oldId));
+        return;
+      }
+
+      // Realtime broadcasts the raw row straight from Postgres --
+      // every org member can now SELECT every booking (see
+      // supabase/migrations/0020_cleaner_full_calendar.sql), so this
+      // has to apply the same redaction calendar/page.tsx applies on
+      // first load, or a live update would hand a cleaner guest/
+      // rating/dispute detail on a job that isn't theirs.
+      const next = scopeBookingForViewer(payload.new as Booking, currentProfile.id, staffViewer);
+      setBookings((prev) => {
+        const exists = prev.some((b) => b.id === next.id);
+        return exists ? prev.map((b) => (b.id === next.id ? next : b)) : [...prev, next];
+      });
+    }
+
+    // A realtime websocket that silently drops (laptop sleep, a network
+    // blip, an idle tab left open for hours) used to leave an
+    // already-open calendar stuck showing stale data forever -- nothing
+    // else here ever re-fetched, so a cleaner's update could go
+    // completely unseen by an owner/manager until they thought to
+    // manually reload. `connect()` below re-subscribes with a short
+    // backoff on any non-"SUBSCRIBED" status instead of just giving up.
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
+    let cancelled = false;
+
+    function connect() {
+      channel = supabase
+        .channel("bookings-changes")
+        .on("postgres_changes", { event: "*", schema: "public", table: "bookings" }, handlePayload)
+        .subscribe((status) => {
+          if (cancelled) return;
+          if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+            if (channel) supabase.removeChannel(channel);
+            retryTimer = setTimeout(connect, 3000);
+          }
+        });
+    }
+    connect();
+
+    // Belt-and-braces for the same failure mode: whenever the tab
+    // regains focus/visibility (e.g. waking a laptop from sleep), force
+    // a full re-fetch from the server rather than trusting the realtime
+    // channel alone -- router.refresh() re-runs calendar/page.tsx, and
+    // the syncedBookings/syncedProperties checks above already re-sync
+    // local state whenever the refreshed props differ from what's shown.
+    function handleVisible() {
+      if (document.visibilityState === "visible") router.refresh();
+    }
+    document.addEventListener("visibilitychange", handleVisible);
+    window.addEventListener("focus", handleVisible);
 
     return () => {
-      supabase.removeChannel(channel);
+      cancelled = true;
+      if (retryTimer) clearTimeout(retryTimer);
+      if (channel) supabase.removeChannel(channel);
+      document.removeEventListener("visibilitychange", handleVisible);
+      window.removeEventListener("focus", handleVisible);
     };
-  }, [currentProfile.id, currentProfile.role]);
+  }, [currentProfile.id, currentProfile.role, router]);
 
   // On mobile, a CLEANER's "week" tab is relabelled "Cleaning List" and
   // shows a month's worth of days as a vertical agenda instead of a
