@@ -416,6 +416,9 @@ export default function CalendarApp({
             <Link href="/handbook" className="dropdown-item">
               Handbook
             </Link>
+            <Link href="/handbook/cleaners" className="dropdown-item">
+              Cleaner quick guide
+            </Link>
             <Link href="/history" className="dropdown-item">
               History
             </Link>

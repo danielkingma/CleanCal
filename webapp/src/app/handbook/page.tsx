@@ -37,6 +37,10 @@ export default function HandbookPage() {
             ← Back to Calendar
           </Link>
 
+          <Link href="/handbook/cleaners" className="hb-side-link" style={{ fontWeight: 600 }}>
+            🧹 Cleaner quick guide
+          </Link>
+
           <div className="hb-side-group-title">Getting started</div>
           <a className="hb-side-link" href="#welcome">Welcome</a>
           <a className="hb-side-link" href="#signing-in">Signing in &amp; your business</a>
@@ -71,6 +75,10 @@ export default function HandbookPage() {
                 cleaning checklist, your cleaning team, and trust &amp; payments. Skim the
                 sidebar for what you need, or read straight through if you&apos;re setting up
                 for the first time.
+              </p>
+              <p>
+                Just here to clean? The <Link href="/handbook/cleaners">cleaner quick guide</Link>{" "}
+                covers everything you actually need in a few minutes.
               </p>
               <DeviceShowcase
                 monitorSrc="/handbook/calendar-example.png"
