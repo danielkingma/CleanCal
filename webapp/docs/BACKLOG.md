@@ -5,7 +5,7 @@ Things worth doing, logged for later rather than acted on now. Not in any partic
 ## Before real billing goes in
 
 1. **Payout reliability gap.** `payCleanerForBooking` (`src/app/calendar/actions.ts`) sends the Stripe transfer, then separately updates `payout_status: "paid"` in the database. If that second write fails after the transfer succeeds, the cleaner has actually been paid but the app still shows the job as unpaid -- risk of double-paying someone who chases it up. Separately, the Stripe webhook (`src/app/api/webhooks/stripe/route.ts`) only handles `identity.verification_session.*` and `account.updated` -- a later `transfer.failed` or `transfer.reversed` event never reaches the app, so `payout_status` can go stale in the other direction too.
-2. **Legal page placeholders.** `src/app/terms/page.tsx` and `src/app/privacy/page.tsx` hardcode `support@cleancal.net` as a placeholder contact address (with a comment flagging it needs a real inbox), plus a placeholder governing-law jurisdiction. Cheap to fix, easy to forget before anyone reads these pages closely.
+2. ~~**Legal page placeholders.**~~ Done 2026-10-03: `support@cleancal.net` is now a real, live inbox (GoDaddy Microsoft 365) -- the placeholder comments in `src/app/terms/page.tsx` and `src/app/privacy/page.tsx` are cleared, and the address is now also surfaced to customers on the landing page footer and the Handbook (FAQ + footer). The placeholder governing-law jurisdiction in `terms/page.tsx` is still unconfirmed.
 
 ## Real but limited -- not broken, just worth knowing
 

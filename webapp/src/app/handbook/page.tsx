@@ -617,9 +617,13 @@ export default function HandbookPage() {
               <p>Yes — any platform with a calendar export URL works, badge or not. A recognized platform (Airbnb, Vrbo, Booking.com, and a growing list of others) gets its own color; anything else still syncs, just with a plain grey badge.</p>
               <h3>My magic-link email didn&apos;t work</h3>
               <p>This is almost always Gmail (or a similar provider) automatically opening the link to scan it for safety, which uses it up before you tap it. Request a new code and type it into the page instead of tapping the link.</p>
+              <h3>Something else isn&apos;t covered here</h3>
+              <p>Email <a href="mailto:support@cleancal.net">support@cleancal.net</a> and we&apos;ll help you out.</p>
             </section>
           </div>
-          <footer className="hb-footer">CleanCal Handbook — keep this open while you set up your first property.</footer>
+          <footer className="hb-footer">
+            CleanCal Handbook — keep this open while you set up your first property. Questions? <a href="mailto:support@cleancal.net">support@cleancal.net</a>
+          </footer>
         </main>
       </div>
     </div>

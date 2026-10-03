@@ -157,6 +157,7 @@ export default function LandingPage() {
           <Link href="/handbook">CleanCal Handbook</Link>
           <Link href="/privacy">Privacy Policy</Link>
           <Link href="/terms">Terms of Service</Link>
+          <a href="mailto:support@cleancal.net">Contact support</a>
         </div>
       </footer>
     </div>

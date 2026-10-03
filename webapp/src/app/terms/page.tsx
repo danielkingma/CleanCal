@@ -6,7 +6,7 @@ import Logo from "@/components/Logo";
 // that's the exact legal name (and any ABN/ACN, if incorporated) and
 // the jurisdiction below before relying on this for real signups.
 const LAST_UPDATED = "24 September 2026";
-const CONTACT_EMAIL = "support@cleancal.net"; // placeholder -- make sure this inbox exists before publishing
+const CONTACT_EMAIL = "support@cleancal.net"; // live inbox (GoDaddy Microsoft 365), confirmed 2026-10-03
 const GOVERNING_LAW = "Australia"; // placeholder -- confirm your actual operating jurisdiction
 
 export default function TermsPage() {

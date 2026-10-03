@@ -10,7 +10,7 @@ import Logo from "@/components/Logo";
 // entity is Kingma Labs -- confirm that's the exact legal name (and any
 // ABN/ACN, if incorporated) before this goes live.
 const LAST_UPDATED = "24 September 2026";
-const CONTACT_EMAIL = "support@cleancal.net"; // placeholder -- make sure this inbox exists before publishing
+const CONTACT_EMAIL = "support@cleancal.net"; // live inbox (GoDaddy Microsoft 365), confirmed 2026-10-03
 
 export default function PrivacyPage() {
   return (
