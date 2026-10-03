@@ -21,6 +21,27 @@ interface KnownDevice {
   last_seen_at: string;
 }
 
+// A cleaner's initial is rendered as colored text directly on top of a
+// booking bar's own background (amber "to-clean", blue "in-progress", or
+// dark teal "complete" -- see .booking-bar.* in globals.css), never on a
+// plain white/paper background. A dark pick there is close to invisible,
+// so the picker only offers colors light enough to read clearly against
+// all three. Kept in sync with the DB-side floor in
+// profiles_favorite_color_light (0043_favorite_color_light_only.sql) --
+// anything added here should stay well above that check.
+const COLOR_SWATCHES = [
+  "#fef3c7", // cream
+  "#fde68a", // light gold
+  "#fed7aa", // light orange
+  "#fecaca", // light coral
+  "#fbcfe8", // light pink
+  "#e9d5ff", // light purple
+  "#c7d2fe", // light indigo
+  "#bfdbfe", // light blue
+  "#a7f3d0", // light mint
+  "#d9f99d", // light lime
+];
+
 export default function ProfileForm({
   profile,
   email,
@@ -45,7 +66,7 @@ export default function ProfileForm({
   const [surname, setSurname] = useState(
     profile.surname ?? (nameParts.length > 1 ? nameParts[nameParts.length - 1] : ""),
   );
-  const [favoriteColor, setFavoriteColor] = useState(profile.favorite_color ?? "#2f6f6f");
+  const [favoriteColor, setFavoriteColor] = useState(profile.favorite_color ?? COLOR_SWATCHES[0]);
   // Preview only -- the server derives the real preferred_initial the
   // same way (see update_own_profile), this just shows what it'll be
   // before Save is pressed.
@@ -215,24 +236,37 @@ export default function ProfileForm({
                 no middle initial) -- right now that&apos;s{" "}
                 <strong>{previewInitial || "—"}</strong>.
               </p>
-              <label htmlFor="pColor" style={{ display: "block", marginTop: 14 }}>
+              <label id="pColorLabel" style={{ display: "block", marginTop: 14 }}>
                 Favourite colour
               </label>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 4 }}>
-                <input
-                  id="pColor"
-                  type="color"
-                  value={favoriteColor}
-                  style={{ width: 44, height: 32, padding: 0, border: "1px solid var(--line)", borderRadius: 6 }}
-                  onChange={(e) => setFavoriteColor(e.target.value)}
-                />
-                <span style={{ fontSize: 12.5, color: "var(--muted)", fontFamily: "monospace" }}>
-                  {favoriteColor}
-                </span>
+              <div role="group" aria-labelledby="pColorLabel" style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 6 }}>
+                {COLOR_SWATCHES.map((swatch) => (
+                  <button
+                    key={swatch}
+                    type="button"
+                    aria-label={swatch}
+                    aria-pressed={favoriteColor.toLowerCase() === swatch}
+                    onClick={() => setFavoriteColor(swatch)}
+                    style={{
+                      width: 30,
+                      height: 30,
+                      borderRadius: "50%",
+                      background: swatch,
+                      border:
+                        favoriteColor.toLowerCase() === swatch
+                          ? "2px solid var(--ink)"
+                          : "1px solid var(--line)",
+                      boxShadow: favoriteColor.toLowerCase() === swatch ? "0 0 0 2px var(--paper)" : "none",
+                      cursor: "pointer",
+                      padding: 0,
+                    }}
+                  />
+                ))}
               </div>
               <p className="access-note" style={{ marginTop: 6 }}>
                 Your name is shown in this colour in the Assigned and Completed lists, so it&apos;s
-                easier to pick out your jobs at a glance.
+                easier to pick out your jobs at a glance -- only lighter shades are offered here so
+                it stays readable against the calendar&apos;s booking colours.
               </p>
             </div>
           ) : null}
