@@ -60,6 +60,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body>
         <ServiceWorkerRegistration />
         {children}
+        {/* Vercel Web Analytics' plain script-tag integration (no npm
+            package, so no dependency/lockfile to keep in sync) -- counts
+            page views, served from Vercel's own edge, no cookies. Only
+            actually collects data once Web Analytics is turned on for
+            this project in the Vercel dashboard (Project -> Analytics ->
+            Enable); until then this script loads and quietly no-ops.
+            Traffic only starts counting from whenever that's enabled --
+            there's no history to backfill from before today. */}
+        <script defer src="/_vercel/insights/script.js" />
       </body>
     </html>
   );
