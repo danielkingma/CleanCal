@@ -245,17 +245,18 @@ export default function MonthGrid({
                   const assignedCleanerName = isAssignedToCleaner
                     ? (cleanerNameById?.[seg.booking.assigned_cleaner_id!] ?? "Cleaner")
                     : null;
-                  // A single-day segment is barely wide enough for a
-                  // couple of characters, so it shows the cleaner's
-                  // initial instead of a name that would just get
-                  // ellipsis-truncated down to one letter anyway.
+                  // Always the initial here, never the full name -- full
+                  // names are reserved for the Assigned/Completed lists
+                  // (AgendaCard), which have room for them; the owner's
+                  // calendar grid itself (Month/Week/Year) stays compact
+                  // and consistent regardless of how wide a given segment
+                  // happens to be.
                   const assignedCleanerInitial = isAssignedToCleaner
                     ? (cleanerInitialById?.[seg.booking.assigned_cleaner_id!] ||
                       assignedCleanerName?.charAt(0).toUpperCase() ||
                       "?")
                     : null;
-                  const showCleanerInitial = isAssignedToCleaner && seg.span <= 1;
-                  const displayCleanerName = showCleanerInitial ? assignedCleanerInitial : assignedCleanerName;
+                  const displayCleanerName = assignedCleanerInitial;
                   const assignedCleanerColor = isAssignedToCleaner
                     ? cleanerColorById?.[seg.booking.assigned_cleaner_id!]
                     : undefined;
