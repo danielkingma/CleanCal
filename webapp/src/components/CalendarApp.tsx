@@ -685,6 +685,7 @@ export default function CalendarApp({
           viewerId={currentProfile.id}
           isStaffViewer={isStaffUser}
           cleanerNameById={cleanerNameById}
+          cleanerColorById={cleanerColorById}
         />
       ) : null}
     </div>

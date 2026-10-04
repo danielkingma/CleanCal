@@ -62,6 +62,10 @@ export default function ReportsView({ completed, properties, profiles, isSuperad
   );
   const propertyById = useMemo(() => Object.fromEntries(properties.map((p) => [p.id, p])), [properties]);
   const cleanerNameById = useMemo(() => Object.fromEntries(profiles.map((p) => [p.id, p.name])), [profiles]);
+  const cleanerColorById = useMemo(
+    () => Object.fromEntries(profiles.filter((p) => p.favorite_color).map((p) => [p.id, p.favorite_color as string])),
+    [profiles],
+  );
 
   const filtered = useMemo(() => {
     return completed.filter((b) => {
@@ -414,7 +418,12 @@ export default function ReportsView({ completed, properties, profiles, isSuperad
                   <tbody>
                     {byCleaner.map((row) => (
                       <tr key={row.id}>
-                        <td>{row.name}</td>
+                        <td>
+                          {cleanerColorById[row.id] ? (
+                            <span className="cleaner-color-dot" style={{ background: cleanerColorById[row.id] }} />
+                          ) : null}
+                          {row.name}
+                        </td>
                         <td>{row.count}</td>
                         <td>{row.avgRating != null ? `★ ${row.avgRating.toFixed(1)}` : "—"}</td>
                         <td>{row.avgDurationMinutes != null ? formatMinutes(row.avgDurationMinutes) : "—"}</td>
@@ -467,7 +476,12 @@ export default function ReportsView({ completed, properties, profiles, isSuperad
                           "—"
                         )}
                       </td>
-                      <td>{(b.assigned_cleaner_id && cleanerNameById[b.assigned_cleaner_id]) || "—"}</td>
+                      <td>
+                        {b.assigned_cleaner_id && cleanerColorById[b.assigned_cleaner_id] ? (
+                          <span className="cleaner-color-dot" style={{ background: cleanerColorById[b.assigned_cleaner_id] }} />
+                        ) : null}
+                        {(b.assigned_cleaner_id && cleanerNameById[b.assigned_cleaner_id]) || "—"}
+                      </td>
                       <td>{b.rating != null ? `★ ${b.rating}` : "—"}</td>
                       <td>
                         {b.dispute_status !== "none" ? (

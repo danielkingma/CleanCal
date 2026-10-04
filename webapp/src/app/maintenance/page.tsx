@@ -41,7 +41,7 @@ export default async function MaintenancePage() {
 
     const { data: cleanerProfiles } = await supabase
       .from("profiles")
-      .select("id, name, role")
+      .select("id, name, role, favorite_color")
       .eq("role", "cleaner")
       .is("deactivated_at", null)
       .order("name");

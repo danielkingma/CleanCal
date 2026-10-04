@@ -54,6 +54,10 @@ export default function MaintenanceView({
 }: MaintenanceViewProps) {
   const propertyNameById = useMemo(() => Object.fromEntries(properties.map((p) => [p.id, p.name])), [properties]);
   const cleanerNameById = useMemo(() => Object.fromEntries(cleaners.map((c) => [c.id, c.name])), [cleaners]);
+  const cleanerColorById = useMemo(
+    () => Object.fromEntries(cleaners.filter((c) => c.favorite_color).map((c) => [c.id, c.favorite_color as string])),
+    [cleaners],
+  );
 
   // New work order form
   const [woPropertyId, setWoPropertyId] = useState(properties[0]?.id ?? "");
@@ -325,7 +329,17 @@ export default function MaintenanceView({
                 </div>
                 {wo.description ? <p style={{ fontSize: 13.5, marginTop: 8 }}>{wo.description}</p> : null}
                 <p style={{ fontSize: 12.5, color: "var(--muted)", marginTop: 6 }}>
-                  {wo.assigned_to ? `Assigned to ${cleanerNameById[wo.assigned_to] ?? "a cleaner"}` : "Unassigned"}
+                  {wo.assigned_to ? (
+                    <>
+                      Assigned to{" "}
+                      {cleanerColorById[wo.assigned_to] ? (
+                        <span className="cleaner-color-dot" style={{ background: cleanerColorById[wo.assigned_to] }} />
+                      ) : null}
+                      {cleanerNameById[wo.assigned_to] ?? "a cleaner"}
+                    </>
+                  ) : (
+                    "Unassigned"
+                  )}
                   {wo.due_date ? ` · Due ${new Date(wo.due_date).toLocaleDateString()}` : ""}
                 </p>
                 <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>

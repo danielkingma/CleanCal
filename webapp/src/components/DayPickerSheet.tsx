@@ -12,6 +12,7 @@ interface DayPickerSheetProps {
   viewerId?: string;
   isStaffViewer?: boolean;
   cleanerNameById?: Record<string, string>;
+  cleanerColorById?: Record<string, string>;
 }
 
 // Shown when tapping a day on the mobile Month grid lands on more than
@@ -28,6 +29,7 @@ export default function DayPickerSheet({
   viewerId,
   isStaffViewer,
   cleanerNameById,
+  cleanerColorById,
 }: DayPickerSheetProps) {
   return (
     <div className="overlay open" onClick={(e) => e.target === e.currentTarget && onClose()}>
@@ -43,6 +45,8 @@ export default function DayPickerSheet({
               viewerId={viewerId}
               isStaffViewer={isStaffViewer}
               cleanerNameById={cleanerNameById}
+              cleanerColorById={cleanerColorById}
+              showCleanerColor
             />
           ))}
         </div>

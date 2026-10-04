@@ -46,9 +46,13 @@ export default async function HistoryPage() {
   const propertyNameById = Object.fromEntries((properties ?? []).map((p) => [p.id, p.name]));
 
   let cleanerNameById: Record<string, string> = {};
+  let cleanerColorById: Record<string, string> = {};
   if (staffView) {
-    const { data: allProfiles } = await supabase.from("profiles").select("id, name");
+    const { data: allProfiles } = await supabase.from("profiles").select("id, name, favorite_color");
     cleanerNameById = Object.fromEntries((allProfiles ?? []).map((p) => [p.id, p.name]));
+    cleanerColorById = Object.fromEntries(
+      (allProfiles ?? []).filter((p) => p.favorite_color).map((p) => [p.id, p.favorite_color as string]),
+    );
   }
 
   const rated = completed.filter((b) => b.rating != null);
@@ -123,7 +127,15 @@ export default async function HistoryPage() {
                         )}
                       </td>
                       {staffView ? (
-                        <td>{(b.assigned_cleaner_id && cleanerNameById[b.assigned_cleaner_id]) || "—"}</td>
+                        <td>
+                          {b.assigned_cleaner_id && cleanerColorById[b.assigned_cleaner_id] ? (
+                            <span
+                              className="cleaner-color-dot"
+                              style={{ background: cleanerColorById[b.assigned_cleaner_id] }}
+                            />
+                          ) : null}
+                          {(b.assigned_cleaner_id && cleanerNameById[b.assigned_cleaner_id]) || "—"}
+                        </td>
                       ) : null}
                       <td>
                         {b.rating != null ? (

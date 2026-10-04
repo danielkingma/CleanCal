@@ -22,9 +22,11 @@ interface AgendaCardProps {
   cleanerNameById?: Record<string, string>;
   // Only applied when showCleanerColor is set.
   cleanerColorById?: Record<string, string>;
-  // Set only for the Assigned/Completed tabs (see MobileAgenda.tsx) --
-  // the one place a cleaner's own favourite colour tints their name,
-  // since that's the dedicated spot for scanning "who's doing what".
+  // Set wherever this card's full name should be tinted in the
+  // cleaner's own favourite colour -- the Assigned/Completed tabs (see
+  // MobileAgenda.tsx) and the "which of these" list a tap on a
+  // same-day-turnover day opens (DayPickerSheet.tsx), so the same
+  // colour-coding used on the calendar bars carries through here too.
   showCleanerColor?: boolean;
 }
 
@@ -110,11 +112,12 @@ export default function AgendaCard({
             {isOpenUnclaimed ? "Open job" : STATUS_LABEL[b.status]}
           </span>
           {assignedCleanerName ? (
-            <span
-              className="agenda-cleaner-tag"
-              style={assignedCleanerColor ? { color: assignedCleanerColor } : undefined}
-            >
-              🧹 {assignedCleanerName}
+            <span className="agenda-cleaner-tag">
+              🧹{" "}
+              {assignedCleanerColor ? (
+                <span className="cleaner-color-dot" style={{ background: assignedCleanerColor }} />
+              ) : null}
+              {assignedCleanerName}
             </span>
           ) : null}
           {b.guests ? <span className="agenda-guests">{b.guests}</span> : null}

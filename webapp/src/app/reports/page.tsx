@@ -31,7 +31,10 @@ export default async function ReportsPage() {
     .from("properties")
     .select("id, name, payout_rate_cents, linen_box_count, linen_fee_cents")
     .order("name");
-  const { data: profilesData } = await supabase.from("profiles").select("id, name").order("name");
+  const { data: profilesData } = await supabase
+    .from("profiles")
+    .select("id, name, favorite_color")
+    .order("name");
 
   return (
     <ReportsView

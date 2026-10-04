@@ -798,11 +798,24 @@ export default function BookingModal({
 
         {isStaffUser && isOpenJob ? (
           <div className="field">
-            <p className="access-note">
-              {booking?.assigned_cleaner_id
-                ? `Claimed by ${cleaners.find((c) => c.id === booking.assigned_cleaner_id)?.name || "a cleaner"}.`
-                : "Posted to the open job board — any cleaner can claim it from their calendar."}
-            </p>
+            {booking?.assigned_cleaner_id ? (
+              (() => {
+                const claimedBy = cleaners.find((c) => c.id === booking.assigned_cleaner_id);
+                return (
+                  <p className="access-note">
+                    Claimed by{" "}
+                    {claimedBy?.favorite_color ? (
+                      <span className="cleaner-color-dot" style={{ background: claimedBy.favorite_color }} />
+                    ) : null}
+                    {claimedBy?.name || "a cleaner"}.
+                  </p>
+                );
+              })()
+            ) : (
+              <p className="access-note">
+                Posted to the open job board — any cleaner can claim it from their calendar.
+              </p>
+            )}
           </div>
         ) : null}
 

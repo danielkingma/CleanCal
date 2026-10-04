@@ -760,6 +760,24 @@ main {
   color: var(--teal-deep);
   font-weight: 600;
 }
+/* A cleaner's favourite colour, shown as a small filled dot rather than
+   tinting the text itself -- the colour is constrained to be light
+   enough to read on a dark booking bar (see
+   profiles_favorite_color_light), which makes it too washed-out to read
+   as *text* against the plain white/paper backgrounds used everywhere a
+   name is spelled out off the calendar grid (lists, tables, modals). A
+   dot carries the same at-a-glance colour-coding without that
+   legibility problem. */
+.cleaner-color-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  margin-right: 5px;
+  vertical-align: middle;
+  flex: none;
+}
 .agenda-inline-marker {
   position: static;
   border: none;
