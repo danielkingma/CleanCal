@@ -181,7 +181,12 @@ export default function BookingModal({
     setError(null);
     setConfirming(true);
     try {
-      await confirmAssignedBooking(booking.id);
+      const result = await confirmAssignedBooking(booking.id);
+      if (result.error) {
+        setError(result.error);
+        setConfirming(false);
+        return;
+      }
       onDone();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Couldn't confirm this job.");
@@ -261,7 +266,12 @@ export default function BookingModal({
     setError(null);
     setClaiming(true);
     try {
-      await declineAssignedBooking(booking.id);
+      const result = await declineAssignedBooking(booking.id);
+      if (result.error) {
+        setError(result.error);
+        setClaiming(false);
+        return;
+      }
       onDone();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Couldn't decline this job.");

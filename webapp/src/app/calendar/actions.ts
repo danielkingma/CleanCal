@@ -199,7 +199,7 @@ export async function releaseOpenBooking(id: string) {
 // (not from the open board) -- puts it back in the open pool instead of
 // leaving it stuck. Only works before the job has started -- see
 // decline_assigned_booking in supabase/migrations/0011_decline_assigned_job.sql.
-export async function declineAssignedBooking(id: string) {
+export async function declineAssignedBooking(id: string): Promise<{ error?: string }> {
   const supabase = await createClient();
   const { data: booking } = await supabase
     .from("bookings")
@@ -207,7 +207,7 @@ export async function declineAssignedBooking(id: string) {
     .eq("id", id)
     .maybeSingle();
   const { error } = await supabase.rpc("decline_assigned_booking", { p_booking_id: id });
-  if (error) throw new Error(error.message);
+  if (error) return { error: error.message };
   revalidatePath("/calendar");
 
   if (booking) {
@@ -223,6 +223,7 @@ export async function declineAssignedBooking(id: string) {
       url: "/calendar",
     });
   }
+  return {};
 }
 
 // Cleaner accepts a job an Owner/Manager assigned directly to them --
@@ -230,7 +231,11 @@ export async function declineAssignedBooking(id: string) {
 // runs, the booking's assignment_confirmed stays false and
 // cleaner_update_booking refuses status/checklist writes on it (see
 // supabase/migrations/0020_cleaner_full_calendar.sql).
-export async function confirmAssignedBooking(id: string) {
+// Returns {error} instead of throwing: a thrown server-action error is
+// replaced with a generic "Minified React error #441" in production, so
+// the cleaner never saw why a confirm/decline failed. Already-confirmed
+// (stale screen, double tap, other device) counts as success.
+export async function confirmAssignedBooking(id: string): Promise<{ error?: string }> {
   const supabase = await createClient();
   const { data: booking } = await supabase
     .from("bookings")
@@ -238,7 +243,18 @@ export async function confirmAssignedBooking(id: string) {
     .eq("id", id)
     .maybeSingle();
   const { error } = await supabase.rpc("confirm_assigned_booking", { p_booking_id: id });
-  if (error) throw new Error(error.message);
+  if (error) {
+    const { data: now } = await supabase
+      .from("bookings")
+      .select("assignment_confirmed")
+      .eq("id", id)
+      .maybeSingle();
+    if (now?.assignment_confirmed) {
+      revalidatePath("/calendar");
+      return {};
+    }
+    return { error: error.message };
+  }
   revalidatePath("/calendar");
 
   if (booking) {
@@ -254,6 +270,7 @@ export async function confirmAssignedBooking(id: string) {
       url: "/calendar",
     });
   }
+  return {};
 }
 
 // Cleaner ticks the box on a job that isn't confirmed as theirs yet --
