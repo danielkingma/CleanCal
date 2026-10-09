@@ -179,10 +179,10 @@ export default function Timeline({
                   // A staff viewer otherwise has no way to tell, at a
                   // glance, whether a cleaner is actually on a job -- the
                   // bar looks the same either way. A cleaner viewer gets
-                  // the same broom + initial too, but only for their own
-                  // job -- someone else's assigned bar stays unmarked to
-                  // them, same as everywhere else on the shared schedule.
-                  const isAssignedToCleaner = (isStaffViewer || isMine) && !isOpenUnclaimed && !!b.assigned_cleaner_id;
+                  // the same broom + initial for every assigned job, so
+                  // they can see at a glance who a booking is allocated
+                  // to (and don't turn up to someone else's).
+                  const isAssignedToCleaner = !isOpenUnclaimed && !!b.assigned_cleaner_id;
                   const assignedCleanerName = isAssignedToCleaner
                     ? (cleanerNameById?.[b.assigned_cleaner_id!] ?? "Cleaner")
                     : null;

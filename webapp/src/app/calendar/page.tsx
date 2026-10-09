@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import CalendarApp from "@/components/CalendarApp";
-import { scopeBookingForViewer } from "@/lib/calendar-utils";
+import { computeNameInitial, scopeBookingForViewer } from "@/lib/calendar-utils";
+import { createServiceClient } from "@/lib/supabase/service";
 import { isStaff, type Booking, type CleanerRating, type Profile, type Property } from "@/lib/types";
 import { isSuperadmin } from "@/lib/superadmin";
 
@@ -55,6 +56,11 @@ export default async function CalendarPage() {
   const bookings = (rawBookings ?? []).map((b) => scopeBookingForViewer(b as Booking, user.id, staffUser));
 
   let cleaners: Profile[] = [];
+  // A cleaner viewer can't read other cleaners' profile rows (RLS), but
+  // needs each assigned cleaner's initial + colour to see who a booking
+  // is allocated to on the shared schedule. Only those two display
+  // fields are ever sent -- no names, contact details, or anything else.
+  let cleanerDirectory: Profile[] = [];
   let cleanerRatings: Record<string, CleanerRating> = {};
   let cleanerUnavailableDates: Record<string, string[]> = {};
   let trialEndsAt: string | null = null;
@@ -114,6 +120,34 @@ export default async function CalendarPage() {
     cleanerUnavailableDates = Object.fromEntries(unavailableMap);
   }
 
+  if (!staffUser) {
+    try {
+      const { data: me } = await supabase
+        .from("profiles")
+        .select("organization_id")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (me?.organization_id) {
+        const { data: roster } = await createServiceClient()
+          .from("profiles")
+          .select("id, name, preferred_initial, favorite_color, given_name, middle_name, surname")
+          .eq("organization_id", me.organization_id)
+          .eq("role", "cleaner")
+          .is("deactivated_at", null);
+        cleanerDirectory = (roster ?? []).map((c) => ({
+          id: c.id,
+          name: "Cleaner",
+          role: "cleaner" as const,
+          preferred_initial: c.preferred_initial || computeNameInitial(c) || "?",
+          favorite_color: c.favorite_color,
+        }));
+      }
+    } catch {
+      // No service key / lookup failed: the calendar still works, other
+      // cleaners' bookings just fall back to a generic initial.
+    }
+  }
+
   return (
     <div>
       {propertiesError || bookingsError ? (
@@ -136,6 +170,7 @@ export default async function CalendarPage() {
         properties={properties as Property[]}
         initialBookings={(bookings ?? []) as Booking[]}
         cleaners={cleaners}
+        cleanerDirectory={cleanerDirectory}
         cleanerRatings={cleanerRatings}
         cleanerUnavailableDates={cleanerUnavailableDates}
         trialEndsAt={trialEndsAt}

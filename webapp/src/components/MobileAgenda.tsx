@@ -15,6 +15,7 @@ interface MobileAgendaProps {
   // AgendaCard.tsx) -- shown to staff for any cleaner, and to a cleaner
   // viewer for their own jobs.
   cleanerNameById?: Record<string, string>;
+  cleanerInitialById?: Record<string, string>;
   // Only meaningful together with showCleanerColor below.
   cleanerColorById?: Record<string, string>;
   // Tints the name above in that cleaner's own favourite colour (see
@@ -36,6 +37,7 @@ export default function MobileAgenda({
   viewerId,
   isStaffViewer,
   cleanerNameById,
+  cleanerInitialById,
   cleanerColorById,
   showCleanerColor,
 }: MobileAgendaProps) {
@@ -81,6 +83,7 @@ export default function MobileAgenda({
                   viewerId={viewerId}
                   isStaffViewer={isStaffViewer}
                   cleanerNameById={cleanerNameById}
+                  cleanerInitialById={cleanerInitialById}
                   cleanerColorById={cleanerColorById}
                   showCleanerColor={showCleanerColor}
                 />

@@ -241,7 +241,7 @@ export default function MonthGrid({
                   // your own booking is exactly what makes it recognizable
                   // at a glance on a bar too narrow for your full name.
                   const isAssignedToCleaner =
-                    (isStaffViewer || isMine) && showCleanerLabel && !isOpenUnclaimed && !!seg.booking.assigned_cleaner_id;
+                    showCleanerLabel && !isOpenUnclaimed && !!seg.booking.assigned_cleaner_id;
                   const assignedCleanerName = isAssignedToCleaner
                     ? (cleanerNameById?.[seg.booking.assigned_cleaner_id!] ?? "Cleaner")
                     : null;

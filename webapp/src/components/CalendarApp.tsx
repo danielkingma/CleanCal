@@ -42,6 +42,9 @@ interface CalendarAppProps {
   properties: Property[];
   initialBookings: Booking[];
   cleaners: Profile[];
+  // Initial + colour only, for a cleaner viewer to see who else is on a
+  // booking (see calendar/page.tsx). Empty for staff.
+  cleanerDirectory?: Profile[];
   cleanerRatings: Record<string, CleanerRating>;
   cleanerUnavailableDates: Record<string, string[]>;
   trialEndsAt: string | null;
@@ -68,6 +71,7 @@ export default function CalendarApp({
   properties,
   initialBookings,
   cleaners,
+  cleanerDirectory = [],
   cleanerRatings,
   cleanerUnavailableDates,
   trialEndsAt,
@@ -291,9 +295,12 @@ export default function CalendarApp({
   const cleanerInitialById = useMemo(
     () =>
       Object.fromEntries(
-        allKnownCleaners.map((c) => [c.id, c.preferred_initial || computeNameInitial(c) || "?"]),
+        [...cleanerDirectory, ...allKnownCleaners].map((c) => [
+          c.id,
+          c.preferred_initial || computeNameInitial(c) || "?",
+        ]),
       ),
-    [allKnownCleaners],
+    [allKnownCleaners, cleanerDirectory],
   );
   // Used wherever a cleaner's name is spelled out as text (AgendaCard, via
   // MobileAgenda's showCleanerColor) to tint it in their own favourite
@@ -302,9 +309,11 @@ export default function CalendarApp({
   const cleanerColorById = useMemo(
     () =>
       Object.fromEntries(
-        allKnownCleaners.filter((c) => c.favorite_color).map((c) => [c.id, c.favorite_color as string]),
+        [...cleanerDirectory, ...allKnownCleaners]
+          .filter((c) => c.favorite_color)
+          .map((c) => [c.id, c.favorite_color as string]),
       ),
-    [allKnownCleaners],
+    [allKnownCleaners, cleanerDirectory],
   );
   // Shown wherever there's nothing to display because `properties` is
   // empty -- a cleaner only ever sees properties tied to a booking
@@ -567,6 +576,7 @@ export default function CalendarApp({
             viewerId={currentProfile.id}
             isStaffViewer={isStaffUser}
             cleanerNameById={cleanerNameById}
+            cleanerInitialById={cleanerInitialById}
             cleanerColorById={cleanerColorById}
             showCleanerColor
           />
@@ -579,6 +589,7 @@ export default function CalendarApp({
             viewerId={currentProfile.id}
             isStaffViewer={isStaffUser}
             cleanerNameById={cleanerNameById}
+            cleanerInitialById={cleanerInitialById}
             cleanerColorById={cleanerColorById}
             showCleanerColor
           />
@@ -629,6 +640,7 @@ export default function CalendarApp({
             viewerId={currentProfile.id}
             isStaffViewer={isStaffUser}
             cleanerNameById={cleanerNameById}
+            cleanerInitialById={cleanerInitialById}
             cleanerColorById={cleanerColorById}
             showCleanerColor
           />

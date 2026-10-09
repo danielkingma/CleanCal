@@ -20,6 +20,8 @@ interface AgendaCardProps {
   // Staff view only -- resolves booking.assigned_cleaner_id to a name,
   // shown next to the broom mark below.
   cleanerNameById?: Record<string, string>;
+  // Lets a cleaner viewer see just the initial of whoever else is on a job.
+  cleanerInitialById?: Record<string, string>;
   // Only applied when showCleanerColor is set.
   cleanerColorById?: Record<string, string>;
   // Set wherever this card's full name should be tinted in the
@@ -40,6 +42,7 @@ export default function AgendaCard({
   viewerId,
   isStaffViewer,
   cleanerNameById,
+  cleanerInitialById,
   cleanerColorById,
   showCleanerColor,
 }: AgendaCardProps) {
@@ -62,8 +65,13 @@ export default function AgendaCard({
     b.assigned_cleaner_id && (isStaffViewer || isMine)
       ? (cleanerNameById?.[b.assigned_cleaner_id] ?? "Cleaner")
       : null;
+  // Someone else's job, seen by a cleaner: initial only, no name.
+  const otherCleanerInitial =
+    !assignedCleanerName && b.assigned_cleaner_id && !isOpenUnclaimed
+      ? (cleanerInitialById?.[b.assigned_cleaner_id] ?? "?")
+      : null;
   const assignedCleanerColor =
-    showCleanerColor && b.assigned_cleaner_id ? cleanerColorById?.[b.assigned_cleaner_id] : undefined;
+    (showCleanerColor || otherCleanerInitial) && b.assigned_cleaner_id ? cleanerColorById?.[b.assigned_cleaner_id] : undefined;
 
   async function handleClaim() {
     setPending(true);
@@ -118,6 +126,14 @@ export default function AgendaCard({
                 <span className="cleaner-color-dot" style={{ background: assignedCleanerColor }} />
               ) : null}
               {assignedCleanerName}
+            </span>
+          ) : otherCleanerInitial ? (
+            <span className="agenda-cleaner-tag">
+              🧹{" "}
+              {assignedCleanerColor ? (
+                <span className="cleaner-color-dot" style={{ background: assignedCleanerColor }} />
+              ) : null}
+              {otherCleanerInitial}
             </span>
           ) : null}
           {b.guests ? <span className="agenda-guests">{b.guests}</span> : null}
