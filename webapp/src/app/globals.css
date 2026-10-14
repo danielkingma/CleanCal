@@ -834,7 +834,9 @@ main {
   grid-template-columns: repeat(7, 1fr);
 }
 .py-day-cell {
-  aspect-ratio: 1;
+  /* A slim fixed-height row (not a tall square) so each week's booking
+     bars (.py-bar-stack) sit right under the date numbers. */
+  height: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
