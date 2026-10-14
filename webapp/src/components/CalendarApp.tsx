@@ -631,7 +631,7 @@ export default function CalendarApp({
           )
         ) : properties.length === 0 ? (
           <p className="photo-note">{noPropertiesMessage}</p>
-        ) : isMobile ? (
+        ) : isMobile && !isStaffUser ? (
           <MobileAgenda
             days={days}
             properties={properties}
@@ -647,7 +647,8 @@ export default function CalendarApp({
         ) : (
           <Timeline
             days={days}
-            dayW={derivedView === "week" ? DAY_W_WEEK : DAY_W_MONTH}
+            dayW={derivedView === "week" ? (isMobile ? 46 : DAY_W_WEEK) : DAY_W_MONTH}
+            labelW={isMobile ? 80 : undefined}
             weekly={derivedView === "week"}
             properties={properties}
             bookings={bookings}

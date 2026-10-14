@@ -44,6 +44,8 @@ interface TimelineProps {
   cleanerInitialById?: Record<string, string>;
   // Tints that initial in the cleaner's own favourite colour.
   cleanerColorById?: Record<string, string>;
+  // Narrower property column for phones (default LABEL_W is desktop-sized).
+  labelW?: number;
 }
 
 export default function Timeline({
@@ -60,6 +62,7 @@ export default function Timeline({
   cleanerNameById,
   cleanerInitialById,
   cleanerColorById,
+  labelW = LABEL_W,
 }: TimelineProps) {
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
 
@@ -86,7 +89,7 @@ export default function Timeline({
   const rangeStartISO = isoDate(rangeStart);
   const rangeEndISO = isoDate(days[days.length - 1]);
   const today = new Date();
-  const totalW = LABEL_W + days.length * dayW;
+  const totalW = labelW + days.length * dayW;
   const rowH = weekly ? ROW_H + 12 : ROW_H;
   const headerH = weekly ? HEADER_H + 16 : HEADER_H;
   const todayIdx = daysBetween(rangeStart, today);
@@ -97,7 +100,7 @@ export default function Timeline({
         <div className="cal-header" style={weekly ? { minWidth: totalW } : { width: totalW }}>
           <div
             className="corner"
-            style={weekly ? { minWidth: LABEL_W, height: headerH } : { width: LABEL_W, height: headerH }}
+            style={weekly ? { minWidth: labelW, height: headerH } : { width: labelW, height: headerH }}
           >
             Property
           </div>
@@ -124,7 +127,7 @@ export default function Timeline({
             <div className="prop-row" key={prop.id} style={{ height: rowH }}>
               <div
                 className="prop-label"
-                style={weekly ? { minWidth: LABEL_W } : { width: LABEL_W }}
+                style={weekly ? { minWidth: labelW } : { width: labelW }}
                 title={prop.name}
               >
                 {prop.name}
