@@ -64,6 +64,10 @@ export default function Timeline({
   cleanerColorById,
   labelW = LABEL_W,
 }: TimelineProps) {
+  // Phone only (narrow label column): tapping a property's name shows
+  // the full name in a bubble until it's tapped again.
+  const compactLabels = labelW < LABEL_W;
+  const [expandedPropId, setExpandedPropId] = useState<string | null>(null);
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
 
   async function handleClaim(b: Booking) {
@@ -100,7 +104,13 @@ export default function Timeline({
         <div className="cal-header" style={weekly ? { minWidth: totalW } : { width: totalW }}>
           <div
             className="corner"
-            style={weekly ? { minWidth: labelW, height: headerH } : { width: labelW, height: headerH }}
+            style={
+              compactLabels
+                ? { flex: "0 0 auto", width: labelW, height: headerH }
+                : weekly
+                  ? { minWidth: labelW, height: headerH }
+                  : { width: labelW, height: headerH }
+            }
           >
             Property
           </div>
@@ -127,10 +137,55 @@ export default function Timeline({
             <div className="prop-row" key={prop.id} style={{ height: rowH }}>
               <div
                 className="prop-label"
-                style={weekly ? { minWidth: labelW } : { width: labelW }}
+                style={
+                  compactLabels
+                    ? {
+                        flex: "0 0 auto",
+                        width: labelW,
+                        padding: "0 8px",
+                        overflow: "visible",
+                        cursor: "pointer",
+                        // Above neighbouring rows' sticky labels while open.
+                        zIndex: expandedPropId === prop.id ? 6 : undefined,
+                      }
+                    : weekly
+                      ? { minWidth: labelW }
+                      : { width: labelW }
+                }
                 title={prop.name}
+                onClick={compactLabels ? () => setExpandedPropId((cur) => (cur === prop.id ? null : prop.id)) : undefined}
               >
-                {prop.name}
+                {compactLabels ? (
+                  <>
+                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>
+                      {prop.name}
+                    </span>
+                    {expandedPropId === prop.id ? (
+                      <span
+                        style={{
+                          position: "absolute",
+                          left: 6,
+                          top: "50%",
+                          transform: "translateY(-50%)",
+                          zIndex: 8,
+                          width: "max-content",
+                          maxWidth: 240,
+                          whiteSpace: "normal",
+                          background: "var(--white)",
+                          border: "1px solid var(--line)",
+                          borderRadius: 8,
+                          boxShadow: "0 4px 14px rgba(0,0,0,0.18)",
+                          padding: "8px 10px",
+                          lineHeight: 1.3,
+                        }}
+                      >
+                        {prop.name}
+                      </span>
+                    ) : null}
+                  </>
+                ) : (
+                  prop.name
+                )}
               </div>
               <div
                 className="prop-track"
