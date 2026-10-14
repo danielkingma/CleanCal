@@ -200,7 +200,7 @@ export default function CalendarApp({
   // it must actually behave like one -- a real 7-day window -- rather
   // than silently showing a month's worth of days under a "Week" label,
   // which is what made it look like the week view had no bookings.
-  const isCleaningList = isMobile && derivedView === "week" && !isStaff(currentProfile.role);
+  const isCleaningList = false; // cleaners now get the same 7-day week grid as owners on phones
   // The "Assigned" and "Completed" tabs are a day-by-day agenda too (same
   // layout as the mobile Cleaning List), just filtered to the cleaner's
   // own jobs below instead of switching layouts -- so they share the
@@ -402,7 +402,7 @@ export default function CalendarApp({
             {(
               isMobile
                 ? [
-                    { key: "week", label: isStaffUser ? "Week" : "Cleaning List" },
+                    { key: "week", label: "Week" },
                     { key: "month", label: "Month" },
                     { key: "year", label: "Year" },
                   ]
@@ -631,19 +631,6 @@ export default function CalendarApp({
           )
         ) : properties.length === 0 ? (
           <p className="photo-note">{noPropertiesMessage}</p>
-        ) : isMobile && !isStaffUser ? (
-          <MobileAgenda
-            days={days}
-            properties={properties}
-            bookings={bookings}
-            onBarClick={(booking) => setModal({ mode: "edit", booking })}
-            viewerId={currentProfile.id}
-            isStaffViewer={isStaffUser}
-            cleanerNameById={cleanerNameById}
-            cleanerInitialById={cleanerInitialById}
-            cleanerColorById={cleanerColorById}
-            showCleanerColor
-          />
         ) : (
           <Timeline
             days={days}
