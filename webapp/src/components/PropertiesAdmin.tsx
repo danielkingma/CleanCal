@@ -164,6 +164,7 @@ function PropertyCard({
   exportToken: string;
   exportBaseUrl: string;
 }) {
+  const [open, setOpen] = useState(false);
   const [instructions, setInstructions] = useState(property.access_instructions ?? "");
   const [savingInstructions, setSavingInstructions] = useState(false);
   const [instructionsSaved, setInstructionsSaved] = useState(false);
@@ -350,10 +351,31 @@ function PropertyCard({
     }
   }
 
+  const feedErrorCount = feeds.filter((f) => f.last_sync_status === "error").length;
+  const bodyId = `property-body-${property.id}`;
+
   return (
-    <div className="property-card">
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-        <h2 style={{ fontSize: 18, margin: 0 }}>{property.name}</h2>
+    <div className={`property-card property-accordion${open ? " is-open" : ""}`}>
+      <button
+        type="button"
+        className="property-toggle"
+        aria-expanded={open}
+        aria-controls={bodyId}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span className="property-toggle-chevron" aria-hidden="true">
+          ▸
+        </span>
+        <span className="property-toggle-name">{property.name}</span>
+        <span className="property-toggle-meta">
+          {feeds.length === 0 ? "No feeds" : `${feeds.length} feed${feeds.length === 1 ? "" : "s"}`}
+          {feedErrorCount > 0 ? <span className="sync-pill error">Sync error</span> : null}
+        </span>
+      </button>
+
+      {open ? (
+        <div className="property-body" id={bodyId}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", marginBottom: 6 }}>
         {isOwner ? (
           <button
             type="button"
@@ -674,6 +696,8 @@ function PropertyCard({
         </div>
         {regenerateError ? <div className="error-banner">{regenerateError}</div> : null}
       </div>
+        </div>
+      ) : null}
     </div>
   );
 }

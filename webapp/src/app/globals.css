@@ -1473,6 +1473,63 @@ main {
   margin-bottom: 20px;
   max-width: 760px;
 }
+/* ---- Properties: collapsible list rows ---- */
+.property-accordion {
+  padding: 0;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+.property-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 18px;
+  background: transparent;
+  border: 0;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.property-toggle:hover {
+  background: var(--paper-2);
+}
+.property-toggle:focus-visible {
+  outline: 2px solid var(--teal-deep);
+  outline-offset: -2px;
+}
+.property-toggle-chevron {
+  display: inline-block;
+  color: var(--muted);
+  transition: transform 0.15s ease;
+}
+.property-accordion.is-open .property-toggle-chevron {
+  transform: rotate(90deg);
+}
+.property-accordion.is-open .property-toggle {
+  border-bottom: 1px solid var(--line);
+}
+.property-toggle-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 16px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.property-toggle-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.property-body {
+  padding: 14px 22px 20px;
+}
 /* ---- Reports: labor-trend bar chart (plain divs, no chart library) ---- */
 .report-trend-row {
   display: flex;
