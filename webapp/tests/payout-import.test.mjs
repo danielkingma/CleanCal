@@ -11,6 +11,7 @@ import {
   parseDate,
   parsePayoutCsv,
   PayoutImportError,
+  resolveProperty,
 } from "../src/lib/payout-import.ts";
 
 const AIRBNB_CSV = [
@@ -133,8 +134,8 @@ test("unreadable file names the columns it found", () => {
 
 test("matching: code first, then listing + check-in, then property only", () => {
   const properties = [
-    { id: "p-loft", name: "Braddon Loft", airbnb_listing_name: "Stylish Braddon Loft, near Lonsdale St", booking_com_property_id: "" },
-    { id: "p-kingston", name: "Kingston Foreshore 2BR", airbnb_listing_name: "", booking_com_property_id: "BK10001" },
+    { id: "p-loft", name: "Braddon Loft", listings: [{ platform: "Airbnb", identifier: "Stylish Braddon Loft, near Lonsdale St" }] },
+    { id: "p-kingston", name: "Kingston Foreshore 2BR", listings: [{ platform: "Booking.com", identifier: "BK10001" }] },
   ];
   const bookings = [
     { id: "b1", property_id: "p-loft", checkin_date: "2026-09-02", confirmation_code: "HMABC12345" },
@@ -163,8 +164,29 @@ test("two bookings on the same property and day are not guessed between", () => 
       { id: "x1", property_id: "p", checkin_date: "2026-09-02", confirmation_code: null },
       { id: "x2", property_id: "p", checkin_date: "2026-09-02", confirmation_code: null },
     ],
-    [{ id: "p", name: "Loft", airbnb_listing_name: "", booking_com_property_id: "" }],
+    [{ id: "p", name: "Loft", listings: [] }],
   );
   const row = parsePayoutCsv(["Date,Type,Confirmation code,Start date,Listing,Amount", "09/03/2026,Reservation,HMNEW,09/02/2026,Loft,10"].join("\n")).rows[0];
   assert.deepEqual(matchPayoutRow(row, ctx), { bookingId: null, propertyId: "p", method: "listing_only" });
+});
+
+test("listings on any platform, platform-specific first, explicit listing beats property name", () => {
+  const ctx = buildMatchContext(
+    [],
+    [
+      // Same title used on two platforms for two different properties.
+      { id: "p-airbnb", name: "Unit A", listings: [{ platform: "Airbnb", identifier: "Garden Studio" }] },
+      { id: "p-vrbo", name: "Unit B", listings: [{ platform: "Vrbo", identifier: "Garden Studio" }, { platform: "Stayz", identifier: "98765" }] },
+      // A property whose CleanCal name collides with another's listing.
+      { id: "p-named", name: "Harbour View", listings: [] },
+      { id: "p-listed", name: "Unit C", listings: [{ platform: "Airbnb", identifier: "Harbour View" }] },
+    ],
+  );
+  const row = (platform, listingText, listingId = "") => ({ platform, listingText, listingId });
+  assert.equal(resolveProperty(row("airbnb", "garden studio!"), ctx), "p-airbnb");
+  // An "other" export (e.g. a Vrbo or Stayz report) matches any platform's listing.
+  assert.equal(resolveProperty(row("other", "", "98765"), ctx), "p-vrbo");
+  assert.equal(resolveProperty(row("airbnb", "Harbour View"), ctx), "p-listed");
+  assert.equal(resolveProperty(row("other", "Unit A"), ctx), "p-airbnb");
+  assert.equal(resolveProperty(row("airbnb", "Nowhere"), ctx), null);
 });
