@@ -11,13 +11,19 @@ import NotificationsToggle from "./NotificationsToggle";
 export default function NavMenus({
   isStaffUser,
   isSuperadmin = false,
+  statementsEnabled = false,
 }: {
   isStaffUser: boolean;
   // Daniel's own account only -- see src/lib/superadmin.ts. Links to the
   // hidden platform-wide stats page, which isn't relevant to any normal
   // Owner/Manager/Cleaner.
   isSuperadmin?: boolean;
+  // Owner statements add-on (organizations.statements_enabled). Pages
+  // that don't pass it still show the links to the superadmin, who
+  // always has the add-on while it's in beta.
+  statementsEnabled?: boolean;
 }) {
+  const showStatements = statementsEnabled || isSuperadmin;
   return (
     <>
       {isStaffUser ? (
@@ -40,6 +46,16 @@ export default function NavMenus({
           <Link href="/supplies" className="dropdown-item">
             Supplies
           </Link>
+          {showStatements ? (
+            <>
+              <Link href="/clients" className="dropdown-item">
+                Clients &amp; fees
+              </Link>
+              <Link href="/payouts" className="dropdown-item">
+                Payouts
+              </Link>
+            </>
+          ) : null}
           {isSuperadmin ? (
             <a href="/admin/stats" target="_blank" rel="noopener noreferrer" className="dropdown-item">
               Platform stats ↗

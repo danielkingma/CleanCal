@@ -174,10 +174,71 @@ export interface Booking {
   payout_status?: "none" | "paid";
   stripe_transfer_id?: string | null;
   linen_pickup?: boolean;
+  confirmation_code?: string | null;
   // Stamped by cleaner_update_booking the first time a cleaner moves
   // their own job through "in-progress"/"complete" -- null on any
   // booking completed before that existed, or set by a staff override
   // rather than the cleaner's own phone. See 0033_cleaning_duration_tracking.sql.
   cleaning_started_at?: string | null;
   cleaning_completed_at?: string | null;
+}
+
+// ---------------------------------------------------------------------
+// Owner statements add-on (0044_owner_statements_foundation.sql). Staff
+// only: none of these tables are readable by cleaners.
+// ---------------------------------------------------------------------
+
+export interface PropertyOwner {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  notes: string;
+}
+
+export type FeeBasis = "gross" | "net_of_cleaning";
+
+export interface PropertyFinancials {
+  property_id: string;
+  property_owner_id: string | null;
+  mgmt_fee_percent: number;
+  fee_basis: FeeBasis;
+  owner_cleaning_charge_cents: number | null;
+  airbnb_listing_name: string;
+  booking_com_property_id: string;
+}
+
+export type PayoutPlatform = "airbnb" | "booking_com" | "other";
+export type PayoutLineType = "reservation" | "adjustment" | "cancellation_fee" | "other";
+export type PayoutMatchStatus = "matched" | "property_only" | "unmatched" | "ignored";
+
+export interface PayoutImport {
+  id: string;
+  platform: PayoutPlatform;
+  file_name: string;
+  rows_total: number;
+  rows_imported: number;
+  rows_matched: number;
+  rows_duplicate: number;
+  rows_skipped: number;
+  created_at: string;
+}
+
+export interface PayoutLine {
+  id: string;
+  import_id: string;
+  booking_id: string | null;
+  property_id: string | null;
+  platform: PayoutPlatform;
+  line_type: PayoutLineType;
+  confirmation_code: string;
+  guest_name: string;
+  listing_text: string;
+  listing_ref: string;
+  checkin_date: string | null;
+  nights: number | null;
+  payout_date: string | null;
+  amount_cents: number;
+  currency: string;
+  match_status: PayoutMatchStatus;
 }
