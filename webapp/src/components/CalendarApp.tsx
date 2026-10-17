@@ -55,6 +55,9 @@ interface CalendarAppProps {
   // Owner/Manager/Cleaner, so it's computed server-side in
   // calendar/page.tsx rather than this component needing the raw email.
   isSuperadmin: boolean;
+  // Owner statements add-on (organizations.statements_enabled); the
+  // superadmin always sees it while it's in beta.
+  statementsEnabled?: boolean;
 }
 
 type View = "assigned" | "completed" | "week" | "month" | "year";
@@ -78,6 +81,7 @@ export default function CalendarApp({
   customMonthlyPriceCents,
   pricingAgreementNotes,
   isSuperadmin,
+  statementsEnabled = false,
 }: CalendarAppProps) {
   const router = useRouter();
   const isMobile = useMediaQuery("(max-width: 720px)");
@@ -456,6 +460,16 @@ export default function CalendarApp({
               <Link href="/supplies" className="dropdown-item">
                 Supplies
               </Link>
+              {statementsEnabled || isSuperadmin ? (
+                <>
+                  <Link href="/clients" className="dropdown-item">
+                    Clients &amp; fees
+                  </Link>
+                  <Link href="/payouts" className="dropdown-item">
+                    Payouts
+                  </Link>
+                </>
+              ) : null}
               {isSuperadmin ? (
                 <a href="/admin/stats" target="_blank" rel="noopener noreferrer" className="dropdown-item">
                   Platform stats ↗
