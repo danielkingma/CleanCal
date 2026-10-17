@@ -66,6 +66,7 @@ export default async function CalendarPage() {
   let trialEndsAt: string | null = null;
   let customMonthlyPriceCents: number | null = null;
   let pricingAgreementNotes: string | null = null;
+  let statementsEnabled = false;
   if (isStaff(currentProfile.role)) {
     const { data } = await supabase
       .from("profiles")
@@ -83,11 +84,12 @@ export default async function CalendarPage() {
     // there's no in-app way for an owner to grant this to themselves.
     const { data: org } = await supabase
       .from("organizations")
-      .select("trial_ends_at, custom_monthly_price_cents, pricing_agreement_notes")
+      .select("trial_ends_at, custom_monthly_price_cents, pricing_agreement_notes, statements_enabled")
       .maybeSingle();
     trialEndsAt = org?.trial_ends_at ?? null;
     customMonthlyPriceCents = org?.custom_monthly_price_cents ?? null;
     pricingAgreementNotes = org?.pricing_agreement_notes ?? null;
+    statementsEnabled = Boolean(org?.statements_enabled);
 
     const { data: ratedBookings } = await supabase
       .from("bookings")
@@ -177,6 +179,7 @@ export default async function CalendarPage() {
         customMonthlyPriceCents={customMonthlyPriceCents}
         pricingAgreementNotes={pricingAgreementNotes}
         isSuperadmin={isSuperadmin(user.email)}
+        statementsEnabled={statementsEnabled}
       />
     </div>
   );
