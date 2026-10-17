@@ -110,6 +110,18 @@ export default function LandingPage() {
         <section className="landing-steps">
           <span className="landing-section-eyebrow">How it works</span>
           <h2 className="landing-section-title">Up and running in an afternoon</h2>
+          <figure className="landing-video">
+            <video
+              controls
+              playsInline
+              preload="metadata"
+              poster="/videos/cleancal-signup-poster.png"
+              aria-label="A 30-second walkthrough of signing up to CleanCal"
+            >
+              <source src="/videos/cleancal-signup.mp4" type="video/mp4" />
+            </video>
+            <figcaption>Watch: signing up takes about a minute.</figcaption>
+          </figure>
           <ol className="landing-step-list">
             {STEPS.map((s, i) => (
               <li key={s.title}>

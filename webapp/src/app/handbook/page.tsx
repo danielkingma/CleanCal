@@ -126,6 +126,18 @@ export default function HandbookPage() {
                 automatically opens links to scan them, which can burn a one-time link before you
                 ever tap it yourself).
               </p>
+              <figure className="landing-video">
+                <video
+                  controls
+                  playsInline
+                  preload="metadata"
+                  poster="/videos/cleancal-signup-poster.png"
+                  aria-label="A 30-second walkthrough of signing up to CleanCal"
+                >
+                  <source src="/videos/cleancal-signup.mp4" type="video/mp4" />
+                </video>
+                <figcaption>Watch: signing up takes about a minute.</figcaption>
+              </figure>
               <p>
                 The first time you sign in, you land on a short setup step instead of the
                 calendar, since you don&apos;t belong to a business yet:

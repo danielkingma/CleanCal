@@ -1920,6 +1920,22 @@ main {
   margin: 0 auto;
   padding: 80px 24px;
 }
+.landing-video {
+  margin: 0 0 40px;
+}
+.landing-video video {
+  display: block;
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--teal-deep);
+}
+.landing-video figcaption {
+  text-align: center;
+  color: var(--muted);
+  font-size: 13.5px;
+  margin-top: 8px;
+}
 .landing-step-list {
   list-style: none;
   margin: 0;
