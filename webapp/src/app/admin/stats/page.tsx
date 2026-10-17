@@ -64,14 +64,14 @@ export default async function AdminStatsPage() {
       }}
     >
       <div style={{ fontSize: 12.5, color: "var(--ink)", opacity: 0.65, marginBottom: 4 }}>{label}</div>
-      <div style={{ fontSize: 28, fontWeight: 700, fontFamily: '"Fraunces", serif' }}>{value}</div>
+      <div style={{ fontSize: 28, fontWeight: 700, fontFamily: '"Poppins", sans-serif' }}>{value}</div>
     </div>
   );
 
   return (
     <div style={{ maxWidth: 820, margin: "0 auto", padding: "40px 20px 80px" }}>
       <p style={{ fontSize: 13, opacity: 0.7, marginBottom: 4 }}>Owner-only · not linked anywhere in the app</p>
-      <h1 style={{ fontFamily: '"Fraunces", serif', marginBottom: 24 }}>Platform stats</h1>
+      <h1 style={{ fontFamily: '"Poppins", sans-serif', marginBottom: 24 }}>Platform stats</h1>
 
       <h2 style={{ fontSize: 16, marginBottom: 10 }}>Businesses signed up</h2>
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 32 }}>
