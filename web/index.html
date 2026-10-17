@@ -280,7 +280,7 @@
   /* Pricing table */
   .pricing-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     gap: 20px;
     margin-top: 8px;
   }
@@ -760,43 +760,33 @@
     <section id="pricing">
       <div class="eyebrow-num">12</div>
       <h2 class="section-title">Pricing</h2>
-      <p class="section-intro">Budget-tier subscription, sized to portfolio; marketplace jobs carry a small transaction fee on top.</p>
+      <p class="section-intro">Pricing scales with the number of properties, never per booking or per cleaner. Marketplace jobs carry a small transaction fee on top.</p>
 
       <div class="pricing-grid">
         <div class="price-card">
-          <div class="tier">Starter</div>
-          <div class="amount">$8<span>/property/mo</span></div>
-          <div class="seg">1–5 properties</div>
-          <ul>
-            <li>Basic calendar</li>
-            <li>Task management</li>
-            <li>Mobile apps</li>
-            <li>2 API integrations</li>
-          </ul>
+          <div class="tier">Single property</div>
+          <div class="amount">Free<span></span></div>
+          <div class="seg">1 property</div>
         </div>
         <div class="price-card mid">
-          <div class="tier">Professional</div>
-          <div class="amount">$12<span>/property/mo</span></div>
-          <div class="seg">6–50 properties</div>
-          <ul>
-            <li>Everything in Starter</li>
-            <li>AI quality prediction</li>
-            <li>Marketplace access</li>
-            <li>All 3 integrations</li>
-            <li>Gamification</li>
-          </ul>
+          <div class="tier">Small portfolio</div>
+          <div class="amount">$5<span>/property/mo</span></div>
+          <div class="seg">2–50 properties · free for 3 months, no card required</div>
+        </div>
+        <div class="price-card">
+          <div class="tier">Growing portfolio</div>
+          <div class="amount">$295<span>/mo</span></div>
+          <div class="seg">51–100 properties · flat rate</div>
+        </div>
+        <div class="price-card">
+          <div class="tier">Large portfolio</div>
+          <div class="amount">$495<span>/mo</span></div>
+          <div class="seg">101–500 properties · flat rate</div>
         </div>
         <div class="price-card">
           <div class="tier">Enterprise</div>
-          <div class="amount">$18<span>/property/mo</span></div>
-          <div class="seg">50+ properties</div>
-          <ul>
-            <li>Everything in Professional</li>
-            <li>Dynamic pricing</li>
-            <li>Priority support</li>
-            <li>Custom reporting</li>
-            <li>Dedicated account manager</li>
-          </ul>
+          <div class="amount">Custom<span></span></div>
+          <div class="seg">501+ properties</div>
         </div>
       </div>
     </section>
