@@ -41,10 +41,11 @@ const STEPS = [
 ];
 
 const PRICING = [
-  { tier: "1 – 99 properties", price: "Free for 3 months, then $5/property/mo" },
-  { tier: "100 – 199 properties", price: "$450 / mo flat" },
-  { tier: "200 – 499 properties", price: "$900 / mo flat" },
-  { tier: "500+ properties", price: "Custom enterprise pricing" },
+  { tier: "1 property", price: "Free" },
+  { tier: "2 – 50 properties", price: "Free for 3 months, then $5/property/mo" },
+  { tier: "51 – 100 properties", price: "$295 / mo flat" },
+  { tier: "101 – 500 properties", price: "$495 / mo flat" },
+  { tier: "501+ properties", price: "Custom enterprise pricing" },
 ];
 
 export default function LandingPage() {
@@ -67,7 +68,7 @@ export default function LandingPage() {
 
       <main>
         <section className="landing-hero">
-          <span className="landing-badge">✦ Your first 99 properties, free for 3 months</span>
+          <span className="landing-badge">✦ 1 property free, or up to 50 free for 3 months</span>
           <h1>Every turnover, tracked, cleaned, and paid.</h1>
           <p className="landing-hero-sub">
             The cleaning-operations calendar for short-term rental hosts. Sync every booking from
@@ -124,9 +125,9 @@ export default function LandingPage() {
 
         <section className="landing-pricing" id="pricing">
           <span className="landing-section-eyebrow">Pricing</span>
-          <h2 className="landing-section-title">Your first 99 properties, free for 3 months</h2>
+          <h2 className="landing-section-title">1 property free, or up to 50 free for 3 months</h2>
           <p className="landing-pricing-sub">
-            No credit card required to start. After your first 99 properties, pricing scales with
+            No credit card required to start. Beyond that, pricing scales with
             how many properties you run -- never per booking, never per cleaner. Billing is
             coming soon, so enjoy full access for free while it lasts.
           </p>
