@@ -99,6 +99,18 @@ export default function HandbookPage() {
                 with a full room-by-room checklist — to a cleaner on your team, and gives you a
                 one-click way to pay them once the job&apos;s done. Three kinds of people use it:
               </p>
+              <figure className="landing-video">
+                <video
+                  controls
+                  playsInline
+                  preload="metadata"
+                  poster="/videos/cleancal-intro-poster.png"
+                  aria-label="A 25-second introduction to CleanCal"
+                >
+                  <source src="/videos/cleancal-intro.mp4" type="video/mp4" />
+                </video>
+                <figcaption>Meet Cal: CleanCal in 25 seconds.</figcaption>
+              </figure>
               <ul>
                 <li>
                   <strong>Owners</strong> — run the account. Full access, plus the things nobody

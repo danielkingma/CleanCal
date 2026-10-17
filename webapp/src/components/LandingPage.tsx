@@ -84,6 +84,18 @@ export default function LandingPage() {
             </Link>
           </div>
           <p className="landing-hero-note">No credit card required to start.</p>
+          <figure className="landing-video landing-video-hero">
+            <video
+              controls
+              playsInline
+              preload="metadata"
+              poster="/videos/cleancal-intro-poster.png"
+              aria-label="A 25-second introduction to CleanCal"
+            >
+              <source src="/videos/cleancal-intro.mp4" type="video/mp4" />
+            </video>
+            <figcaption>Meet Cal: CleanCal in 25 seconds.</figcaption>
+          </figure>
           <DeviceShowcase
             monitorSrc="/handbook/calendar-example.png"
             monitorAlt="The CleanCal calendar, month view, open in a desktop browser"

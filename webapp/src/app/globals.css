@@ -1923,6 +1923,10 @@ main {
 .landing-video {
   margin: 0 0 40px;
 }
+.landing-video-hero {
+  max-width: 860px;
+  margin: 32px auto 0;
+}
 .landing-video video {
   display: block;
   width: 100%;
