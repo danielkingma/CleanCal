@@ -204,8 +204,13 @@ export interface PropertyFinancials {
   mgmt_fee_percent: number;
   fee_basis: FeeBasis;
   owner_cleaning_charge_cents: number | null;
-  airbnb_listing_name: string;
-  booking_com_property_id: string;
+}
+
+export interface PlatformListing {
+  id: string;
+  property_id: string;
+  platform: string;
+  identifier: string;
 }
 
 export type PayoutPlatform = "airbnb" | "booking_com" | "other";

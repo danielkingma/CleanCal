@@ -14,9 +14,8 @@ UI.
   - `organizations.statements_enabled` — the add-on switch (default off).
   - `property_owners` — clients.
   - `property_financials` — per property: client, management fee %, fee
-    basis (gross / net of cleaning), cleaning charged to the owner (blank
-    = the cleaner payout rate, plus linen when picked up), and the Airbnb
-    listing name / Booking.com property ID used to match imports.
+    basis (gross / net of cleaning), and cleaning charged to the owner
+    (blank = the cleaner payout rate, plus linen when picked up).
   - `bookings.confirmation_code` — the platform reservation code.
   - `payout_imports` + `payout_lines` — every imported money row. A line
     counts toward a statement once it has a property; the booking link
@@ -36,6 +35,26 @@ UI.
 - **`/clients`** — manage clients and each property's fee settings.
 - Parsing and matching live in `src/lib/payout-import.ts` (no framework
   imports). Tests: `npm test`.
+
+## Platform listings (0045)
+
+`property_platform_listings` holds any number of listings per property,
+on any platform: the platform's display name (the same names the
+calendar's platform badges use, or a host's own label) and what that
+platform's payout export calls the property (a title or an ID). It
+replaced the fixed `airbnb_listing_name` / `booking_com_property_id`
+fields, whose values were copied across; those columns are no longer
+used and will be dropped in a later migration.
+
+Matching a payout row without a confirmation code tries, in order: the
+row's listing ID then title against listings on the row's own platform,
+then against listings on any platform, then the property's own name. A
+listing can only belong to one property (unique per org, platform and
+normalised identifier).
+
+Clients & fees shows which platforms each property has a calendar feed
+from but no listing yet, and pre-selects that platform. Placing a payout
+on the Payouts page with "Remember this listing" adds the listing.
 
 ## Turning it on
 

@@ -10,7 +10,9 @@ import {
   parsePayoutCsv,
   PayoutImportError,
   type DateOrder,
+  PLATFORM_DISPLAY_NAME,
   type MatchBooking,
+  type MatchListing,
   type MatchProperty,
   type Platform,
   type ParseResult,
@@ -57,18 +59,20 @@ async function loadMatchData(
     .select("id, name")
     .eq("organization_id", organizationId);
   if (propsError) throw new Error(propsError.message);
-  const { data: fins, error: finsError } = await supabase
-    .from("property_financials")
-    .select("property_id, airbnb_listing_name, booking_com_property_id");
-  if (finsError) throw new Error(finsError.message);
-  const finByProperty = new Map<string, { airbnb_listing_name: string; booking_com_property_id: string }>(
-    (fins ?? []).map((f) => [f.property_id as string, f]),
-  );
+  const { data: listings, error: listingsError } = await supabase
+    .from("property_platform_listings")
+    .select("property_id, platform, identifier");
+  if (listingsError) throw new Error(listingsError.message);
+  const listingsByProperty = new Map<string, MatchListing[]>();
+  for (const l of listings ?? []) {
+    const list = listingsByProperty.get(l.property_id as string) ?? [];
+    list.push({ platform: l.platform as string, identifier: l.identifier as string });
+    listingsByProperty.set(l.property_id as string, list);
+  }
   const properties: MatchProperty[] = (props ?? []).map((p) => ({
     id: p.id as string,
     name: p.name as string,
-    airbnb_listing_name: finByProperty.get(p.id as string)?.airbnb_listing_name ?? "",
-    booking_com_property_id: finByProperty.get(p.id as string)?.booking_com_property_id ?? "",
+    listings: listingsByProperty.get(p.id as string) ?? [],
   }));
 
   const select = "id, property_id, checkin_date, confirmation_code, guests";
@@ -258,27 +262,23 @@ export async function assignPayoutLine(lineId: string, input: AssignPayoutLineIn
     }
   }
 
-  // Teach the property its listing name / Booking.com ID, so the next
-  // import matches it automatically. Only fills an empty field.
+  // Teach the property this listing, so the next import from the same
+  // listing matches automatically.
   if (input.rememberListing) {
-    const { data: fin } = await supabase
-      .from("property_financials")
-      .select("airbnb_listing_name, booking_com_property_id")
-      .eq("property_id", input.propertyId)
-      .maybeSingle();
-    const patch: { airbnb_listing_name?: string; booking_com_property_id?: string } = {};
-    if (line.listing_ref && !fin?.booking_com_property_id) patch.booking_com_property_id = line.listing_ref;
-    else if (line.platform === "airbnb" && line.listing_text && !fin?.airbnb_listing_name) {
-      patch.airbnb_listing_name = line.listing_text;
-    }
-    if (Object.keys(patch).length > 0) {
-      if (fin) {
-        await supabase.from("property_financials").update(patch).eq("property_id", input.propertyId);
-      } else {
-        await supabase.from("property_financials").insert({ property_id: input.propertyId, ...patch });
+    const identifier = (line.listing_ref || line.listing_text || "").trim();
+    if (identifier) {
+      const { error: listingError } = await supabase.from("property_platform_listings").insert({
+        property_id: input.propertyId,
+        platform: PLATFORM_DISPLAY_NAME[line.platform as Platform] ?? "Other",
+        identifier,
+      });
+      // 23505 = already on file (for this or another property): nothing
+      // new to learn, and the line itself is already placed.
+      if (listingError && listingError.code !== "23505") throw new Error(listingError.message);
+      if (!listingError) {
+        // Other lines from the same listing can now be placed too.
+        await rematchUnmatchedLines(supabase);
       }
-      // Other lines from the same listing can now be placed too.
-      await rematchUnmatchedLines(supabase);
     }
   }
 

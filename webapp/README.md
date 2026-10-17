@@ -1090,5 +1090,6 @@ supabase/
     0016_organizations.sql                        organizations table, organization_id everywhere, org-scoped RLS rewrite, invites
     0017_trial_period.sql                         sets trial_ends_at on org creation + backfill
     0044_owner_statements_foundation.sql          owner statements add-on: clients, fees, payout imports (docs/OWNER_STATEMENTS.md)
+    0045_property_platform_listings.sql           any number of platform listings per property, for payout matching
   seed.sql                                     optional demo properties
 ```

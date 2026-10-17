@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireStatementsAccess } from "@/lib/statements-access";
+import { normaliseListing } from "@/lib/payout-import";
 import type { FeeBasis } from "@/lib/types";
 
 export interface ClientInput {
@@ -53,8 +54,6 @@ export interface PropertyFinancialsInput {
   mgmt_fee_percent: number;
   fee_basis: FeeBasis;
   owner_cleaning_charge_cents: number | null;
-  airbnb_listing_name: string;
-  booking_com_property_id: string;
 }
 
 export async function savePropertyFinancials(propertyId: string, input: PropertyFinancialsInput) {
@@ -76,12 +75,55 @@ export async function savePropertyFinancials(propertyId: string, input: Property
       mgmt_fee_percent: Math.round(fee * 100) / 100,
       fee_basis: input.fee_basis,
       owner_cleaning_charge_cents: cleaning,
-      airbnb_listing_name: input.airbnb_listing_name.trim(),
-      booking_com_property_id: input.booking_com_property_id.trim(),
     },
     { onConflict: "property_id" },
   );
   if (error) throw new Error(error.message);
   revalidatePath("/clients");
   revalidatePath("/payouts");
+}
+
+// A property's listings on booking platforms: what each platform's payout
+// export calls it, so imported payouts find the right property.
+export async function addPlatformListing(propertyId: string, platform: string, identifier: string) {
+  const supabase = await createClient();
+  await requireStatementsAccess(supabase);
+  const p = platform.trim();
+  const id = identifier.trim();
+  if (!p) throw new Error("Choose a platform.");
+  if (!id) throw new Error("Enter the listing name or ID.");
+  if (!/[a-z0-9]/i.test(id)) throw new Error("The listing name or ID needs at least one letter or number.");
+
+  const { error } = await supabase
+    .from("property_platform_listings")
+    .insert({ property_id: propertyId, platform: p, identifier: id.slice(0, 300) });
+  if (error) {
+    if (error.code === "23505") {
+      const { data: existing } = await supabase
+        .from("property_platform_listings")
+        .select("property_id, identifier, properties(name)")
+        // Escaped so a platform name with % or _ is matched literally.
+        .ilike("platform", p.replace(/[\\%_]/g, (c) => `\\${c}`))
+        .limit(500);
+      const key = normaliseListing(id);
+      const clash = (existing ?? []).find((l) => normaliseListing(l.identifier as string) === key);
+      const props = clash?.properties as { name?: string } | { name?: string }[] | null | undefined;
+      const owner = Array.isArray(props) ? props[0]?.name : props?.name;
+      if (clash && clash.property_id === propertyId) throw new Error("That listing is already on this property.");
+      throw new Error(
+        owner ? `That ${p} listing is already linked to ${owner}.` : `That ${p} listing is already linked to another property.`,
+      );
+    }
+    throw new Error(error.message);
+  }
+  revalidatePath("/clients");
+  revalidatePath("/payouts");
+}
+
+export async function removePlatformListing(id: string) {
+  const supabase = await createClient();
+  await requireStatementsAccess(supabase);
+  const { error } = await supabase.from("property_platform_listings").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+  revalidatePath("/clients");
 }

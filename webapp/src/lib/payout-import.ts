@@ -421,11 +421,18 @@ export interface MatchBooking {
   confirmation_code: string | null;
 }
 
+export interface MatchListing {
+  // Display name as the calendar's platform badges use it ("Airbnb",
+  // "Vrbo", …), or a host's own label.
+  platform: string;
+  // What the payout export calls the property: a listing title or an ID.
+  identifier: string;
+}
+
 export interface MatchProperty {
   id: string;
   name: string;
-  airbnb_listing_name: string;
-  booking_com_property_id: string;
+  listings: MatchListing[];
 }
 
 export type MatchMethod = "code" | "listing_and_date" | "listing_only" | "none";
@@ -439,10 +446,24 @@ export interface MatchResult {
 export interface MatchContext {
   byCode: Map<string, MatchBooking>;
   byPropertyDate: Map<string, MatchBooking[]>;
-  byListingName: Map<string, string>;
-  byBookingComId: Map<string, string>;
+  // "platform|identifier" -> property id, platform lower-cased.
+  byPlatformListing: Map<string, string>;
+  // identifier -> property id, for rows whose platform isn't known or
+  // doesn't have a listing of its own on file.
+  byAnyListing: Map<string, string>;
+  byPropertyName: Map<string, string>;
 }
 
+// Platform name each importer's rows belong to, so a row is matched
+// against that platform's listings first. "other" exports match any.
+export const PLATFORM_DISPLAY_NAME: Record<Platform, string | null> = {
+  airbnb: "Airbnb",
+  booking_com: "Booking.com",
+  other: null,
+};
+
+// Keep in step with the identifier_key column in
+// 0045_property_platform_listings.sql.
 export function normaliseListing(s: string): string {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 }
@@ -456,29 +477,46 @@ export function buildMatchContext(bookings: MatchBooking[], properties: MatchPro
     byPropertyDate.set(key, [...(byPropertyDate.get(key) ?? []), b]);
   }
 
-  // An explicit listing name wins over a property's own name, so the
-  // property names go in first and get overwritten.
-  const byListingName = new Map<string, string>();
+  const byPlatformListing = new Map<string, string>();
+  const byAnyListing = new Map<string, string>();
+  const byPropertyName = new Map<string, string>();
   for (const p of properties) {
-    const n = normaliseListing(p.name);
-    if (n) byListingName.set(n, p.id);
+    const name = normaliseListing(p.name);
+    if (name) byPropertyName.set(name, p.id);
+    for (const l of p.listings) {
+      const key = normaliseListing(l.identifier);
+      if (!key) continue;
+      byPlatformListing.set(`${l.platform.trim().toLowerCase()}|${key}`, p.id);
+      byAnyListing.set(key, p.id);
+    }
   }
-  for (const p of properties) {
-    const n = normaliseListing(p.airbnb_listing_name);
-    if (n) byListingName.set(n, p.id);
-  }
-  const byBookingComId = new Map<string, string>();
-  for (const p of properties) {
-    const id = p.booking_com_property_id.trim();
-    if (id) byBookingComId.set(id, p.id);
-  }
-  return { byCode, byPropertyDate, byListingName, byBookingComId };
+  return { byCode, byPropertyDate, byPlatformListing, byAnyListing, byPropertyName };
 }
 
-export function resolveProperty(row: Pick<ParsedPayoutRow, "listingId" | "listingText">, ctx: MatchContext): string | null {
-  if (row.listingId && ctx.byBookingComId.has(row.listingId)) return ctx.byBookingComId.get(row.listingId)!;
-  const n = normaliseListing(row.listingText);
-  return n ? (ctx.byListingName.get(n) ?? null) : null;
+// Tries the row's listing ID before its title, each against the row's
+// own platform first, then any platform; the property's own name in
+// CleanCal is the last resort.
+export function resolveProperty(
+  row: Pick<ParsedPayoutRow, "platform" | "listingId" | "listingText">,
+  ctx: MatchContext,
+): string | null {
+  const platform = PLATFORM_DISPLAY_NAME[row.platform]?.toLowerCase() ?? null;
+  const keys = [normaliseListing(row.listingId), normaliseListing(row.listingText)].filter(Boolean);
+  if (platform) {
+    for (const key of keys) {
+      const hit = ctx.byPlatformListing.get(`${platform}|${key}`);
+      if (hit) return hit;
+    }
+  }
+  for (const key of keys) {
+    const hit = ctx.byAnyListing.get(key);
+    if (hit) return hit;
+  }
+  for (const key of keys) {
+    const hit = ctx.byPropertyName.get(key);
+    if (hit) return hit;
+  }
+  return null;
 }
 
 export function matchPayoutRow(row: ParsedPayoutRow, ctx: MatchContext): MatchResult {
