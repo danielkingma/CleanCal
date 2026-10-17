@@ -148,14 +148,20 @@ export default function Timeline({
                         // Above neighbouring rows' sticky labels while open.
                         zIndex: expandedPropId === prop.id ? 6 : undefined,
                       }
-                    : weekly
-                      ? { minWidth: labelW }
-                      : { width: labelW }
+                    : {
+                        // Desktop too: the name column ellipsis-truncates, so
+                        // clicking/tapping a name opens the same full-name
+                        // bubble the phone view shows.
+                        ...(weekly ? { minWidth: labelW } : { width: labelW }),
+                        overflow: "visible",
+                        cursor: "pointer",
+                        zIndex: expandedPropId === prop.id ? 6 : undefined,
+                      }
                 }
                 title={prop.name}
-                onClick={compactLabels ? () => setExpandedPropId((cur) => (cur === prop.id ? null : prop.id)) : undefined}
+                onClick={() => setExpandedPropId((cur) => (cur === prop.id ? null : prop.id))}
               >
-                {compactLabels ? (
+                {(
                   <>
                     <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>
                       {prop.name}
@@ -169,7 +175,7 @@ export default function Timeline({
                           transform: "translateY(-50%)",
                           zIndex: 8,
                           width: "max-content",
-                          maxWidth: 240,
+                          maxWidth: compactLabels ? 240 : 360,
                           whiteSpace: "normal",
                           background: "var(--white)",
                           border: "1px solid var(--line)",
@@ -183,8 +189,6 @@ export default function Timeline({
                       </span>
                     ) : null}
                   </>
-                ) : (
-                  prop.name
                 )}
               </div>
               <div
