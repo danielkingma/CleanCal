@@ -9,6 +9,20 @@ export interface IcsEvent {
   startDate: string; // ISO yyyy-mm-dd (check-in)
   endDate: string; // ISO yyyy-mm-dd (checkout, exclusive)
   summary: string;
+  // Airbnb's reservation code (HM…), read from the event DESCRIPTION's
+  // reservation link. Other platforms' feeds don't carry one.
+  confirmationCode: string | null;
+}
+
+// Airbnb puts the reservation link in DESCRIPTION, e.g.
+// "Reservation URL: https://www.airbnb.com/hosting/reservations/details/HMABCDE123"
+// (newlines inside the value are escaped as a literal \n). The code is the
+// last path segment.
+const AIRBNB_RESERVATION_LINK = /\/reservations\/details\/([A-Z0-9]{6,20})\b/i;
+
+export function extractConfirmationCode(description: string): string | null {
+  const match = AIRBNB_RESERVATION_LINK.exec(description);
+  return match ? match[1].toUpperCase() : null;
 }
 
 function unfoldLines(raw: string): string[] {
@@ -33,7 +47,7 @@ function parseDateValue(value: string): string | null {
 export function parseIcs(raw: string): IcsEvent[] {
   const lines = unfoldLines(raw);
   const events: IcsEvent[] = [];
-  let current: Partial<IcsEvent> | null = null;
+  let current: (Partial<IcsEvent> & { description?: string }) | null = null;
 
   for (const line of lines) {
     if (line === "BEGIN:VEVENT") {
@@ -47,6 +61,7 @@ export function parseIcs(raw: string): IcsEvent[] {
           startDate: current.startDate,
           endDate: current.endDate,
           summary: current.summary ?? "",
+          confirmationCode: extractConfirmationCode(current.description ?? ""),
         });
       }
       current = null;
@@ -61,6 +76,7 @@ export function parseIcs(raw: string): IcsEvent[] {
 
     if (key === "UID") current.uid = value;
     else if (key === "SUMMARY") current.summary = value;
+    else if (key === "DESCRIPTION") current.description = value;
     else if (key === "DTSTART") {
       const d = parseDateValue(value);
       if (d) current.startDate = d;

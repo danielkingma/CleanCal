@@ -52,15 +52,23 @@ export async function syncOneFeed(supabase: SupabaseClient, feed: FeedRow): Prom
     // (after upserting) to spot UIDs that dropped out of the feed.
     const { data: existing } = await supabase
       .from("bookings")
-      .select("id, external_uid, guests, checkin_date, nights, assigned_cleaner_id, ical_missing_first_seen_at")
+      .select(
+        "id, external_uid, guests, confirmation_code, checkin_date, nights, assigned_cleaner_id, ical_missing_first_seen_at",
+      )
       .eq("property_id", feed.property_id)
       .eq("source", "ical");
     const existingByUid = new Map((existing ?? []).map((b) => [b.external_uid, b]));
 
     if (events.length > 0) {
       const rows = events.map((e) => {
-        const priorGuests = existingByUid.get(e.uid)?.guests;
+        const prior = existingByUid.get(e.uid);
+        const priorGuests = prior?.guests;
         const guests = priorGuests || (isUsableGuestName(e.summary) ? e.summary.trim() : "");
+        // Every row in one upsert has to carry the same columns, so a feed
+        // without a code (Vrbo, Booking.com) re-sends whatever is already
+        // stored -- e.g. a code a payout import filled in -- rather than
+        // wiping it to null.
+        const confirmation_code = e.confirmationCode ?? prior?.confirmation_code ?? null;
         return {
           property_id: feed.property_id,
           external_uid: e.uid,
@@ -69,6 +77,7 @@ export async function syncOneFeed(supabase: SupabaseClient, feed: FeedRow): Prom
           source: "ical" as const,
           platform_label: feed.source_label,
           guests,
+          confirmation_code,
           // Back in the feed -- clears any earlier "missing" mark from a
           // fetch that turned out to be a one-off anomaly, not a real
           // cancellation.
