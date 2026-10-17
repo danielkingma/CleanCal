@@ -19,7 +19,7 @@ export default function Image() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          background: "#f6f3ec",
+          background: "#f2f8f7",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
@@ -32,12 +32,12 @@ export default function Image() {
               width: 96,
               height: 96,
               borderRadius: 24,
-              background: "#143f38",
+              background: "#0a4b48",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               fontSize: 56,
-              color: "#f6f3ec",
+              color: "#f2f8f7",
               fontWeight: 700,
             }}
           >
@@ -45,7 +45,7 @@ export default function Image() {
           </div>
           <div style={{ display: "flex", fontSize: 88, fontWeight: 700, color: "#14231f" }}>
             <span>Clean</span>
-            <span style={{ color: "#1f6f63" }}>Cal</span>
+            <span style={{ color: "#0b8579" }}>Cal</span>
           </div>
         </div>
         <div
@@ -65,7 +65,7 @@ export default function Image() {
             marginTop: 56,
             fontSize: 26,
             fontWeight: 600,
-            color: "#143f38",
+            color: "#0a4b48",
             letterSpacing: 2,
             display: "flex",
           }}
