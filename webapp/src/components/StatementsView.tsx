@@ -9,7 +9,7 @@ import NavMenus from "./NavMenus";
 import StatementDocument from "./StatementDocument";
 import { addOwnerExpense, deleteOwnerExpense, saveStatement } from "@/app/statements/actions";
 import { dollarsToCents, formatCents } from "@/lib/money";
-import type { StatementSnapshot } from "@/lib/statements";
+import { fyLabel, periodRange, type StatementSnapshot } from "@/lib/statements";
 import type { PropertyOwner } from "@/lib/types";
 
 export interface SavedStatement {
@@ -24,6 +24,7 @@ interface Props {
   owners: PropertyOwner[];
   ownerId: string;
   month: string;
+  currentFY: number;
   snapshot: StatementSnapshot | null;
   expenses: { id: string; property_id: string; expense_date: string; description: string; amount_cents: number }[];
   properties: { id: string; name: string }[];
@@ -35,12 +36,23 @@ function monthLabel(iso: string): string {
   return new Date(`${iso}T00:00:00`).toLocaleDateString("en-AU", { month: "long", year: "numeric" });
 }
 
-export default function StatementsView({ owners, ownerId, month, snapshot, expenses, properties, saved, isSuperadmin }: Props) {
+// "July 2026" for a month, "FY 2025–26" for a financial year.
+function periodLabel(start: string, end: string): string {
+  const startMonth = start.slice(0, 7);
+  if (startMonth === end.slice(0, 7)) return monthLabel(start);
+  return fyLabel(Number(start.slice(0, 4)));
+}
+
+export default function StatementsView({ owners, ownerId, month, currentFY, snapshot, expenses, properties, saved, isSuperadmin }: Props) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expProp, setExpProp] = useState("");
-  const [expDate, setExpDate] = useState(`${month}-01`);
+  const range = periodRange(month)!;
+  const isFY = range.kind === "fy";
+  const [expDateRaw, setExpDate] = useState(range.start);
+  // Keep the date inside the period being viewed when the period changes.
+  const expDate = expDateRaw >= range.start && expDateRaw <= range.end ? expDateRaw : range.start;
   const [expDesc, setExpDesc] = useState("");
   const [expAmount, setExpAmount] = useState("");
 
@@ -80,7 +92,9 @@ export default function StatementsView({ owners, ownerId, month, snapshot, expen
   }
 
   const propName = Object.fromEntries(properties.map((p) => [p.id, p.name]));
-  const savedThisMonth = saved.find((s) => s.period_start === `${month}-01`);
+  const savedThisMonth = saved.find((s) => s.period_start === range.start && s.period_end === range.end);
+  const fyOptions = [currentFY, currentFY - 1, currentFY - 2, currentFY - 3];
+  const todayMonth = new Date().toISOString().slice(0, 7);
 
   return (
     <div>
@@ -127,9 +141,33 @@ export default function StatementsView({ owners, ownerId, month, snapshot, expen
                   </select>
                 </div>
                 <div className="field">
-                  <label htmlFor="stmtMonth">Month</label>
-                  <input id="stmtMonth" type="month" value={month} onChange={(e) => e.target.value && go(ownerId, e.target.value)} />
+                  <label htmlFor="stmtKind">Period</label>
+                  <select
+                    id="stmtKind"
+                    value={isFY ? "fy" : "month"}
+                    onChange={(e) => go(ownerId, e.target.value === "fy" ? `fy${currentFY}` : todayMonth)}
+                  >
+                    <option value="month">Month</option>
+                    <option value="fy">Financial year (1 Jul – 30 Jun)</option>
+                  </select>
                 </div>
+                {isFY ? (
+                  <div className="field">
+                    <label htmlFor="stmtFY">Financial year</label>
+                    <select id="stmtFY" value={month} onChange={(e) => go(ownerId, e.target.value)}>
+                      {fyOptions.map((y) => (
+                        <option key={y} value={`fy${y}`}>
+                          {fyLabel(y)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ) : (
+                  <div className="field">
+                    <label htmlFor="stmtMonth">Month</label>
+                    <input id="stmtMonth" type="month" value={month} onChange={(e) => e.target.value && go(ownerId, e.target.value)} />
+                  </div>
+                )}
               </div>
               <p className="access-note" style={{ marginBottom: 0 }}>
                 Worked out live from imported payouts, your cleaning jobs, each property&apos;s fee settings and the
@@ -158,7 +196,7 @@ export default function StatementsView({ owners, ownerId, month, snapshot, expen
                     })
                   }
                 >
-                  {savedThisMonth ? "Re-save this month (replaces the saved copy)" : "Save statement"}
+                  {savedThisMonth ? "Re-save (replaces the saved copy)" : "Save statement"}
                 </button>
                 {savedThisMonth ? <Link href={`/statements/${savedThisMonth.id}`}>Open saved copy</Link> : null}
               </div>
@@ -166,9 +204,9 @@ export default function StatementsView({ owners, ownerId, month, snapshot, expen
 
             {properties.length > 0 ? (
               <div className="property-card no-print" style={{ maxWidth: 820, marginTop: 16 }}>
-                <h3 style={{ marginTop: 0 }}>Expenses for {monthLabel(`${month}-01`)}</h3>
+                <h3 style={{ marginTop: 0 }}>Expenses for {periodLabel(range.start, range.end)}</h3>
                 {expenses.length === 0 ? (
-                  <p className="access-note">None this month.</p>
+                  <p className="access-note">None in this period.</p>
                 ) : (
                   <ul style={{ listStyle: "none", padding: 0, margin: "0 0 12px" }}>
                     {expenses.map((e) => (
@@ -225,7 +263,7 @@ export default function StatementsView({ owners, ownerId, month, snapshot, expen
                 <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
                   {saved.map((s) => (
                     <li key={s.id} style={{ borderTop: "1px solid var(--line)", padding: "6px 0" }}>
-                      <Link href={`/statements/${s.id}`}>{monthLabel(s.period_start)}</Link>
+                      <Link href={`/statements/${s.id}`}>{periodLabel(s.period_start, s.period_end)}</Link>
                       {s.share_enabled ? " · owner link on" : ""}
                     </li>
                   ))}

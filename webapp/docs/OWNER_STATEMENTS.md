@@ -78,7 +78,13 @@ update public.organizations set statements_enabled = true where id = '<org id>';
   fee when linen was picked up; a fixed owner charge is not topped up
   with linen); management fee % of payouts (gross) or of payouts after
   cleaning; expenses; net = payouts - cleaning - fee - expenses.
-- **`/statements`** — pick client and month, see the live statement,
+- **Financial year** — the same statement over 1 July to 30 June
+  (`fy2025` = FY 2025-26), with a month-by-month table. The fee is worked
+  out per month and summed, so the year equals its months. A statement
+  is refused if any query hits PostgREST's 1000-row cap, rather than
+  silently under-reporting; use months for very large clients. GST and
+  tax are not calculated.
+- **`/statements`** — pick client and month or financial year, see the live statement,
   add expenses, save. **`/statements/[id]`** — printable saved copy plus
   owner-link controls.
 - **Owner links** — `/owner-statement/[token]` is public (listed in
@@ -93,7 +99,6 @@ update public.organizations set statements_enabled = true where id = '<org id>';
 - Maintenance work-order costs feeding expenses (expenses are entered by
   hand; work orders are readable by cleaners, so a cost column there
   needs its own staff-only table).
-- Financial-year statements (monthly only).
 - Stripe billing for the add-on.
 
 ## Known limits

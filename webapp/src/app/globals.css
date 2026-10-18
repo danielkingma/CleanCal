@@ -2790,3 +2790,7 @@ h1, h2, .brand { letter-spacing: -0.02em; font-weight: 700; }
 .history-table .h-rating { min-width: 150px; max-width: 320px; }
 .history-table .h-rating .rating-summary { white-space: normal; }
 .history-table td { vertical-align: middle; }
+.stmt-months th { text-align: left; font-size: 12px; color: var(--muted); padding: 5px 6px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.stmt-months th.stmt-num { text-align: right; }
+.stmt-months td:first-child { width: auto; }
+.stmt-doc { overflow-x: auto; }

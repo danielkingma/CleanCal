@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireStatementsAccess } from "@/lib/statements-access";
-import { monthRange } from "@/lib/statements";
+import { periodRange } from "@/lib/statements";
 import { loadStatement } from "./data";
 
 export async function addOwnerExpense(input: {
@@ -42,8 +42,8 @@ export async function deleteOwnerExpense(id: string) {
 export async function saveStatement(ownerId: string, month: string): Promise<string> {
   const supabase = await createClient();
   await requireStatementsAccess(supabase);
-  const range = monthRange(month);
-  if (!range) throw new Error("Choose a month.");
+  const range = periodRange(month);
+  if (!range) throw new Error("Choose a month or financial year.");
   const loaded = await loadStatement(supabase, ownerId, range.start, range.end);
   if (!loaded) throw new Error("Client not found.");
   const { data, error } = await supabase

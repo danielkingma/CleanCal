@@ -1236,7 +1236,11 @@ export default function HandbookPage() {
               </p>
               <ol className="hb-step-list">
                 <li>
-                  Pick the <strong>Client</strong> and the <strong>Month</strong>. The statement
+                  Pick the <strong>Client</strong> and the <strong>Period</strong>: a{" "}
+                  <strong>Month</strong>, or a <strong>Financial year</strong> (1 July to 30 June).
+                  A financial-year statement adds a month-by-month table and a total, which you
+                  can give to the owner or their accountant for tax time (it&apos;s a summary of
+                  your records, not tax advice, and GST isn&apos;t calculated). The statement
                   is worked out live: platform payouts (by payout date) less a cleaning charge for
                   each stay that checked out that month, less your management fee, less expenses.
                   It&apos;s broken down property by property.

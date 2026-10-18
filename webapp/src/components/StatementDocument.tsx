@@ -49,6 +49,48 @@ export default function StatementDocument({ s }: { s: StatementSnapshot }) {
         </tbody>
       </table>
 
+      {s.months && s.months.length > 1 ? (
+        <section className="stmt-prop">
+          <h3>Month by month</h3>
+          <table className="stmt-table stmt-months">
+            <thead>
+              <tr>
+                <th>Month</th>
+                <th className="stmt-num">Payouts</th>
+                <th className="stmt-num">Cleaning</th>
+                <th className="stmt-num">Fee</th>
+                <th className="stmt-num">Expenses</th>
+                <th className="stmt-num">Net</th>
+              </tr>
+            </thead>
+            <tbody>
+              {s.months.map((m) => (
+                <tr key={m.month}>
+                  <td>{new Date(`${m.month}-01T00:00:00`).toLocaleDateString("en-AU", { month: "short", year: "numeric" })}</td>
+                  <td className="stmt-num">{money(m.payouts_cents)}</td>
+                  <td className="stmt-num">{money(m.cleaning_cents)}</td>
+                  <td className="stmt-num">{money(m.fee_cents)}</td>
+                  <td className="stmt-num">{money(m.expenses_cents)}</td>
+                  <td className="stmt-num">{money(m.net_cents)}</td>
+                </tr>
+              ))}
+              <tr className="stmt-total">
+                <td>Total</td>
+                <td className="stmt-num">{money(s.payouts_cents)}</td>
+                <td className="stmt-num">{money(s.cleaning_cents)}</td>
+                <td className="stmt-num">{money(s.fee_cents)}</td>
+                <td className="stmt-num">{money(s.expenses_cents)}</td>
+                <td className="stmt-num">{money(s.net_cents)}</td>
+              </tr>
+            </tbody>
+          </table>
+          <p className="stmt-none">
+            A summary of the figures in your records for the period, to give to an accountant or use when preparing a
+            tax return. It is not tax advice, and GST is not calculated.
+          </p>
+        </section>
+      ) : null}
+
       {s.properties.length === 0 ? (
         <p style={{ color: "var(--muted)" }}>This client has no properties assigned yet.</p>
       ) : null}

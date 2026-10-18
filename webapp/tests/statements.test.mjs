@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { buildStatement, monthRange } from "../src/lib/statements.ts";
+import { buildStatement, monthRange, periodRange, currentFY } from "../src/lib/statements.ts";
 
 const prop = {
   id: "p1", name: "Guest house", payout_rate_cents: 8000, linen_box_count: 1, linen_fee_cents: 2000,
@@ -31,4 +31,24 @@ test("statement maths", () => {
   assert.equal(s.fee_cents, 6000); // 15% of 40000
   assert.equal(s.expenses_cents, 1500);
   assert.equal(s.net_cents, 50000 - 10000 - 6000 - 1500);
+});
+
+test("financial year", () => {
+  assert.deepEqual(periodRange("fy2025"), { start: "2025-07-01", end: "2026-06-30", kind: "fy" });
+  assert.equal(currentFY("2026-10-19"), 2026);
+  assert.equal(currentFY("2026-03-01"), 2025);
+  const s = buildStatement({
+    clientName: "A", organizationName: "Org", start: "2025-07-01", end: "2026-06-30", generatedAt: "x",
+    properties: [prop],
+    lines: [
+      { property_id: "p1", line_type: "reservation", guest_name: "G", checkin_date: "2025-07-02", nights: 2, payout_date: "2025-07-05", amount_cents: 10001, platform: "airbnb", confirmation_code: "" },
+      { property_id: "p1", line_type: "reservation", guest_name: "H", checkin_date: "2026-05-02", nights: 2, payout_date: "2026-05-05", amount_cents: 10001, platform: "airbnb", confirmation_code: "" },
+    ],
+    bookings: [], expenses: [],
+  });
+  assert.equal(s.months.length, 12);
+  assert.equal(s.payouts_cents, 20002);
+  // fee is per month: round(10001*0.15)=1500 twice
+  assert.equal(s.fee_cents, 3000);
+  assert.equal(s.months.reduce((t, m) => t + m.net_cents, 0), s.net_cents);
 });

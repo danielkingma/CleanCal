@@ -83,6 +83,15 @@ export interface StatementPropertySection {
   net_cents: number;
 }
 
+export interface StatementMonthRow {
+  month: string; // "2026-10"
+  payouts_cents: number;
+  cleaning_cents: number;
+  fee_cents: number;
+  expenses_cents: number;
+  net_cents: number;
+}
+
 export interface StatementSnapshot {
   version: 1;
   client_name: string;
@@ -97,6 +106,47 @@ export interface StatementSnapshot {
   fee_cents: number;
   expenses_cents: number;
   net_cents: number;
+  // Month-by-month totals across all properties. Absent on statements
+  // saved before financial-year statements existed.
+  months?: StatementMonthRow[];
+}
+
+// Australian financial year: 1 July to 30 June. fy = the starting year,
+// so FY 2025-26 is fy 2025.
+export function fyRange(fy: number): { start: string; end: string } {
+  return { start: `${fy}-07-01`, end: `${fy + 1}-06-30` };
+}
+export function fyLabel(fy: number): string {
+  return `FY ${fy}\u2013${String(fy + 1).slice(2)}`;
+}
+export function currentFY(today: string): number {
+  const y = Number(today.slice(0, 4));
+  return Number(today.slice(5, 7)) >= 7 ? y : y - 1;
+}
+// "2026-10" -> a month; "fy2025" -> a financial year; anything else null.
+export function periodRange(key: string): { start: string; end: string; kind: "month" | "fy" } | null {
+  const fy = /^fy(\d{4})$/.exec(key);
+  if (fy) return { ...fyRange(Number(fy[1])), kind: "fy" };
+  const m = monthRange(key);
+  return m ? { ...m, kind: "month" } : null;
+}
+
+export function monthKeys(start: string, end: string): string[] {
+  const out: string[] = [];
+  let y = Number(start.slice(0, 4));
+  let m = Number(start.slice(5, 7));
+  const last = end.slice(0, 7);
+  for (;;) {
+    const key = `${y}-${String(m).padStart(2, "0")}`;
+    out.push(key);
+    if (key >= last) break;
+    m += 1;
+    if (m > 12) {
+      m = 1;
+      y += 1;
+    }
+  }
+  return out;
 }
 
 export function addDaysISO(iso: string, days: number): string {
@@ -140,6 +190,7 @@ export function buildStatement(input: {
   expenses: StatementExpense[];
 }): StatementSnapshot {
   const { start, end } = input;
+  const monthFees = new Map<string, number>();
   const sections: StatementPropertySection[] = input.properties.map((p) => {
     const payouts = input.lines
       .filter((l) => l.property_id === p.id && inRange(l.payout_date ?? l.checkin_date, start, end))
@@ -171,8 +222,27 @@ export function buildStatement(input: {
     const payoutsCents = payouts.reduce((s, r) => s + r.amount_cents, 0);
     const cleaningCents = cleaning.reduce((s, r) => s + r.amount_cents, 0);
     const expensesCents = expenses.reduce((s, r) => s + r.amount_cents, 0);
-    const feeBase = p.fee_basis === "gross" ? payoutsCents : payoutsCents - cleaningCents;
-    const feeCents = Math.max(0, Math.round((feeBase * p.mgmt_fee_percent) / 100));
+    // The fee is worked out month by month and added up, so a financial
+    // year's total always equals the sum of its months.
+    const monthly = new Map<string, { payouts: number; cleaning: number; expenses: number }>();
+    const bucket = (m: string) => {
+      let b = monthly.get(m);
+      if (!b) {
+        b = { payouts: 0, cleaning: 0, expenses: 0 };
+        monthly.set(m, b);
+      }
+      return b;
+    };
+    for (const r of payouts) bucket((r.date ?? start).slice(0, 7)).payouts += r.amount_cents;
+    for (const r of cleaning) bucket(r.date.slice(0, 7)).cleaning += r.amount_cents;
+    for (const r of expenses) bucket(r.date.slice(0, 7)).expenses += r.amount_cents;
+    let feeCents = 0;
+    for (const [m, b] of monthly) {
+      const base = p.fee_basis === "gross" ? b.payouts : b.payouts - b.cleaning;
+      const fee = Math.max(0, Math.round((base * p.mgmt_fee_percent) / 100));
+      feeCents += fee;
+      monthFees.set(m, (monthFees.get(m) ?? 0) + fee);
+    }
     return {
       property_id: p.id,
       property_name: p.name,
@@ -190,6 +260,14 @@ export function buildStatement(input: {
   });
 
   const sum = (f: (s: StatementPropertySection) => number) => sections.reduce((t, s) => t + f(s), 0);
+  const months: StatementMonthRow[] = monthKeys(start, end).map((m) => {
+    const inMonth = (d: string | null) => Boolean(d) && (d as string).slice(0, 7) === m;
+    const payouts = sections.reduce((t, s) => t + s.payouts.filter((r) => inMonth(r.date ?? start)).reduce((a, r) => a + r.amount_cents, 0), 0);
+    const cleaning = sections.reduce((t, s) => t + s.cleaning.filter((r) => inMonth(r.date)).reduce((a, r) => a + r.amount_cents, 0), 0);
+    const expenses = sections.reduce((t, s) => t + s.expenses.filter((r) => inMonth(r.date)).reduce((a, r) => a + r.amount_cents, 0), 0);
+    const fee = monthFees.get(m) ?? 0;
+    return { month: m, payouts_cents: payouts, cleaning_cents: cleaning, fee_cents: fee, expenses_cents: expenses, net_cents: payouts - cleaning - fee - expenses };
+  });
   return {
     version: 1,
     client_name: input.clientName,
@@ -204,5 +282,6 @@ export function buildStatement(input: {
     fee_cents: sum((s) => s.fee_cents),
     expenses_cents: sum((s) => s.expenses_cents),
     net_cents: sum((s) => s.net_cents),
+    months,
   };
 }

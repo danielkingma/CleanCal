@@ -63,6 +63,11 @@ export async function loadStatement(
         .lte("expense_date", end)
         .order("expense_date"),
     ]);
+    // PostgREST returns at most 1000 rows per query; never silently
+    // under-report a statement.
+    if ((lineRows?.length ?? 0) >= 1000 || (bookingRows?.length ?? 0) >= 1000 || (expenseRows?.length ?? 0) >= 1000) {
+      throw new Error("Too many records for one statement. Try a single month instead.");
+    }
     const fin = new Map((financials ?? []).map((f) => [f.property_id as string, f]));
     props = (properties ?? []).map((p) => {
       const f = fin.get(p.id as string)!;
