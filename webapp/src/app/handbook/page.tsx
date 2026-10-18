@@ -1170,7 +1170,7 @@ export default function HandbookPage() {
                   properties in place, just unassigned.
                 </li>
                 <li>
-                  <strong>Property fees</strong> — for each property: its <strong>Client</strong>,{" "}
+                  <strong>Property fees</strong> — each property is a collapsed row showing its client; tap it to open. For each property: its <strong>Client</strong>,{" "}
                   <strong>Management fee %</strong>, <strong>Fee charged on</strong> (the full
                   payout, or the payout after cleaning), and <strong>Cleaning charged to owner
                   ($)</strong>. Leave the cleaning charge blank and it uses that property&apos;s

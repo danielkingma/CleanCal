@@ -160,6 +160,16 @@ export default function ClientsView({
   }
 
   // ---- Property fees ----
+  // Each property stays collapsed until its row is clicked.
+  const [openIds, setOpenIds] = useState<Set<string>>(() => new Set());
+  function toggleOpen(propertyId: string) {
+    setOpenIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(propertyId)) next.delete(propertyId);
+      else next.add(propertyId);
+      return next;
+    });
+  }
   const [drafts, setDrafts] = useState<Record<string, FeeDraft>>(() =>
     Object.fromEntries(properties.map((p) => [p.id, draftFor(finByProperty.get(p.id))])),
   );
@@ -441,8 +451,9 @@ export default function ClientsView({
             when you place a payout on the Payouts page.
           </p>
           {properties.length === 0 ? <p className="access-note">No properties yet.</p> : null}
+        </div>
 
-          {properties.map((p) => {
+        {properties.map((p) => {
             const d = drafts[p.id] ?? draftFor(finByProperty.get(p.id));
             const defaultCleaning = (p.payout_rate_cents ?? 0) > 0 ? formatCents(p.payout_rate_cents) : null;
             const propListings = listingsByProperty.get(p.id) ?? [];
@@ -453,9 +464,30 @@ export default function ClientsView({
               ...PLATFORM_CHOICES,
               ...(feedPlatformsByProperty.get(p.id) ?? []).filter((n) => !PLATFORM_CHOICES.includes(n)),
             ];
+            const isOpen = openIds.has(p.id);
+            const clientName = owners.find((o) => o.id === d.property_owner_id)?.name;
+            const bodyId = `fees-body-${p.id}`;
             return (
-              <div key={p.id} style={{ borderTop: "1px solid var(--line)", paddingTop: 12, marginTop: 12 }}>
-                <div style={{ fontWeight: 600, marginBottom: 8 }}>{p.name}</div>
+              <div
+                key={p.id}
+                className={`property-card property-accordion${isOpen ? " is-open" : ""}`}
+                style={{ maxWidth: 760, marginTop: 10 }}
+              >
+                <button
+                  type="button"
+                  className="property-toggle"
+                  aria-expanded={isOpen}
+                  aria-controls={bodyId}
+                  onClick={() => toggleOpen(p.id)}
+                >
+                  <span className="property-toggle-chevron" aria-hidden="true">
+                    ▸
+                  </span>
+                  <span className="property-toggle-name">{p.name}</span>
+                  <span className="property-toggle-meta">{clientName ?? "No client"}</span>
+                </button>
+                {isOpen ? (
+                  <div className="property-body" id={bodyId}>
                 <div className="filter-row">
                   <div className="field">
                     <label htmlFor={`owner-${p.id}`}>Client</label>
@@ -613,10 +645,11 @@ export default function ClientsView({
                     </div>
                   ) : null}
                 </div>
+                  </div>
+                ) : null}
               </div>
             );
-          })}
-        </div>
+        })}
       </main>
     </div>
   );
