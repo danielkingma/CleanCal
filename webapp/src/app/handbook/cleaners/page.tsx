@@ -72,10 +72,16 @@ export default function CleanerGuidePage() {
               <span className="hb-kicker">3</span>
               <h2>Find &amp; claim a job</h2>
               <p>
-                On your phone, <strong>Cleaning List</strong> is your day-by-day schedule. You see
-                the whole portfolio&apos;s bookings, not just your own, so you can plan around the
-                rest of the calendar — but a job that isn&apos;t yours yet shows no guest name or
-                details, just an <strong>Assign</strong> checkbox.
+                The calendar has <strong>Week</strong>, <strong>Month</strong> and{" "}
+                <strong>Year</strong> tabs, plus <strong>Assigned</strong> and{" "}
+                <strong>Completed</strong> lists. On your phone, Week is a 7-day grid with every
+                property as a row (tap a property&apos;s name to see it in full), and Month shows
+                one property at a time — pick it from the dropdown, and tap a day to open it.
+                You see the whole portfolio&apos;s bookings, not just your own, so you can plan
+                around the rest of the calendar — but a job that isn&apos;t yours yet shows no
+                guest name or details, just an <strong>Assign</strong> checkbox. A bar too short
+                for a name shows a coloured initial for whoever the job is allocated to, so you
+                can tell at a glance if it isn&apos;t yours.
               </p>
               <ul>
                 <li>
@@ -92,7 +98,15 @@ export default function CleanerGuidePage() {
               <p>
                 <strong>Assigned</strong> lists every job you&apos;ve claimed or confirmed that
                 isn&apos;t finished yet; <strong>Completed</strong> lists everything you&apos;ve
-                already cleaned.
+                already cleaned. Another claimed job you can&apos;t make? Open it and press{" "}
+                <strong>Release job</strong> (or <strong>Decline job</strong> if it was assigned
+                to you) before you start it, and it goes back on the open board.
+              </p>
+              <p>
+                Tell your Owner or Manager when you can&apos;t work: open{" "}
+                <span className="hb-kbd-chip">Menu → Availability</span> and tap the days you
+                aren&apos;t available. Everything else is assumed available, and they see a
+                warning if they try to give you a job on a day you&apos;ve marked off.
               </p>
             </section>
 
@@ -117,11 +131,31 @@ export default function CleanerGuidePage() {
                 </li>
                 <li>
                   <strong>Photos</strong> — attach them while you work through the job, useful for
-                  proving the clean or flagging pre-existing damage. Tap a thumbnail to see it
-                  full-size.
+                  proving the clean or flagging pre-existing damage. Tap the <strong>+</strong>{" "}
+                  to add some, and tap a thumbnail to see it full-size. A photo that looks
+                  out of focus gets a <strong>Blurry</strong> badge — retake it or remove it.
+                </li>
+                <li>
+                  <strong>Supplies</strong> — if you use the last of something, open{" "}
+                  <span className="hb-kbd-chip">Menu → Supplies</span> and tap{" "}
+                  <strong>Used one</strong> next to it so your host knows when to restock.
+                </li>
+                <li>
+                  <strong>Work orders</strong> — repair jobs assigned to you are under{" "}
+                  <span className="hb-kbd-chip">Menu → Maintenance</span>. Tap <strong>Start</strong>{" "}
+                  when you begin and <strong>Mark done</strong> when you finish.
                 </li>
               </ul>
-              <p>Mark the job complete once you&apos;re done.</p>
+              <p>
+                Mark the job <strong>Complete</strong> once you&apos;re done and press Save. You
+                need at least one photo, with no blurry ones left, before CleanCal will let you.
+                Your time on the job is recorded from when you set it In Progress to when you set
+                it Complete, so set those at the real start and finish.
+              </p>
+              <p>
+                Your finished jobs are in <span className="hb-kbd-chip">Menu → History</span>, with
+                the rating and note you got for each one.
+              </p>
             </section>
 
             <section className="hb-section">
@@ -129,9 +163,15 @@ export default function CleanerGuidePage() {
               <h2>Get paid</h2>
               <ol className="hb-step-list">
                 <li>
-                  Verify your identity from <span className="hb-kbd-chip">Menu → My Profile</span>{" "}
-                  — a government ID and a live selfie, handled by Stripe. It&apos;s quick, and the
-                  result comes back automatically.
+                  Fill in <span className="hb-kbd-chip">Menu → My Profile</span> — your name,
+                  phone, service area, and a favourite colour (your name and initial show in it, so
+                  your jobs are easy to spot). You can also switch on{" "}
+                  <span className="hb-kbd-chip">Menu → Enable notifications</span> to get alerts
+                  when jobs are posted or assigned to you.
+                </li>
+                <li>
+                  Verify your identity from the same page — a government ID and a live selfie,
+                  handled by Stripe. It&apos;s quick, and the result comes back automatically.
                 </li>
                 <li>
                   Connect your payout account from the same page (&quot;Set up payouts&quot;) — a

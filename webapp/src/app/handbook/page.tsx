@@ -49,17 +49,29 @@ export default function HandbookPage() {
 
           <div className="hb-side-group-title">Day to day</div>
           <a className="hb-side-link" href="#calendar">The calendar</a>
+          <a className="hb-side-link" href="#booking">Opening &amp; editing a booking</a>
           <a className="hb-side-link" href="#sync">Properties &amp; two-way sync</a>
           <a className="hb-side-link" href="#checklist">Cleaning checklist &amp; photos</a>
           <a className="hb-side-link" href="#team">Managing the cleaning team</a>
           <a className="hb-side-link" href="#disputes">Disputes</a>
           <a className="hb-side-link" href="#maintenance">Maintenance &amp; supplies</a>
-          <a className="hb-side-link" href="#mobile">Mobile app &amp; notifications</a>
+          <a className="hb-side-link" href="#mobile">Mobile app</a>
+          <a className="hb-side-link" href="#notifications">Notifications</a>
+
+          <div className="hb-side-group-title">Your team &amp; account</div>
+          <a className="hb-side-link" href="#cleaners-page">The Cleaners page</a>
+          <a className="hb-side-link" href="#availability">Availability</a>
+          <a className="hb-side-link" href="#history">History</a>
+          <a className="hb-side-link" href="#profile">My Profile &amp; devices</a>
+
+          <div className="hb-side-group-title">Insight</div>
+          <a className="hb-side-link" href="#dashboard">Dashboard</a>
+          <a className="hb-side-link" href="#reports">Reports &amp; CSV export</a>
 
           <div className="hb-side-group-title">Trust &amp; money</div>
           <a className="hb-side-link" href="#trust">ID verification &amp; background checks</a>
           <a className="hb-side-link" href="#payments">Cleaner payouts</a>
-          <a className="hb-side-link" href="#pricing">Pricing</a>
+          <a className="hb-side-link" href="#pricing">Pricing &amp; your free trial</a>
 
           <div className="hb-side-group-title">Reference</div>
           <a className="hb-side-link" href="#faq">FAQ &amp; troubleshooting</a>
@@ -71,10 +83,12 @@ export default function HandbookPage() {
               <span className="hb-eyebrow">CleanCal Handbook</span>
               <h1>Every turnover, tracked, cleaned, and paid.</h1>
               <p>
-                This handbook covers CleanCal end to end — the calendar, calendar sync, the
-                cleaning checklist, your cleaning team, and trust &amp; payments. Skim the
-                sidebar for what you need, or read straight through if you&apos;re setting up
-                for the first time.
+                This handbook covers every part of CleanCal — the calendar and booking editor,
+                calendar sync, the cleaning checklist and photos, your cleaning team,
+                availability, maintenance and supplies, notifications, the dashboard and
+                reports, your profile and devices, and trust &amp; payments. Skim the sidebar
+                for what you need, or read straight through if you&apos;re setting up for the
+                first time.
               </p>
               <p>
                 Just here to clean? The <Link href="/handbook/cleaners">cleaner quick guide</Link>{" "}
@@ -261,6 +275,36 @@ export default function HandbookPage() {
                       <td className="yes">Yes</td>
                       <td className="no">—</td>
                     </tr>
+                    <tr>
+                      <td>Remove, restore or delete a cleaner&apos;s account</td>
+                      <td className="yes">Yes</td>
+                      <td className="no">—</td>
+                      <td className="no">—</td>
+                    </tr>
+                    <tr>
+                      <td>Create work orders &amp; maintenance schedules, restock supplies</td>
+                      <td className="yes">Yes</td>
+                      <td className="yes">Yes</td>
+                      <td className="no">—</td>
+                    </tr>
+                    <tr>
+                      <td>Update a work order assigned to you, report a supply &quot;Used one&quot;</td>
+                      <td className="yes">Yes</td>
+                      <td className="yes">Yes</td>
+                      <td className="yes">Yes</td>
+                    </tr>
+                    <tr>
+                      <td>Mark your own days unavailable, view History, edit My Profile</td>
+                      <td className="yes">Yes</td>
+                      <td className="yes">Yes</td>
+                      <td className="yes">Yes</td>
+                    </tr>
+                    <tr>
+                      <td>Set the business name</td>
+                      <td className="yes">Yes</td>
+                      <td className="no">—</td>
+                      <td className="no">—</td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -272,17 +316,40 @@ export default function HandbookPage() {
 
             <section className="hb-section" id="navigation">
               <h2>Finding your way around</h2>
-              <p>The calendar&apos;s top bar has two dropdowns, color-coded so they&apos;re easy to tell apart at a glance:</p>
+              <p>Every signed-in page has the same two dropdowns in its top bar, so you can jump anywhere without going back to the calendar first:</p>
               <ul>
-                <li><strong>Manage</strong> (Owner/Manager only) — Dashboard, Reports, Properties, Cleaners, Maintenance, Supplies.</li>
-                <li><strong>Menu</strong> (everyone) — this Handbook, your Cleaning History, your Availability calendar, Maintenance, Supplies, My Profile, and the notifications toggle.</li>
+                <li>
+                  <strong>Manage</strong> (Owner/Manager only) —{" "}
+                  <a href="#dashboard">Dashboard</a>, <a href="#reports">Reports</a>,{" "}
+                  <a href="#sync">Properties</a>, <a href="#cleaners-page">Cleaners</a>,{" "}
+                  <a href="#maintenance">Maintenance</a> and <a href="#maintenance">Supplies</a>.
+                </li>
+                <li>
+                  <strong>Menu</strong> (everyone) — this Handbook, the{" "}
+                  <Link href="/handbook/cleaners">Cleaner quick guide</Link>,{" "}
+                  <a href="#history">History</a>, <a href="#availability">Availability</a>,
+                  Maintenance, Supplies, <a href="#profile">My Profile</a>, the notifications
+                  toggle (see <a href="#notifications">Notifications</a>), and{" "}
+                  <strong>Contact support</strong>, which opens an email to{" "}
+                  <a href="mailto:support@cleancal.net">support@cleancal.net</a>.
+                </li>
               </ul>
+              <p>
+                Every page except the calendar also has a <strong>← Calendar</strong> button in
+                the top right to take you back, and a <strong>Sign out</strong> button in the
+                top bar.
+              </p>
             </section>
 
             <section className="hb-section" id="calendar">
               <span className="hb-kicker">Day to day</span>
               <h2>The calendar</h2>
-              <p>On desktop, three views, switched from the top bar:</p>
+              <p>
+                Along the top bar, the <strong>‹ ›</strong> arrows step to the previous or next
+                period, the label in between says which period you&apos;re looking at, and{" "}
+                <strong>Today</strong> jumps back to now. Owners and Managers also get a{" "}
+                <strong>+ New booking</strong> button. Three views are switched from the top bar:
+              </p>
               <ul>
                 <li>
                   <strong>Week / Month</strong> — every property as a row, bookings as colored
@@ -302,21 +369,37 @@ export default function HandbookPage() {
                 </li>
               </ul>
               <p>
-                On mobile, Week and Year are replaced with two views built for a phone screen: a
-                scrollable day-by-day agenda, paginated by month — called{" "}
-                <strong>Cleaning List</strong> for a cleaner and <strong>Week</strong> for an
-                Owner/Manager — and <strong>Month</strong> (a compact grid for one property at a
-                time).
+                On a phone, the same three tabs are there, laid out to fit a narrow screen:
               </p>
+              <ul>
+                <li>
+                  <strong>Week</strong> — a 7-day grid with every property as a row. The property
+                  column is kept narrow to leave room for the days; tap a property&apos;s name
+                  to see it in full (the same works on desktop if a long name is cut off).
+                </li>
+                <li>
+                  <strong>Month</strong> — a compact month grid for one property at a time; pick
+                  the property from the dropdown in the top bar. Tap a day to open it — if
+                  more than one clean falls on that day (a same-day turnover), you get a short
+                  list to choose from, so you never have to hit two overlapping slivers
+                  precisely.
+                </li>
+                <li>
+                  <strong>Year</strong> — a stack of twelve mini-months for the property picked
+                  in the dropdown.
+                </li>
+              </ul>
               <p>
-                Both roles also have <strong>Assigned</strong> and <strong>Completed</strong>,
-                set apart from Week/Month/Year in their own pill group since they&apos;re
-                worklists rather than calendar views. For a cleaner, Assigned lists every job
-                they&apos;ve actually claimed or confirmed that isn&apos;t finished yet, and
-                Completed lists everything they&apos;ve already cleaned. For an Owner/Manager,
-                both list every booking in the portfolio in that state regardless of who&apos;s on
-                it, naming the cleaner on each card. All four are the same day-by-day agenda,
-                just filtered differently.
+                Both roles, on desktop and phone, also have <strong>Assigned</strong> and{" "}
+                <strong>Completed</strong>, set apart from Week/Month/Year in their own pill
+                group since they&apos;re worklists rather than calendar views. They&apos;re a
+                scrollable day-by-day agenda of cards, paginated by month. For a cleaner,
+                Assigned lists every job they&apos;ve actually claimed or confirmed that
+                isn&apos;t finished yet, and Completed lists everything they&apos;ve already
+                cleaned. For an Owner/Manager, both list every booking in the portfolio in that
+                state regardless of who&apos;s on it, naming the cleaner on each card — in that
+                cleaner&apos;s own favourite colour (see <a href="#profile">My Profile</a>), so
+                you can pick out one person&apos;s jobs at a glance.
               </p>
               <p>
                 A bar always starts a little into its check-in day and ends a little into its
@@ -342,6 +425,14 @@ export default function HandbookPage() {
                 a generic &quot;Reserved&quot; label anymore, and a platform&apos;s name only ever
                 appears once per booking.
               </p>
+              <p>
+                A bar can be too short to fit a full name. When that happens — and always on the
+                phone&apos;s Month grid — the cleaner&apos;s <strong>initial</strong> is shown
+                instead of cutting the name off mid-word, tinted in their favourite colour. Cleaners
+                see this too: on the shared schedule they can see the initial and colour of whoever
+                is allocated to each booking (and nothing else about that person), so nobody turns
+                up to a job that isn&apos;t theirs.
+              </p>
               <figure className="hb-figure">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -357,15 +448,125 @@ export default function HandbookPage() {
               </figure>
             </section>
 
+            <section className="hb-section" id="booking">
+              <h2>Opening &amp; editing a booking</h2>
+              <p>
+                Click or tap any bar (or card) to open its booking. Owners and Managers can also
+                start a blank one with <strong>+ New booking</strong>, or by clicking empty space
+                on the calendar. What you can change depends on your role.
+              </p>
+              <h3>For Owners &amp; Managers</h3>
+              <ul>
+                <li>
+                  <strong>Property, Guest/s, Booking platform</strong> — the platform field
+                  suggests Airbnb, Vrbo, Booking.com, Expedia and Direct, but you can type any
+                  name. It decides the colored badge on the bar.
+                </li>
+                <li>
+                  <strong>Check-in, Checkout, Nights</strong> — the three are linked: change any
+                  one and the others follow. A booking can be 1 to 30 nights.
+                </li>
+                <li>
+                  <strong>Assignment</strong> — <em>Reserved for a cleaner</em> (pick them in{" "}
+                  <strong>Assigned cleaner</strong>, which shows each cleaner&apos;s average
+                  rating) or <em>Open — any cleaner can claim</em>, which posts it to the open
+                  job board. See <a href="#team">Managing the cleaning team</a>. If the cleaner
+                  you pick marked themselves unavailable on the clean date, a warning says so
+                  right there (see <a href="#availability">Availability</a>).
+                </li>
+                <li>
+                  <strong>Cleaner takes linen off-site to clean</strong> — tick this on a booking
+                  whose linen needs picking up; it shows exactly how much it adds to the payout
+                  (see <a href="#payments">Cleaner payouts</a>).
+                </li>
+                <li>
+                  <strong>Cleaning status</strong> — To Clean, In Progress, or Complete.
+                </li>
+                <li>
+                  <strong>Notes</strong> and the general <strong>Needs attention</strong> box —
+                  see <a href="#checklist">Cleaning checklist &amp; photos</a>.
+                </li>
+                <li>
+                  Further down: the checklist and photos, a <strong>Rate this cleaning</strong>{" "}
+                  section (once it&apos;s complete and has a cleaner), the{" "}
+                  <strong>Cleaner payout</strong> section, and the <strong>Dispute</strong>{" "}
+                  thread.
+                </li>
+                <li>
+                  <strong>Delete</strong> removes the booking for good. A booking that came in
+                  from a calendar feed and later disappears from it is removed automatically (see
+                  the FAQ).
+                </li>
+              </ul>
+              <p>
+                The property&apos;s <strong>access instructions</strong> (door code, parking,
+                wifi — whatever you saved on the Properties page) appear in the booking so a
+                cleaner sees them without asking.
+              </p>
+              <h3>For cleaners</h3>
+              <p>
+                You can see the booking&apos;s dates, notes and access instructions, and you
+                work the checklist, photos and status on jobs that are yours. Depending on the
+                job, the buttons at the bottom are:
+              </p>
+              <ul>
+                <li><strong>Claim this job</strong> — for a job on the open board or one with no cleaner confirmed.</li>
+                <li><strong>Confirm</strong> / <strong>Decline</strong> — on a job an Owner or Manager assigned directly to you.</li>
+                <li><strong>Decline job</strong> — hands a job back before you&apos;ve started it.</li>
+                <li><strong>Release job</strong> — puts a job you claimed back on the open board.</li>
+                <li><strong>Save</strong> — saves your status and checklist.</li>
+              </ul>
+              <div className="hb-callout">
+                <strong>Marking a job complete</strong>
+                A cleaner has to attach <strong>at least one photo</strong> first, and any photo
+                CleanCal thinks is blurry has to be retaken — otherwise the save is refused with a
+                message saying so. Owners and Managers aren&apos;t held to this when they update a
+                booking themselves.
+              </div>
+              <p>
+                Cleaning time is recorded for you: the first time a cleaner sets their own job to{" "}
+                <strong>In Progress</strong> and the first time they set it to{" "}
+                <strong>Complete</strong>, CleanCal notes the moment, and the gap is the time the
+                clean took. That&apos;s what the{" "}
+                <a href="#reports">Reports</a> page uses for average cleaning time. Jobs finished
+                before this existed, or completed by an Owner/Manager on someone&apos;s behalf,
+                have no time recorded.
+              </p>
+            </section>
+
             <section className="hb-section" id="sync">
               <h2>Properties &amp; two-way sync</h2>
               <p>Open <span className="hb-kbd-chip">Manage → Properties</span> from the calendar&apos;s top bar to manage each listing.</p>
+              <h3>Adding and finding properties</h3>
+              <p>
+                Type a name under <strong>Add a property</strong> and press{" "}
+                <span className="hb-kbd-chip">Add property</span>. Each property is a collapsed
+                row showing its name and how many calendar feeds it has (a red{" "}
+                <strong>Sync error</strong> pill appears on the row if any feed is failing) — tap
+                a row to open all of its settings. <span className="hb-kbd-chip">Sync all feeds</span>{" "}
+                at the top syncs every property in one go and tells you how many succeeded.
+              </p>
+              <h3>Access instructions</h3>
+              <p>
+                Inside each property, <strong>Access instructions</strong> is where you put the
+                door code, parking, wifi — anything a cleaner needs to get in and get started.
+                It&apos;s shown to cleaners on that property&apos;s bookings.
+              </p>
               <h3>Bringing bookings in</h3>
               <ol className="hb-step-list">
                 <li>On your OTA (Airbnb, Vrbo, Booking.com, or any other), find its calendar export link — usually under Calendar → Export or Sync.</li>
                 <li>Paste it into the property&apos;s <span className="hb-kbd-chip">Add feed</span> field with a label, e.g. &quot;Airbnb&quot;.</li>
                 <li>Click <span className="hb-kbd-chip">Sync now</span>, or leave it — feeds sync automatically on a schedule if that&apos;s configured for your account.</li>
               </ol>
+              <p>
+                Each feed shows a status pill — <strong>Never synced</strong>, <strong>OK</strong>{" "}
+                or a red <strong>Error</strong> with the reason underneath — plus buttons to{" "}
+                <span className="hb-kbd-chip">Sync now</span> or <span className="hb-kbd-chip">Remove</span>{" "}
+                it. A property can have as many feeds as it needs (Airbnb, Vrbo, your own
+                website…). A property with no feeds simply takes bookings you enter by hand.
+                Re-syncing updates a reservation&apos;s dates rather than duplicating it, and
+                never touches its cleaning status, checklist or assigned cleaner.
+              </p>
               <h3>Sending your calendar back out</h3>
               <p>
                 Every property also has its own <strong>Calendar export</strong> link. Paste that
@@ -386,6 +587,16 @@ export default function HandbookPage() {
                 is what the cleaning checklist uses to scale itself to the actual property; see{" "}
                 <a href="#checklist">Cleaning checklist &amp; photos</a> below. Any property
                 that&apos;s never had this set defaults to 1 bedroom, 1 bathroom, no outdoor area.
+              </p>
+              <h3>Pay settings and deleting a property</h3>
+              <p>
+                The same page holds each property&apos;s <strong>payout rate</strong> and{" "}
+                <strong>linen service</strong> (boxes and fee per box) — Owner-only; a Manager
+                sees the figures but can&apos;t change them (see{" "}
+                <a href="#payments">Cleaner payouts</a>). Only an Owner sees{" "}
+                <span className="hb-kbd-chip">Delete property</span>, which permanently deletes the
+                property along with every booking, photo and calendar feed on it, after a
+                confirmation. It can&apos;t be undone.
               </p>
             </section>
 
@@ -427,6 +638,14 @@ export default function HandbookPage() {
                 photo to see it full-size: on desktop, just hover over the thumbnail; on a phone
                 (no hover), tap it to open a large view, tap again (or the ✕) to close.
               </p>
+              <p>
+                Tap the <strong>+</strong> tile to add photos (you can pick several at once), and
+                the small ✕ on a thumbnail removes one. CleanCal checks each photo as it&apos;s
+                uploaded, and one that looks out of focus gets a <strong>Blurry</strong> badge.
+                A cleaner needs <strong>at least one photo</strong>, with no blurry ones left,
+                before the job can be marked complete — retake any that are flagged and remove the
+                bad ones.
+              </p>
             </section>
 
             <section className="hb-section" id="team">
@@ -455,7 +674,11 @@ export default function HandbookPage() {
               <p>
                 Every completed job gets a 1–5 star rating with an optional note. Ratings roll up
                 into each cleaner&apos;s profile average, visible right in the assignment
-                dropdown — so you&apos;re never assigning blind.
+                dropdown and on the <a href="#cleaners-page">Cleaners page</a> — so you&apos;re
+                never assigning blind. To rate one, open the completed booking and use{" "}
+                <strong>Rate this cleaning</strong> (Owner/Manager only); the cleaner is
+                notified, and a rating of 2★ or lower also raises a re-clean work order (see{" "}
+                <a href="#maintenance">Maintenance &amp; supplies</a>).
               </p>
             </section>
 
@@ -467,6 +690,16 @@ export default function HandbookPage() {
                 threaded conversation attached to that booking, visible to both sides and no one
                 else. Posting a reply reopens the thread even if it was marked resolved, so
                 nothing quietly gets buried.
+              </p>
+              <p>
+                Find it in the <strong>Dispute</strong> section at the bottom of the booking:
+                type your message and press <span className="hb-kbd-chip">Post</span>. Each
+                message shows who wrote it, whether they&apos;re an Owner, Manager or cleaner, and
+                when. An Owner/Manager can press <span className="hb-kbd-chip">Mark resolved</span>{" "}
+                once it&apos;s sorted. Open and resolved disputes show as a small pill on the
+                booking and in <a href="#history">History</a> and{" "}
+                <a href="#reports">Reports</a>, and open ones are listed on the{" "}
+                <a href="#dashboard">Dashboard</a>.
               </p>
             </section>
 
@@ -480,9 +713,21 @@ export default function HandbookPage() {
               <p>
                 A standalone task on a property — a broken dishwasher, a squeaky door — that
                 isn&apos;t tied to any specific cleaning booking. Owners/Managers create one with a
-                title, description, priority, and optionally assign it to a cleaner; a cleaner sees
-                anything assigned to them and can move it between <strong>In progress</strong> and{" "}
-                <strong>Done</strong> themselves, without needing to go through staff.
+                title, description, priority (Normal or Urgent), an optional due date, and
+                optionally assign it to a cleaner; a cleaner sees anything assigned to them and
+                can move it between <strong>In progress</strong> and <strong>Done</strong>{" "}
+                themselves, without needing to go through staff.
+              </p>
+              <p>
+                Open work orders are listed with a tag for where they came from —{" "}
+                <strong>Manual</strong> (someone created it), <strong>Low rating</strong> (raised
+                automatically from a poor rating) or <strong>Preventative</strong> (raised from a
+                recurring schedule) — plus an Urgent tag where it applies, who it&apos;s assigned
+                to, and the due date. Owners/Managers get <strong>Mark in progress</strong>,{" "}
+                <strong>Mark done</strong> and <strong>Delete</strong> on each; a cleaner gets{" "}
+                <strong>Start</strong> and <strong>Mark done</strong> on their own. Finished work
+                orders drop into a <strong>Done</strong> list with the date they were completed.
+                A cleaner is notified when a work order is assigned to them.
               </p>
               <p>
                 A rating of 2★ or lower on a booking automatically creates an <strong>urgent</strong>{" "}
@@ -497,6 +742,17 @@ export default function HandbookPage() {
                 due date forward on its own. Owners/Managers can also mark one done directly, or spin
                 up its work order early without waiting for it to go overdue.
               </p>
+              <p>
+                To set one up, go to <strong>Preventative maintenance</strong> at the bottom of
+                the Maintenance page (Owner/Manager only), choose the property, how many days
+                apart it repeats (<strong>Every (days)</strong>) and a title, then press{" "}
+                <span className="hb-kbd-chip">Add schedule</span>. Each schedule shows{" "}
+                <strong>Due in N days</strong> or, in red, <strong>Overdue by N days</strong>,
+                with <span className="hb-kbd-chip">Mark done now</span>,{" "}
+                <span className="hb-kbd-chip">Create work order</span> and{" "}
+                <span className="hb-kbd-chip">Delete</span> buttons. When a schedule goes overdue,
+                Owners/Managers are notified.
+              </p>
               <h3>Supplies</h3>
               <p>
                 A running list of consumables per property — toilet paper, coffee, soap, whatever
@@ -508,6 +764,17 @@ export default function HandbookPage() {
                 actually bought more — is an Owner/Manager action, kept deliberately separate from
                 usage reports so the two can never be mixed up.
               </p>
+              <p>
+                To add an item, an Owner/Manager fills in <strong>Add a supply item</strong> at the
+                top of the Supplies page: property, item name, unit (rolls, bottles, bags…),
+                starting quantity, and <strong>Flag as low at or below</strong>. The list is
+                grouped by property, with a red &quot;low&quot; tag on anything at or under its
+                line and a count of how many items are running low in the heading. Each item has{" "}
+                <span className="hb-kbd-chip">Used one</span> for everyone, and for
+                Owners/Managers a <strong>Restock to…</strong> box with a{" "}
+                <span className="hb-kbd-chip">Restock</span> button, plus{" "}
+                <span className="hb-kbd-chip">Remove</span>.
+              </p>
               <div className="hb-callout">
                 <strong>No automatic reordering yet</strong>
                 Restocking is you telling CleanCal you bought more — it doesn&apos;t place a real
@@ -517,7 +784,7 @@ export default function HandbookPage() {
             </section>
 
             <section className="hb-section" id="mobile">
-              <h2>Mobile app &amp; notifications</h2>
+              <h2>Mobile app</h2>
               <p>
                 CleanCal isn&apos;t in the App Store or Google Play — it installs straight from
                 your phone&apos;s browser instead, as a Progressive Web App (PWA). That means one
@@ -550,10 +817,283 @@ export default function HandbookPage() {
                 land right back on your calendar, still signed in from the browser.
               </div>
               <p>
-                From Menu → &quot;Enable notifications,&quot; you can get a push alert straight to
-                your phone when: a job is assigned or posted open, a cleaner declines a job, a
-                dispute message is posted, or a cleaning gets rated. Turn this on from inside the
-                installed app for the most reliable delivery.
+                New accounts are also shown these install steps right after signing up. For the
+                alerts that make the installed app worth having, see{" "}
+                <a href="#notifications">Notifications</a> below.
+              </p>
+            </section>
+
+            <section className="hb-section" id="notifications">
+              <h2>Notifications</h2>
+              <p>
+                From <strong>Menu → Enable notifications</strong>, CleanCal can push an alert
+                straight to your phone or computer (the same item turns them off again). Turn it
+                on from inside the installed app for the most reliable delivery. If your browser
+                has blocked notifications for CleanCal, re-allow them in the browser&apos;s site
+                settings first. If your phone number is saved in{" "}
+                <a href="#profile">My Profile</a> and text alerts are switched on for the
+                platform, you can also tick a box there to get the same alerts by SMS.
+              </p>
+              <div className="hb-table-wrap">
+                <table>
+                  <tbody>
+                    <tr>
+                      <th>Alert</th>
+                      <th>Who gets it</th>
+                    </tr>
+                    <tr>
+                      <td><strong>New open job posted</strong> — a booking is posted to the open board</td>
+                      <td>Every active cleaner</td>
+                    </tr>
+                    <tr>
+                      <td><strong>New job assigned to you</strong></td>
+                      <td>The cleaner it&apos;s assigned to</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Job confirmed</strong>, <strong>Job declined</strong>, <strong>A job was claimed</strong></td>
+                      <td>Owners &amp; Managers</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Jobs back on the open board</strong> — a cleaner was removed from the team and had upcoming jobs</td>
+                      <td>The remaining cleaners</td>
+                    </tr>
+                    <tr>
+                      <td><strong>You got a new rating</strong></td>
+                      <td>The cleaner who was rated</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Re-clean flagged</strong> — a rating of 2★ or lower</td>
+                      <td>Owners &amp; Managers</td>
+                    </tr>
+                    <tr>
+                      <td><strong>New dispute message</strong></td>
+                      <td>Owners &amp; Managers when a cleaner posts; the assigned cleaner when staff post</td>
+                    </tr>
+                    <tr>
+                      <td><strong>A booking was removed</strong> — it disappeared from its source calendar</td>
+                      <td>Owners &amp; Managers, and whoever was assigned to it</td>
+                    </tr>
+                    <tr>
+                      <td><strong>New work order assigned to you</strong></td>
+                      <td>The cleaner it&apos;s assigned to</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Maintenance due</strong> — a preventative schedule went overdue</td>
+                      <td>Owners &amp; Managers</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Supply running low</strong></td>
+                      <td>Owners &amp; Managers</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Signed in on a new device</strong></td>
+                      <td>The account that signed in (see <a href="#profile">My Profile</a>)</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <section className="hb-section" id="cleaners-page">
+              <span className="hb-kicker">Your team &amp; account</span>
+              <h2>The Cleaners page</h2>
+              <p>
+                <span className="hb-kbd-chip">Manage → Cleaners</span> (Owner/Manager) is the
+                home for your team. From top to bottom:
+              </p>
+              <ul>
+                <li>
+                  <strong>Invite someone to your team</strong> — pick a role, press{" "}
+                  <span className="hb-kbd-chip">Generate invite link</span>, then copy the link, or
+                  copy the ready-made message, or press <strong>Open in email</strong>. Managers
+                  can only invite Cleaners; Owners can also invite Managers and Owners. Each link
+                  works once. (More under <a href="#signing-in">Signing in &amp; your business</a>.)
+                </li>
+                <li>
+                  <strong>Team roles</strong> (Owner only) — everyone on the account with their
+                  email address, and a dropdown to change their role to Owner, Manager or
+                  Cleaner. You can&apos;t change your own role, so you can&apos;t lock yourself
+                  out.
+                </li>
+                <li>
+                  <strong>One card per cleaner</strong> — name (with their favourite-colour dot),
+                  the email address (Owner only), an <strong>ID verified / ID pending / ID not
+                  verified</strong> badge, a <strong>Payouts set up / pending / not set up</strong>{" "}
+                  badge, their average rating and how many ratings that&apos;s from, their phone and
+                  service area, their bio, and the next few days they&apos;ve marked themselves
+                  unavailable (see <a href="#availability">Availability</a>).
+                </li>
+              </ul>
+              <h3>Removing a cleaner</h3>
+              <p>
+                An Owner can press <span className="hb-kbd-chip">Remove from team</span> on a
+                cleaner&apos;s card. They&apos;re signed out and can&apos;t sign back in, and any
+                of their upcoming, not-yet-complete jobs go back on the open board (the other
+                cleaners are notified). Their past bookings, ratings and payout history are kept.
+              </p>
+              <p>
+                Removed cleaners move to a <strong>Removed cleaners</strong> list at the bottom
+                with the date, where an Owner can either{" "}
+                <span className="hb-kbd-chip">Restore access</span> or, as a deliberate second
+                step, <span className="hb-kbd-chip">Delete</span> — permanently deleting their
+                account after typing <strong>DELETE</strong> to confirm. A deleted account
+                can&apos;t be brought back; their past bookings, ratings and payout history stay on
+                record, just no longer linked to a named account.
+              </p>
+            </section>
+
+            <section className="hb-section" id="availability">
+              <h2>Availability</h2>
+              <p>
+                <span className="hb-kbd-chip">Menu → Availability</span> is a calendar where you
+                mark days you can&apos;t work. Everything is assumed available unless you say
+                otherwise: click or tap a day to mark yourself <strong>unavailable</strong> (it
+                turns coral), and click it again to clear it. Use ‹ › to move between months.
+                Past days can&apos;t be changed, and each change saves as you click.
+              </p>
+              <p>
+                Owners and Managers see your upcoming unavailable days on the{" "}
+                <a href="#cleaners-page">Cleaners page</a>, and if a booking is assigned to a
+                cleaner who has marked its clean date as unavailable, the booking editor shows a
+                warning. It&apos;s a heads-up, not a block — you can still assign them. Anyone can use
+                the page, including Owners and Managers, but it only ever affects your own dates.
+              </p>
+            </section>
+
+            <section className="hb-section" id="history">
+              <h2>History</h2>
+              <p>
+                <span className="hb-kbd-chip">Menu → History</span> lists every{" "}
+                <strong>completed</strong> clean, newest first, with a count and the average
+                rating at the top. Each row shows the property, guest(s), check-in date, nights,
+                the source platform, the rating and any note, and a dispute pill if there was
+                one. For a cleaner this is <em>their own</em> completed jobs; for an
+                Owner/Manager it&apos;s the whole portfolio, with a Cleaner column showing who
+                did each one. (For filtering by date, property or cleaner and for exporting,
+                see <a href="#reports">Reports</a>.)
+              </p>
+            </section>
+
+            <section className="hb-section" id="profile">
+              <h2>My Profile &amp; devices</h2>
+              <p>
+                <span className="hb-kbd-chip">Menu → My Profile</span> holds your details. Press{" "}
+                <strong>Save</strong> after changing them.
+              </p>
+              <ul>
+                <li><strong>Email</strong> — shown for reference (it&apos;s what you sign in with).</li>
+                <li>
+                  <strong>Given name, Middle name (optional), Surname</strong> — what your team
+                  sees.
+                </li>
+                <li>
+                  <strong>Preferred initial</strong> (cleaners) — when a booking bar is too short
+                  for your full name, your initial is shown instead. It&apos;s made from one letter
+                  of each name you&apos;ve filled in, and the page previews it as you type.
+                </li>
+                <li>
+                  <strong>Favourite colour</strong> (cleaners) — pick one of ten light shades.
+                  Your name and initial appear in it in the Assigned and Completed lists and on
+                  the calendar, so your jobs are easy to pick out. Only lighter shades are offered
+                  so it stays readable on the calendar&apos;s booking colours.
+                </li>
+                <li>
+                  <strong>Phone</strong> and <strong>Service area</strong> — so admins can reach
+                  you and know where you work. When text alerts are available on the platform, an
+                  extra <strong>Also text me booking/job alerts</strong> tick-box appears under
+                  Phone (standard SMS rates may apply).
+                </li>
+                <li><strong>Bio</strong> — a short intro: experience, availability, specialties.</li>
+                <li>
+                  <strong>Business name</strong> (Owner only) — shown on invite messages and in the
+                  Handbook. Signing up doesn&apos;t ask for one, so set it here whenever you like.
+                </li>
+                <li>
+                  <strong>Identity verification</strong> and <strong>Payouts</strong> (cleaners) —
+                  see <a href="#trust">ID verification</a> and <a href="#payments">Cleaner payouts</a>.
+                </li>
+              </ul>
+              <h3>Devices &amp; sessions</h3>
+              <p>
+                You can be signed in on a computer and a phone at the same time. This section
+                lists the devices that have signed in to your account, with when each was last
+                seen. Whenever your account signs in on a device it hasn&apos;t seen before, you
+                get a <strong>Signed in on a new device</strong> notification naming it (if
+                you&apos;ve turned notifications on). If you don&apos;t recognise one, or you just
+                want to close out an old session, press{" "}
+                <span className="hb-kbd-chip">Sign out other devices</span> — it ends every other
+                session and keeps the one you&apos;re on.
+              </p>
+            </section>
+
+            <section className="hb-section" id="dashboard">
+              <span className="hb-kicker">Insight</span>
+              <h2>Dashboard</h2>
+              <p>
+                <span className="hb-kbd-chip">Manage → Dashboard</span> (Owner/Manager) is the
+                at-a-glance page. Five tiles:
+              </p>
+              <ul>
+                <li><strong>Cleans due in 7 days</strong> — bookings checking out within the next week that aren&apos;t complete yet.</li>
+                <li><strong>Open jobs, unclaimed</strong> — jobs on the open board nobody has claimed.</li>
+                <li><strong>In progress right now</strong> — jobs a cleaner has started.</li>
+                <li><strong>Open disputes</strong></li>
+                <li><strong>Team rating avg</strong> — the average of every rating given, with how many active cleaners you have.</li>
+              </ul>
+              <p>
+                Below the tiles, <strong>Needs attention</strong> lists each open dispute and each
+                unclaimed open job — type, property, date (marked &quot;past&quot; if it&apos;s
+                already gone by) and detail — oldest first. When there&apos;s nothing to chase it
+                says so.
+              </p>
+            </section>
+
+            <section className="hb-section" id="reports">
+              <h2>Reports &amp; CSV export</h2>
+              <p>
+                <span className="hb-kbd-chip">Manage → Reports</span> (Owner/Manager) analyses
+                your <strong>completed</strong> cleans.
+              </p>
+              <ul>
+                <li>
+                  <strong>Filters</strong> — From and To (by check-in date), Property and Cleaner.
+                  Everything below updates as you change them.
+                </li>
+                <li>
+                  <strong>Tiles</strong> — Completed cleans, Nights cleaned, Average rating and
+                  Disputes for the filtered set, then <strong>Priciest to turn over</strong> (the
+                  property with the highest average cost per clean) and{" "}
+                  <strong>Fastest cleaner</strong> (lowest average cleaning time).
+                </li>
+                <li>
+                  <strong>Trend over time</strong> — once the filtered cleans span more than one
+                  month, a bar per month showing the number of cleans and that month&apos;s average
+                  rating.
+                </li>
+                <li>
+                  <strong>By property</strong> — cleans, nights, average rating and average cost
+                  per clean. <strong>By cleaner</strong> — cleans, average rating and average
+                  time.
+                </li>
+                <li>
+                  <strong>Matching jobs</strong> — the full list: property, guest(s), check-in,
+                  nights, source, cleaner, rating and dispute.
+                </li>
+              </ul>
+              <div className="hb-callout">
+                <strong>How cost and time are worked out</strong>
+                Cost is an estimate at each property&apos;s <em>current</em> payout rate, plus its
+                linen fee on jobs where linen was picked up — not necessarily what was actually
+                paid at the time — and shows a dash if the property has no rate set. Cleaning time
+                only exists for jobs a cleaner ran from their own account (see{" "}
+                <a href="#booking">Opening &amp; editing a booking</a>), so it fills in going
+                forward, not for past jobs.
+              </div>
+              <p>
+                <span className="hb-kbd-chip">Export CSV</span> downloads whatever the filters
+                currently show as <code>cleancal-report-YYYY-MM-DD.csv</code>, with the columns:
+                Property, Guest(s), Check-in, Nights, Source, Cleaner, Rating, Rating comment,
+                Dispute, Est. cost and Duration (min). It opens straight in Excel or Google Sheets.
               </p>
             </section>
 
@@ -568,6 +1108,12 @@ export default function HandbookPage() {
                 <span className="hb-pending-pill">pending</span> while it&apos;s still processing
                 — visible to Owners and Managers on the Cleaners page, so you can see it before
                 assigning a job, not after.
+              </p>
+              <p>
+                If a verification doesn&apos;t go through, the profile says so and the button
+                changes to <span className="hb-kbd-chip">Restart verification</span> so you can
+                try again; while it&apos;s processing it also offers a restart, and it updates by
+                itself once the result comes back.
               </p>
               <div className="hb-callout warn">
                 <strong>Background checks aren&apos;t live yet</strong>
@@ -604,6 +1150,15 @@ export default function HandbookPage() {
                   linen fee if that box was ticked. Clicking it sends the payout.
                 </li>
               </ol>
+              <p>
+                In place of the button, that <strong>Cleaner payout</strong> section tells you why
+                it isn&apos;t available: <em>Paid ✓</em> once it&apos;s been sent, <em>No payout
+                rate set for this property</em> (set one on the Properties page), or{" "}
+                <em>This cleaner hasn&apos;t finished setting up payouts yet</em>. On the{" "}
+                <a href="#cleaners-page">Cleaners page</a>, each cleaner&apos;s card shows a{" "}
+                <strong>Payouts set up / pending / not set up</strong> badge so you can see this
+                before you assign them.
+              </p>
               <div className="hb-callout">
                 <strong>What a cleaner sees</strong>
                 Today, payout status isn&apos;t shown to cleaners directly in the app — check with
@@ -618,7 +1173,7 @@ export default function HandbookPage() {
             </section>
 
             <section className="hb-section" id="pricing">
-              <h2>Pricing</h2>
+              <h2>Pricing &amp; your free trial</h2>
               <p>CleanCal&apos;s planned pricing scales with the number of properties on your account:</p>
               <div className="hb-table-wrap">
                 <table>
@@ -632,7 +1187,19 @@ export default function HandbookPage() {
                   </tbody>
                 </table>
               </div>
-              <p>As your free trial period nears its end, CleanCal shows an in-app reminder before anything would ever be billed — no surprise charges.</p>
+              <p>
+                In the last 30 days of your free trial, Owners and Managers see a banner across
+                the top of the calendar counting down the days left (and saying so once it has
+                ended). It makes clear
+                that nothing is charged automatically — no surprise charges. Press the ✕ to
+                dismiss it; it&apos;s hidden for the rest of that day and comes back the next, so
+                a real deadline never gets silenced for good.
+              </p>
+              <p>
+                If you&apos;ve agreed a special price with us, that banner is replaced by a plain
+                note that you have a custom pricing agreement (with the monthly amount, if one was
+                set), and the standard pricing above doesn&apos;t apply to your account.
+              </p>
               <div className="hb-callout warn">
                 <strong>Not billed yet — but coming soon</strong>
                 This is the intended pricing structure. Billing isn&apos;t turned on yet and
@@ -656,6 +1223,20 @@ export default function HandbookPage() {
               <p>Yes — any platform with a calendar export URL works, badge or not. A recognized platform (Airbnb, Vrbo, Booking.com, and a growing list of others) gets its own color; anything else still syncs, just with a plain grey badge.</p>
               <h3>My magic-link email didn&apos;t work</h3>
               <p>This is almost always Gmail (or a similar provider) automatically opening the link to scan it for safety, which uses it up before you tap it. Request a new code and type it into the page instead of tapping the link.</p>
+              <h3>I can see a job but not the guest name or details</h3>
+              <p>As a cleaner, a job that isn&apos;t confirmed as yours shows only an <strong>Assign</strong> checkbox. Tick it to claim the job, or open it and press Claim this job; if an Owner/Manager assigned it to you directly, press Confirm first. You can&apos;t update a job&apos;s checklist or status until you&apos;ve confirmed it.</p>
+              <h3>It won&apos;t let me mark a job complete</h3>
+              <p>A cleaner has to attach at least one photo first, and any photo marked <strong>Blurry</strong> has to be retaken or removed. See <a href="#checklist">Cleaning checklist &amp; photos</a>.</p>
+              <h3>I see a letter instead of someone&apos;s name on the calendar</h3>
+              <p>That&apos;s their preferred initial, shown when a bar is too short for the full name. Open the booking to see the job in full, or have the cleaner check their initial and colour in <a href="#profile">My Profile</a>.</p>
+              <h3>A cleaner can&apos;t sign in any more</h3>
+              <p>If an Owner removed them from the team, they can&apos;t sign in until an Owner presses Restore access on the Cleaners page (under Removed cleaners). A deleted account can&apos;t be restored; send a fresh invite link instead.</p>
+              <h3>I got a &quot;Signed in on a new device&quot; alert and it wasn&apos;t me</h3>
+              <p>Open Menu → My Profile and press <strong>Sign out other devices</strong>, then sign back in on anything you still use. See <a href="#profile">My Profile &amp; devices</a>.</p>
+              <h3>My invite link doesn&apos;t work</h3>
+              <p>Each invite link works once, and the page tells you if one is invalid or already used. Ask an Owner or Manager for a new one from the Cleaners page.</p>
+              <h3>I&apos;m not getting notifications</h3>
+              <p>Turn them on from Menu → Enable notifications, ideally inside the installed app, and check your browser or phone hasn&apos;t blocked notifications for CleanCal. The full list of alerts is under <a href="#notifications">Notifications</a>.</p>
               <h3>Something else isn&apos;t covered here</h3>
               <p>Email <a href="mailto:support@cleancal.net">support@cleancal.net</a> and we&apos;ll help you out.</p>
             </section>
