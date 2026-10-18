@@ -53,7 +53,7 @@ const FEATURES = [
   },
   {
     title: "Owner statements -- in beta",
-    body: "Manage properties for landlords? Add your clients and fee rules, then import Airbnb and Booking.com payouts and have them matched to the right property and stay. Monthly statements are the next step.",
+    body: "Manage properties for landlords? Add your clients and fee rules, then import Airbnb and Booking.com payouts and have them matched to the right property and stay. Then get a monthly owner statement with cleaning, your fee and expenses worked out, ready to print or share by private link.",
   },
 ];
 

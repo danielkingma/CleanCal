@@ -2751,3 +2751,27 @@ h1, h2, .brand { letter-spacing: -0.02em; font-weight: 700; }
   .landing-story { padding: 56px 16px 24px; }
   .landing-faq { padding: 56px 16px 16px; }
 }
+
+/* Owner statements (printable) */
+.stmt-doc { background: #fff; color: #1a2b2b; border: 1px solid var(--line); border-radius: 12px; padding: 24px; max-width: 820px; }
+.stmt-head { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; border-bottom: 2px solid #1a2b2b; padding-bottom: 12px; margin-bottom: 14px; }
+.stmt-kicker { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.stmt-period { text-align: right; font-size: 14px; color: var(--muted); }
+.stmt-table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 4px 0 10px; }
+.stmt-table td { padding: 5px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.stmt-table td:first-child { white-space: nowrap; width: 1%; }
+.stmt-summary td:first-child { white-space: normal; width: auto; }
+.stmt-num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.stmt-total td { font-weight: 700; border-top: 2px solid #1a2b2b; border-bottom: 0; }
+.stmt-sub { display: block; font-size: 12px; color: var(--muted); }
+.stmt-prop { margin-top: 22px; break-inside: avoid-page; }
+.stmt-prop h3 { margin: 0 0 4px; }
+.stmt-prop h4 { margin: 12px 0 2px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+.stmt-none { font-size: 13px; color: var(--muted); margin: 2px 0 8px; }
+.stmt-prop-total td:first-child { white-space: normal; width: auto; }
+.stmt-public { padding: 16px; display: flex; justify-content: center; }
+@media print {
+  .topbar, .no-print { display: none !important; }
+  body, .stmt-public { background: #fff !important; padding: 0 !important; }
+  .stmt-doc { border: 0; padding: 0; max-width: none; }
+}

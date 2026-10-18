@@ -1122,20 +1122,13 @@ export default function HandbookPage() {
               <h2>Owner statements: Clients &amp; Payouts</h2>
               <p>
                 If you manage properties on behalf of landlords, this add-on is the start of
-                monthly owner statements: what the booking platform paid out, less cleaning and
-                your management fee. It&apos;s in beta and is switched on per account, so you
+                monthly owner statements: what the booking platform paid out, less cleaning,
+                your management fee and any expenses. It&apos;s in beta and is switched on per account, so you
                 only see it if it&apos;s been enabled for yours — then{" "}
-                <strong>Clients &amp; fees</strong> and <strong>Payouts</strong> appear in the{" "}
-                <strong>Manage</strong> menu (Owner/Manager only). Don&apos;t see them and want
+                <strong>Clients &amp; fees</strong>, <strong>Payouts</strong> and{" "}
+                <strong>Owner statements</strong> appear in the <strong>Manage</strong> menu (Owner/Manager only). Don&apos;t see them and want
                 them? Email <a href="mailto:support@cleancal.net">support@cleancal.net</a>.
               </p>
-              <div className="hb-callout warn">
-                <strong>What exists today</strong>
-                Setting up clients and fees, and importing and matching platform payouts, is
-                live. The monthly and financial-year statement pages themselves — expenses, the
-                calculation and a printable statement — are the next phase and aren&apos;t built
-                yet. Everything you enter now is what they will use.
-              </div>
               <div className="hb-callout">
                 <strong>Not the same as cleaner payouts</strong>
                 <em>Payouts</em> here means money the booking platforms (Airbnb, Booking.com…)
@@ -1214,6 +1207,44 @@ export default function HandbookPage() {
                 adds the guest and nights. <strong>Ignored lines</strong> can be restored, and{" "}
                 <strong>Recent imports</strong> shows each file with an{" "}
                 <span className="hb-kbd-chip">Undo</span> that removes that whole import.
+              </p>
+              <h3>Owner statements</h3>
+              <p>
+                <span className="hb-kbd-chip">Manage → Owner statements</span> turns it all into
+                a monthly statement for each client.
+              </p>
+              <ol className="hb-step-list">
+                <li>
+                  Pick the <strong>Client</strong> and the <strong>Month</strong>. The statement
+                  is worked out live: platform payouts (by payout date) less a cleaning charge for
+                  each stay that checked out that month, less your management fee, less expenses.
+                  It&apos;s broken down property by property.
+                </li>
+                <li>
+                  Add <strong>Expenses</strong> under the statement — a property, a date, what it
+                  was for and the amount (a replacement kettle, say). They count against the
+                  owner&apos;s net for that month, and <strong>Remove</strong> takes one back out.
+                </li>
+                <li>
+                  Press <span className="hb-kbd-chip">Save statement</span> to freeze a copy.
+                  Later changes to fees, payouts or expenses won&apos;t alter a saved copy;{" "}
+                  <strong>Re-save</strong> replaces it with fresh numbers.
+                </li>
+                <li>
+                  On the saved statement, <strong>Print or save as PDF</strong> gives a clean
+                  printable page. Switch on the <strong>Owner link</strong> to get a private page
+                  your client can open without signing in — copy the link or press{" "}
+                  <strong>Email to client</strong> (it opens your email app with the link filled
+                  in). Anyone with the link can see that one statement, so switch it off or{" "}
+                  <strong>Replace link</strong> whenever you want it to stop working.
+                </li>
+              </ol>
+              <p>
+                The cleaning charge per stay is the property&apos;s &quot;Cleaning charged to
+                owner&quot; amount if you set one, otherwise the cleaner payout rate plus the
+                linen fee when linen was picked up. If a statement looks short, check that
+                payouts are imported and matched to a property, and that the property is assigned
+                to the client.
               </p>
               <p>
                 Money from this add-on is visible to Owners and Managers only — cleaners can

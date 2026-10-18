@@ -54,6 +54,9 @@ export default function NavMenus({
               <Link href="/payouts" className="dropdown-item">
                 Payouts
               </Link>
+              <Link href="/statements" className="dropdown-item">
+                Owner statements
+              </Link>
             </>
           ) : null}
           {isSuperadmin ? (

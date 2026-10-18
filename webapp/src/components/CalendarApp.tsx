@@ -468,6 +468,9 @@ export default function CalendarApp({
                   <Link href="/payouts" className="dropdown-item">
                     Payouts
                   </Link>
+                  <Link href="/statements" className="dropdown-item">
+                    Owner statements
+                  </Link>
                 </>
               ) : null}
               {isSuperadmin ? (

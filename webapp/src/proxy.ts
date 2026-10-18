@@ -26,6 +26,8 @@ const PUBLIC_PATHS = [
   "/manifest.webmanifest",
   "/sw.js",
   "/handbook",
+  // Private owner statement links (token in the URL stands in for auth).
+  "/owner-statement",
   "/privacy",
   "/terms",
   // Requested by social-media link-preview crawlers (no session cookie),

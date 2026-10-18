@@ -8,7 +8,7 @@ expenses. Built in phases; this file tracks what exists.
 landlords are **property owners** in the database and **Clients** in the
 UI.
 
-## Phase 1 — foundation (this change)
+## Phase 1 — foundation
 
 - **Migration `0044_owner_statements_foundation.sql`**
   - `organizations.statements_enabled` — the add-on switch (default off).
@@ -64,13 +64,37 @@ The superadmin account always sees it. For another organisation:
 update public.organizations set statements_enabled = true where id = '<org id>';
 ```
 
-## Next phases
+## Phases 2 and 3 (migration 0047)
 
-2. Expenses (`owner_expenses`, plus a cost on maintenance work orders),
-   the statement calculation, monthly and financial-year statements with
-   frozen line snapshots, and a printable statement page.
-3. Private owner links (token pattern from `ical_export_tokens`), email
-   delivery, and Stripe billing for the add-on.
+- **`owner_expenses`** — property, date, description, amount. Entered on
+  `/statements` for the month being viewed.
+- **`owner_statements`** — one saved statement per client and period,
+  with a frozen `snapshot` (jsonb) so later edits never change what an
+  owner was sent. Re-saving replaces the snapshot and keeps the link.
+- **Calculation** (`src/lib/statements.ts`, pure and tested): payouts
+  dated (payout date, else check-in) in the period; one cleaning charge
+  per booking whose checkout falls in the period (the property's owner
+  cleaning charge, or the cleaner payout rate, plus linen boxes x linen
+  fee when linen was picked up; a fixed owner charge is not topped up
+  with linen); management fee % of payouts (gross) or of payouts after
+  cleaning; expenses; net = payouts - cleaning - fee - expenses.
+- **`/statements`** — pick client and month, see the live statement,
+  add expenses, save. **`/statements/[id]`** — printable saved copy plus
+  owner-link controls.
+- **Owner links** — `/owner-statement/[token]` is public (listed in
+  `proxy.ts`), read through the service role, shows only one frozen
+  statement and only while `share_enabled`. Replacing the link issues a
+  new token. "Email to client" is a `mailto:` link; nothing is sent by
+  the server.
+
+## Not built yet
+
+- Server-sent email delivery of statements.
+- Maintenance work-order costs feeding expenses (expenses are entered by
+  hand; work orders are readable by cleaners, so a cost column there
+  needs its own staff-only table).
+- Financial-year statements (monthly only).
+- Stripe billing for the add-on.
 
 ## Known limits
 
