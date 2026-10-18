@@ -68,6 +68,9 @@ export default function HandbookPage() {
           <a className="hb-side-link" href="#dashboard">Dashboard</a>
           <a className="hb-side-link" href="#reports">Reports &amp; CSV export</a>
 
+          <div className="hb-side-group-title">Add-on (beta)</div>
+          <a className="hb-side-link" href="#statements">Owner statements: Clients &amp; Payouts</a>
+
           <div className="hb-side-group-title">Trust &amp; money</div>
           <a className="hb-side-link" href="#trust">ID verification &amp; background checks</a>
           <a className="hb-side-link" href="#payments">Cleaner payouts</a>
@@ -300,6 +303,12 @@ export default function HandbookPage() {
                       <td className="yes">Yes</td>
                     </tr>
                     <tr>
+                      <td>Clients &amp; fees and platform Payouts (owner statements add-on, when enabled)</td>
+                      <td className="yes">Yes</td>
+                      <td className="yes">Yes</td>
+                      <td className="no">—</td>
+                    </tr>
+                    <tr>
                       <td>Set the business name</td>
                       <td className="yes">Yes</td>
                       <td className="no">—</td>
@@ -322,7 +331,10 @@ export default function HandbookPage() {
                   <strong>Manage</strong> (Owner/Manager only) —{" "}
                   <a href="#dashboard">Dashboard</a>, <a href="#reports">Reports</a>,{" "}
                   <a href="#sync">Properties</a>, <a href="#cleaners-page">Cleaners</a>,{" "}
-                  <a href="#maintenance">Maintenance</a> and <a href="#maintenance">Supplies</a>.
+                  <a href="#maintenance">Maintenance</a> and <a href="#maintenance">Supplies</a>
+                  — plus <a href="#statements">Clients &amp; fees</a> and{" "}
+                  <a href="#statements">Payouts</a> if the owner statements add-on is switched on
+                  for your account.
                 </li>
                 <li>
                   <strong>Menu</strong> (everyone) — this Handbook, the{" "}
@@ -1094,6 +1106,110 @@ export default function HandbookPage() {
                 currently show as <code>cleancal-report-YYYY-MM-DD.csv</code>, with the columns:
                 Property, Guest(s), Check-in, Nights, Source, Cleaner, Rating, Rating comment,
                 Dispute, Est. cost and Duration (min). It opens straight in Excel or Google Sheets.
+              </p>
+            </section>
+
+            <section className="hb-section" id="statements">
+              <span className="hb-kicker">Add-on (beta)</span>
+              <h2>Owner statements: Clients &amp; Payouts</h2>
+              <p>
+                If you manage properties on behalf of landlords, this add-on is the start of
+                monthly owner statements: what the booking platform paid out, less cleaning and
+                your management fee. It&apos;s in beta and is switched on per account, so you
+                only see it if it&apos;s been enabled for yours — then{" "}
+                <strong>Clients &amp; fees</strong> and <strong>Payouts</strong> appear in the{" "}
+                <strong>Manage</strong> menu (Owner/Manager only). Don&apos;t see them and want
+                them? Email <a href="mailto:support@cleancal.net">support@cleancal.net</a>.
+              </p>
+              <div className="hb-callout warn">
+                <strong>What exists today</strong>
+                Setting up clients and fees, and importing and matching platform payouts, is
+                live. The monthly and financial-year statement pages themselves — expenses, the
+                calculation and a printable statement — are the next phase and aren&apos;t built
+                yet. Everything you enter now is what they will use.
+              </div>
+              <div className="hb-callout">
+                <strong>Not the same as cleaner payouts</strong>
+                <em>Payouts</em> here means money the booking platforms (Airbnb, Booking.com…)
+                paid <em>you</em>. Paying your cleaners is separate — see{" "}
+                <a href="#payments">Cleaner payouts</a>.
+              </div>
+              <h3>Clients &amp; fees</h3>
+              <p>
+                A <strong>client</strong> is the owner of a property you manage (to keep it
+                apart from the CleanCal account Owner role). Open{" "}
+                <span className="hb-kbd-chip">Manage → Clients &amp; fees</span>:
+              </p>
+              <ul>
+                <li>
+                  <strong>Add a client</strong> — name, email (where statements will go) and
+                  phone. A client&apos;s row in the table shows how many properties they have, with{" "}
+                  <strong>Edit</strong> and <strong>Remove</strong>. Removing a client leaves their
+                  properties in place, just unassigned.
+                </li>
+                <li>
+                  <strong>Property fees</strong> — for each property: its <strong>Client</strong>,{" "}
+                  <strong>Management fee %</strong>, <strong>Fee charged on</strong> (the full
+                  payout, or the payout after cleaning), and <strong>Cleaning charged to owner
+                  ($)</strong>. Leave the cleaning charge blank and it uses that property&apos;s
+                  cleaner payout rate, plus the linen fee when linen was picked up. Press{" "}
+                  <span className="hb-kbd-chip">Save fees</span>. The heading counts properties
+                  that still have no client.
+                </li>
+                <li>
+                  <strong>Platform listings</strong> — a property can have any number of listings
+                  on any platform. Each is a platform plus what that platform&apos;s payout export
+                  calls the property (its title or listing ID). They help payouts find the right
+                  property when a line has no confirmation code. The page lists platforms the
+                  property has a calendar feed from but no listing yet, so nothing is missed.
+                </li>
+              </ul>
+              <h3>Payouts</h3>
+              <p>
+                <span className="hb-kbd-chip">Manage → Payouts</span> brings in the money rows.
+              </p>
+              <ol className="hb-step-list">
+                <li>
+                  Download a CSV from the platform — Airbnb: <strong>Earnings → Transaction
+                  history → export CSV</strong>; Booking.com: export reservations or payouts from
+                  the extranet. Keep each file to about a month at a time (uploads are limited to
+                  roughly 900 KB).
+                </li>
+                <li>
+                  Choose the file, leave <strong>Platform</strong> and <strong>Dates in
+                  file</strong> on <em>Detect automatically</em> (or pick Airbnb, Booking.com,
+                  Other, and Day/month/year or Month/day/year if the result looks wrong), and
+                  press <span className="hb-kbd-chip">Import</span>.
+                </li>
+                <li>
+                  A summary says how many lines were imported, how many matched a booking, how
+                  many matched a property only and how many need a property, plus any warnings and
+                  skipped rows. Importing the same file twice never doubles anything.
+                </li>
+                <li>
+                  Lines CleanCal couldn&apos;t place land under <strong>Needs a property</strong>.
+                  Pick the property (and optionally the booking), tick{" "}
+                  <strong>Remember this listing for next time</strong> so the next import matches
+                  by itself, and press <span className="hb-kbd-chip">Save</span> — or{" "}
+                  <span className="hb-kbd-chip">Ignore</span> a line that doesn&apos;t belong.
+                  <span className="hb-kbd-chip">Re-run matching</span> retries them all after you
+                  add listings.
+                </li>
+              </ol>
+              <p>
+                Lines are matched by the booking&apos;s confirmation code first (Airbnb&apos;s
+                code is read from its calendar feed automatically), then by listing and check-in
+                date, then by listing alone. A line matched to a booking fills in that
+                booking&apos;s guest name on the calendar, without ever overwriting a name that
+                is already there. <strong>Not linked to a booking</strong> lists lines placed on a
+                property only, which still count toward its owner statement — linking a booking
+                adds the guest and nights. <strong>Ignored lines</strong> can be restored, and{" "}
+                <strong>Recent imports</strong> shows each file with an{" "}
+                <span className="hb-kbd-chip">Undo</span> that removes that whole import.
+              </p>
+              <p>
+                Money from this add-on is visible to Owners and Managers only — cleaners can
+                never see client fees or payout figures.
               </p>
             </section>
 
