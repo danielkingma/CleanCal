@@ -6,13 +6,13 @@ import { getStatementsAccess } from "@/lib/statements-access";
 import StatementDocument from "@/components/StatementDocument";
 import StatementShare from "@/components/StatementShare";
 import PrintButton from "@/components/PrintButton";
-import { fyLabel, type StatementSnapshot } from "@/lib/statements";
+import { fyLabelFromDates, type StatementSnapshot } from "@/lib/statements";
 
 function periodText(start: string, end: string): string {
   if (start.slice(0, 7) === end.slice(0, 7)) {
     return new Date(`${start}T00:00:00`).toLocaleDateString("en-AU", { month: "long", year: "numeric" });
   }
-  return fyLabel(Number(start.slice(0, 4)));
+  return fyLabelFromDates(start, end);
 }
 
 export default async function SavedStatementPage({ params }: { params: Promise<{ id: string }> }) {
@@ -39,7 +39,7 @@ export default async function SavedStatementPage({ params }: { params: Promise<{
   return (
     <div className="stmt-public" style={{ flexDirection: "column", alignItems: "center", gap: 12 }}>
       <div className="no-print" style={{ width: "100%", maxWidth: 820, display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-        <Link href={`/statements?owner=${row.property_owner_id}&month=${snapshot.period_end.slice(0, 7) === String(row.period_start).slice(0, 7) ? String(row.period_start).slice(0, 7) : `fy${String(row.period_start).slice(0, 4)}`}`}>← Statements</Link>
+        <Link href={`/statements?owner=${row.property_owner_id}${snapshot.period_end.slice(0, 7) === String(row.period_start).slice(0, 7) ? `&month=${String(row.period_start).slice(0, 7)}` : ""}`}>← Statements</Link>
         <PrintButton />
         <span style={{ color: "var(--muted)", fontSize: 13 }}>
           Saved {new Date(row.updated_at as string).toLocaleDateString("en-AU")} — a frozen copy; later changes don&apos;t alter it.

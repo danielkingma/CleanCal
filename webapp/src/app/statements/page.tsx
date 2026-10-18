@@ -3,7 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import StatementsView, { type SavedStatement } from "@/components/StatementsView";
 import { getStatementsAccess } from "@/lib/statements-access";
 import { isSuperadmin } from "@/lib/superadmin";
-import { currentFY, periodRange } from "@/lib/statements";
+import { cookies } from "next/headers";
+import { currentFY, isFYRegion, periodRange } from "@/lib/statements";
 import type { PropertyOwner } from "@/lib/types";
 import { loadStatement } from "./data";
 
@@ -14,13 +15,15 @@ function currentMonth(): string {
 export default async function StatementsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ owner?: string; month?: string }>;
+  searchParams: Promise<{ owner?: string; month?: string; region?: string }>;
 }) {
   const supabase = await createClient();
   const access = await getStatementsAccess(supabase);
   if (!access) redirect("/login");
   if (!access.allowed) redirect("/calendar");
   const sp = await searchParams;
+  const cookieRegion = (await cookies()).get("stmt_region")?.value;
+  const region = isFYRegion(sp.region) ? sp.region : isFYRegion(cookieRegion) ? cookieRegion : "au";
 
   const {
     data: { user },
@@ -29,8 +32,8 @@ export default async function StatementsPage({
   const { data: owners } = await supabase.from("property_owners").select("id, name, email, phone, notes").order("name");
   const ownerList = (owners ?? []) as PropertyOwner[];
   const ownerId = ownerList.find((o) => o.id === sp.owner)?.id ?? ownerList[0]?.id ?? "";
-  const month = periodRange(sp.month ?? "") ? (sp.month as string) : currentMonth();
-  const range = periodRange(month)!;
+  const month = periodRange(sp.month ?? "", region) ? (sp.month as string) : currentMonth();
+  const range = periodRange(month, region)!;
 
   const loaded = ownerId ? await loadStatement(supabase, ownerId, range.start, range.end) : null;
   const { data: saved } = ownerId
@@ -46,7 +49,8 @@ export default async function StatementsPage({
       owners={ownerList}
       ownerId={ownerId}
       month={month}
-      currentFY={currentFY(new Date().toISOString().slice(0, 10))}
+      region={region}
+      currentFY={currentFY(new Date().toISOString().slice(0, 10), region)}
       snapshot={loaded?.snapshot ?? null}
       expenses={loaded?.expenses ?? []}
       properties={loaded?.properties ?? []}

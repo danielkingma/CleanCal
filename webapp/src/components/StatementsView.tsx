@@ -9,7 +9,7 @@ import NavMenus from "./NavMenus";
 import StatementDocument from "./StatementDocument";
 import { addOwnerExpense, deleteOwnerExpense, saveStatement } from "@/app/statements/actions";
 import { dollarsToCents, formatCents } from "@/lib/money";
-import { fyLabel, periodRange, type StatementSnapshot } from "@/lib/statements";
+import { FY_REGIONS, fyLabel, fyLabelFromDates, periodRange, type FYRegion, type StatementSnapshot } from "@/lib/statements";
 import type { PropertyOwner } from "@/lib/types";
 
 export interface SavedStatement {
@@ -24,6 +24,7 @@ interface Props {
   owners: PropertyOwner[];
   ownerId: string;
   month: string;
+  region: FYRegion;
   currentFY: number;
   snapshot: StatementSnapshot | null;
   expenses: { id: string; property_id: string; expense_date: string; description: string; amount_cents: number }[];
@@ -40,15 +41,15 @@ function monthLabel(iso: string): string {
 function periodLabel(start: string, end: string): string {
   const startMonth = start.slice(0, 7);
   if (startMonth === end.slice(0, 7)) return monthLabel(start);
-  return fyLabel(Number(start.slice(0, 4)));
+  return fyLabelFromDates(start, end);
 }
 
-export default function StatementsView({ owners, ownerId, month, currentFY, snapshot, expenses, properties, saved, isSuperadmin }: Props) {
+export default function StatementsView({ owners, ownerId, month, region, currentFY, snapshot, expenses, properties, saved, isSuperadmin }: Props) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expProp, setExpProp] = useState("");
-  const range = periodRange(month)!;
+  const range = periodRange(month, region)!;
   const isFY = range.kind === "fy";
   const [expDateRaw, setExpDate] = useState(range.start);
   // Keep the date inside the period being viewed when the period changes.
@@ -56,8 +57,13 @@ export default function StatementsView({ owners, ownerId, month, currentFY, snap
   const [expDesc, setExpDesc] = useState("");
   const [expAmount, setExpAmount] = useState("");
 
-  function go(nextOwner: string, nextMonth: string) {
-    router.push(`/statements?owner=${nextOwner}&month=${nextMonth}`);
+  function go(nextOwner: string, nextMonth: string, nextRegion: FYRegion = region) {
+    try {
+      document.cookie = `stmt_region=${nextRegion}; path=/; max-age=31536000; SameSite=Lax`;
+    } catch {
+      // The URL still carries the choice.
+    }
+    router.push(`/statements?owner=${nextOwner}&month=${nextMonth}&region=${nextRegion}`);
   }
 
   async function run(fn: () => Promise<void>) {
@@ -95,6 +101,12 @@ export default function StatementsView({ owners, ownerId, month, currentFY, snap
   const savedThisMonth = saved.find((s) => s.period_start === range.start && s.period_end === range.end);
   const fyOptions = [currentFY, currentFY - 1, currentFY - 2, currentFY - 3];
   const todayMonth = new Date().toISOString().slice(0, 7);
+  const currentYearFor = (r: FYRegion) => {
+    const t = new Date().toISOString().slice(0, 10);
+    const rr = FY_REGIONS[r];
+    const y = Number(t.slice(0, 4));
+    return t >= `${y}-${String(rr.startMonth).padStart(2, "0")}-${String(rr.startDay).padStart(2, "0")}` ? y : y - 1;
+  };
 
   return (
     <div>
@@ -148,20 +160,39 @@ export default function StatementsView({ owners, ownerId, month, currentFY, snap
                     onChange={(e) => go(ownerId, e.target.value === "fy" ? `fy${currentFY}` : todayMonth)}
                   >
                     <option value="month">Month</option>
-                    <option value="fy">Financial year (1 Jul – 30 Jun)</option>
+                    <option value="fy">Financial / tax year</option>
                   </select>
                 </div>
                 {isFY ? (
-                  <div className="field">
-                    <label htmlFor="stmtFY">Financial year</label>
-                    <select id="stmtFY" value={month} onChange={(e) => go(ownerId, e.target.value)}>
-                      {fyOptions.map((y) => (
-                        <option key={y} value={`fy${y}`}>
-                          {fyLabel(y)}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  <>
+                    <div className="field">
+                      <label htmlFor="stmtRegion">Country</label>
+                      <select
+                        id="stmtRegion"
+                        value={region}
+                        onChange={(e) => {
+                          const r = e.target.value as FYRegion;
+                          go(ownerId, `fy${currentYearFor(r)}`, r);
+                        }}
+                      >
+                        {(Object.keys(FY_REGIONS) as FYRegion[]).map((r) => (
+                          <option key={r} value={r}>
+                            {FY_REGIONS[r].name} ({FY_REGIONS[r].note})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="field">
+                      <label htmlFor="stmtFY">Year</label>
+                      <select id="stmtFY" value={month} onChange={(e) => go(ownerId, e.target.value)}>
+                        {fyOptions.map((y) => (
+                          <option key={y} value={`fy${y}`}>
+                            {fyLabel(y, region)}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </>
                 ) : (
                   <div className="field">
                     <label htmlFor="stmtMonth">Month</label>
@@ -191,7 +222,7 @@ export default function StatementsView({ owners, ownerId, month, currentFY, snap
                   disabled={busy || !snapshot}
                   onClick={() =>
                     run(async () => {
-                      const id = await saveStatement(ownerId, month);
+                      const id = await saveStatement(ownerId, month, region);
                       router.push(`/statements/${id}`);
                     })
                   }

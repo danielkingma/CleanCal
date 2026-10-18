@@ -86,7 +86,7 @@ export default function StatementDocument({ s }: { s: StatementSnapshot }) {
           </table>
           <p className="stmt-none">
             A summary of the figures in your records for the period, to give to an accountant or use when preparing a
-            tax return. It is not tax advice, and GST is not calculated.
+            tax return. It is not tax advice, and GST, VAT or other sales taxes are not calculated.
           </p>
         </section>
       ) : null}

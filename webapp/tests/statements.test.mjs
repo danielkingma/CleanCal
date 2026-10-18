@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { buildStatement, monthRange, periodRange, currentFY } from "../src/lib/statements.ts";
+import { buildStatement, monthRange, periodRange, currentFY, fyLabel, fyRange } from "../src/lib/statements.ts";
 
 const prop = {
   id: "p1", name: "Guest house", payout_rate_cents: 8000, linen_box_count: 1, linen_fee_cents: 2000,
@@ -51,4 +51,17 @@ test("financial year", () => {
   // fee is per month: round(10001*0.15)=1500 twice
   assert.equal(s.fee_cents, 3000);
   assert.equal(s.months.reduce((t, m) => t + m.net_cents, 0), s.net_cents);
+});
+
+test("regional financial years", () => {
+  assert.deepEqual(fyRange(2025, "nz"), { start: "2025-04-01", end: "2026-03-31" });
+  assert.deepEqual(fyRange(2025, "uk"), { start: "2025-04-06", end: "2026-04-05" });
+  assert.deepEqual(fyRange(2025, "us"), { start: "2025-01-01", end: "2025-12-31" });
+  assert.deepEqual(fyRange(2023, "za"), { start: "2023-03-01", end: "2024-02-29" });
+  assert.equal(currentFY("2026-04-05", "uk"), 2025);
+  assert.equal(currentFY("2026-04-06", "uk"), 2026);
+  assert.equal(currentFY("2026-10-19", "us"), 2026);
+  assert.equal(fyLabel(2025, "au"), "FY 2025\u201326");
+  assert.equal(fyLabel(2025, "us"), "2025");
+  assert.deepEqual(periodRange("fy2025", "nz"), { start: "2025-04-01", end: "2026-03-31", kind: "fy" });
 });

@@ -111,22 +111,66 @@ export interface StatementSnapshot {
   months?: StatementMonthRow[];
 }
 
-// Australian financial year: 1 July to 30 June. fy = the starting year,
-// so FY 2025-26 is fy 2025.
-export function fyRange(fy: number): { start: string; end: string } {
-  return { start: `${fy}-07-01`, end: `${fy + 1}-06-30` };
+// Financial / tax years by country. A year is identified by the calendar
+// year it STARTS in (fy2025 = Australia's 1 Jul 2025 - 30 Jun 2026).
+export type FYRegion = "au" | "nz" | "uk" | "ie" | "us" | "ca" | "za" | "in" | "cal";
+
+export const FY_REGIONS: Record<FYRegion, { name: string; startMonth: number; startDay: number; note: string }> = {
+  au: { name: "Australia", startMonth: 7, startDay: 1, note: "1 Jul – 30 Jun" },
+  nz: { name: "New Zealand", startMonth: 4, startDay: 1, note: "1 Apr – 31 Mar" },
+  uk: { name: "United Kingdom (tax year)", startMonth: 4, startDay: 6, note: "6 Apr – 5 Apr" },
+  ie: { name: "Ireland", startMonth: 1, startDay: 1, note: "1 Jan – 31 Dec" },
+  us: { name: "United States", startMonth: 1, startDay: 1, note: "1 Jan – 31 Dec" },
+  ca: { name: "Canada", startMonth: 1, startDay: 1, note: "1 Jan – 31 Dec" },
+  za: { name: "South Africa", startMonth: 3, startDay: 1, note: "1 Mar – end Feb" },
+  in: { name: "India", startMonth: 4, startDay: 1, note: "1 Apr – 31 Mar" },
+  cal: { name: "Calendar year (other)", startMonth: 1, startDay: 1, note: "1 Jan – 31 Dec" },
+};
+
+export function isFYRegion(v: unknown): v is FYRegion {
+  return typeof v === "string" && Object.prototype.hasOwnProperty.call(FY_REGIONS, v);
 }
-export function fyLabel(fy: number): string {
-  return `FY ${fy}\u2013${String(fy + 1).slice(2)}`;
+
+function pad(n: number): string {
+  return String(n).padStart(2, "0");
 }
-export function currentFY(today: string): number {
+
+export function fyRange(fy: number, region: FYRegion = "au"): { start: string; end: string } {
+  const r = FY_REGIONS[region];
+  const start = `${fy}-${pad(r.startMonth)}-${pad(r.startDay)}`;
+  const nextStart = `${fy + 1}-${pad(r.startMonth)}-${pad(r.startDay)}`;
+  return { start, end: addDaysISO(nextStart, -1) };
+}
+
+// The year (by its start) that contains `today`.
+export function currentFY(today: string, region: FYRegion = "au"): number {
+  const r = FY_REGIONS[region];
   const y = Number(today.slice(0, 4));
-  return Number(today.slice(5, 7)) >= 7 ? y : y - 1;
+  const startThisYear = `${y}-${pad(r.startMonth)}-${pad(r.startDay)}`;
+  return today >= startThisYear ? y : y - 1;
 }
-// "2026-10" -> a month; "fy2025" -> a financial year; anything else null.
-export function periodRange(key: string): { start: string; end: string; kind: "month" | "fy" } | null {
+
+// "FY 2025–26", or just "2026" for a calendar-year period. Works from the
+// dates alone, so a saved statement labels itself whatever country it was
+// made for.
+export function fyLabelFromDates(start: string, end: string): string {
+  const sy = Number(start.slice(0, 4));
+  const ey = Number(end.slice(0, 4));
+  if (sy === ey) return `${sy}`;
+  return `FY ${sy}\u2013${String(ey).slice(2)}`;
+}
+export function fyLabel(fy: number, region: FYRegion = "au"): string {
+  const { start, end } = fyRange(fy, region);
+  return fyLabelFromDates(start, end);
+}
+
+// "2026-10" -> a month; "fy2025" -> that region's financial year; else null.
+export function periodRange(
+  key: string,
+  region: FYRegion = "au",
+): { start: string; end: string; kind: "month" | "fy" } | null {
   const fy = /^fy(\d{4})$/.exec(key);
-  if (fy) return { ...fyRange(Number(fy[1])), kind: "fy" };
+  if (fy) return { ...fyRange(Number(fy[1]), region), kind: "fy" };
   const m = monthRange(key);
   return m ? { ...m, kind: "month" } : null;
 }

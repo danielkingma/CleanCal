@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireStatementsAccess } from "@/lib/statements-access";
-import { periodRange } from "@/lib/statements";
+import { isFYRegion, periodRange } from "@/lib/statements";
 import { loadStatement } from "./data";
 
 export async function addOwnerExpense(input: {
@@ -39,10 +39,10 @@ export async function deleteOwnerExpense(id: string) {
 // Recalculates server-side (never trusts a client-sent snapshot) and
 // freezes it. Saving again for the same client and month replaces the
 // snapshot but keeps the owner link and its on/off state.
-export async function saveStatement(ownerId: string, month: string): Promise<string> {
+export async function saveStatement(ownerId: string, month: string, region: string = "au"): Promise<string> {
   const supabase = await createClient();
   await requireStatementsAccess(supabase);
-  const range = periodRange(month);
+  const range = periodRange(month, isFYRegion(region) ? region : "au");
   if (!range) throw new Error("Choose a month or financial year.");
   const loaded = await loadStatement(supabase, ownerId, range.start, range.end);
   if (!loaded) throw new Error("Client not found.");

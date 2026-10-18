@@ -78,8 +78,14 @@ update public.organizations set statements_enabled = true where id = '<org id>';
   fee when linen was picked up; a fixed owner charge is not topped up
   with linen); management fee % of payouts (gross) or of payouts after
   cleaning; expenses; net = payouts - cleaning - fee - expenses.
-- **Financial year** — the same statement over 1 July to 30 June
-  (`fy2025` = FY 2025-26), with a month-by-month table. The fee is worked
+- **Financial year** — the same statement over a financial/tax year with
+  a month-by-month table. The year's dates depend on the country picked
+  (`FY_REGIONS` in `statements.ts`: AU 1 Jul, NZ/IN 1 Apr, UK 6 Apr, ZA
+  1 Mar, US/CA/IE/other calendar year); `fy2025` means the year that
+  starts in 2025 in that country. The choice is remembered in a
+  `stmt_region` cookie. Saved statements store their own dates, so they
+  label themselves ("FY 2025-26" or "2025"). Amounts are always shown in
+  AUD ($): multi-currency statements are not built. The fee is worked
   out per month and summed, so the year equals its months. A statement
   is refused if any query hits PostgREST's 1000-row cap, rather than
   silently under-reporting; use months for very large clients. GST and
