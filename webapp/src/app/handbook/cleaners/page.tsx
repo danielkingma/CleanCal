@@ -81,7 +81,8 @@ export default function CleanerGuidePage() {
                 around the rest of the calendar — but a job that isn&apos;t yours yet shows no
                 guest name or details, just an <strong>Assign</strong> checkbox. A bar too short
                 for a name shows a coloured initial for whoever the job is allocated to, so you
-                can tell at a glance if it isn&apos;t yours.
+                can tell at a glance if it isn&apos;t yours. Guests&apos; email addresses and phone
+                numbers are never shown to cleaners — only your host sees those.
               </p>
               <ul>
                 <li>

@@ -69,7 +69,7 @@ export default function HandbookPage() {
           <a className="hb-side-link" href="#reports">Reports &amp; CSV export</a>
 
           <div className="hb-side-group-title">Add-on (beta)</div>
-          <a className="hb-side-link" href="#statements">Owner statements: Clients &amp; Payouts</a>
+          <a className="hb-side-link" href="#statements">Owner statements</a>
 
           <div className="hb-side-group-title">Trust &amp; money</div>
           <a className="hb-side-link" href="#trust">ID verification &amp; background checks</a>
@@ -237,6 +237,18 @@ export default function HandbookPage() {
                       <td className="no">—</td>
                     </tr>
                     <tr>
+                      <td>See a guest&apos;s email, phone and notes (direct bookings)</td>
+                      <td className="yes">Yes</td>
+                      <td className="yes">Yes</td>
+                      <td className="no">—</td>
+                    </tr>
+                    <tr>
+                      <td>Owner statements, client fees, payout imports (add-on)</td>
+                      <td className="yes">Yes</td>
+                      <td className="yes">Yes</td>
+                      <td className="no">—</td>
+                    </tr>
+                    <tr>
                       <td>Assign or rate cleaners, resolve disputes</td>
                       <td className="yes">Yes</td>
                       <td className="yes">Yes</td>
@@ -332,9 +344,10 @@ export default function HandbookPage() {
                   <a href="#dashboard">Dashboard</a>, <a href="#reports">Reports</a>,{" "}
                   <a href="#sync">Properties</a>, <a href="#cleaners-page">Cleaners</a>,{" "}
                   <a href="#maintenance">Maintenance</a> and <a href="#maintenance">Supplies</a>
-                  — plus <a href="#statements">Clients &amp; fees</a> and{" "}
-                  <a href="#statements">Payouts</a> if the owner statements add-on is switched on
-                  for your account.
+                  — plus <a href="#statements">Clients &amp; fees</a>,{" "}
+                  <a href="#statements">Payouts</a> and{" "}
+                  <a href="#statements">Owner statements</a> if the owner statements add-on is
+                  switched on for your account.
                 </li>
                 <li>
                   <strong>Menu</strong> (everyone) — this Handbook, the{" "}
@@ -557,6 +570,14 @@ export default function HandbookPage() {
             <section className="hb-section" id="sync">
               <h2>Properties &amp; two-way sync</h2>
               <p>Open <span className="hb-kbd-chip">Manage → Properties</span> from the calendar&apos;s top bar to manage each listing.</p>
+              <div className="hb-callout">
+                <strong>Does CleanCal connect to my property management system (PMS)?</strong>
+                Not directly. CleanCal works from calendar (iCal) links: paste each
+                property&apos;s calendar link from Airbnb, Vrbo, Booking.com, your own website or
+                any PMS that can export one, and the bookings appear here — and CleanCal gives
+                you its own link to paste back out so other calendars stay in step. If your PMS
+                can give you a calendar link, it works alongside it.
+              </div>
               <h3>Adding and finding properties</h3>
               <p>
                 Type a name under <strong>Add a property</strong> and press{" "}
@@ -1366,6 +1387,12 @@ export default function HandbookPage() {
             <section className="hb-section" id="faq">
               <span className="hb-kicker">Reference</span>
               <h2>FAQ &amp; troubleshooting</h2>
+              <h3>Can I take bookings that don&apos;t come from a platform?</h3>
+              <p>Yes. Use <strong>+ New booking</strong>, set the platform to <em>Direct</em>, and add the guest&apos;s email, phone and notes. Only Owners and Managers can see those details; cleaners see just the guest name. See <a href="#booking">Opening &amp; editing a booking</a>.</p>
+              <h3>Does CleanCal connect to my PMS?</h3>
+              <p>Not directly — it reads and writes calendar (iCal) links instead. See <a href="#sync">Properties &amp; two-way sync</a>. If your system can give you a calendar link, it works alongside it.</p>
+              <h3>My owner statement looks short</h3>
+              <p>Check that payouts are imported and matched to a property (Manage → Payouts), that the property is assigned to the client with its fee set (Manage → Clients &amp; fees), and that you&apos;re looking at the right month. See <a href="#statements">Owner statements</a>.</p>
               <h3>A booking didn&apos;t sync from my OTA</h3>
               <p>Check the feed&apos;s status on the Properties page — a red &quot;Error&quot; pill shows the reason. Most often the calendar link expired; grab a fresh export URL from the platform and re-paste it.</p>
               <h3>A booking disappeared from the calendar</h3>
