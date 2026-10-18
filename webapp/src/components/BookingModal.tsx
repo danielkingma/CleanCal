@@ -11,6 +11,7 @@ import {
   payCleanerForBooking,
   postDisputeMessage,
   rateBooking,
+  saveGuestContact,
   releaseOpenBooking,
   resolveDispute,
   updateBookingAdmin,
@@ -214,6 +215,9 @@ export default function BookingModal({
   const [isOpenJob, setIsOpenJob] = useState(booking?.is_open_job ?? false);
   const [linenPickup, setLinenPickup] = useState(booking?.linen_pickup ?? false);
   const [platformLabel, setPlatformLabel] = useState(booking?.platform_label ?? "");
+  const [guestEmail, setGuestEmail] = useState("");
+  const [guestPhone, setGuestPhone] = useState("");
+  const [guestNotes, setGuestNotes] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [claiming, setClaiming] = useState(false);
@@ -278,6 +282,29 @@ export default function BookingModal({
       setClaiming(false);
     }
   }
+
+  // Staff-only guest contact (separate table; RLS hides it from cleaners).
+  const [contactLoaded, setContactLoaded] = useState(mode === "new");
+  useEffect(() => {
+    if (!isStaffUser || !booking || mode === "new") return;
+    let cancelled = false;
+    const supabase = createClient();
+    (async () => {
+      const { data } = await supabase
+        .from("booking_guest_contacts")
+        .select("email, phone, notes")
+        .eq("booking_id", booking.id)
+        .maybeSingle();
+      if (cancelled) return;
+      setGuestEmail(data?.email ?? "");
+      setGuestPhone(data?.phone ?? "");
+      setGuestNotes(data?.notes ?? "");
+      setContactLoaded(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isStaffUser, booking, mode]);
 
   const [rating, setRating] = useState<number>(booking?.rating ?? 0);
   const [ratingComment, setRatingComment] = useState(booking?.rating_comment ?? "");
@@ -547,10 +574,15 @@ export default function BookingModal({
           linen_pickup: linenPickup,
           platform_label: platformLabel.trim() || null,
         };
+        const contact = { email: guestEmail, phone: guestPhone, notes: guestNotes };
         if (mode === "new") {
-          await createBooking(input);
+          const newId = await createBooking(input);
+          if (guestEmail.trim() || guestPhone.trim() || guestNotes.trim()) {
+            await saveGuestContact(newId, contact);
+          }
         } else if (booking) {
           await updateBookingAdmin(booking.id, input);
+          if (contactLoaded) await saveGuestContact(booking.id, contact);
         }
       } else if (booking && isAssignedCleaner) {
         if (status === "complete") {
@@ -663,6 +695,44 @@ export default function BookingModal({
             onChange={(e) => setGuests(e.target.value)}
           />
         </div>
+
+        {isStaffUser && (
+          <>
+            <div className="field">
+              <label htmlFor="fGuestEmail">Guest email (Owners &amp; Managers only)</label>
+              <input
+                id="fGuestEmail"
+                type="email"
+                value={guestEmail}
+                disabled={!contactLoaded}
+                placeholder="guest@example.com"
+                onChange={(e) => setGuestEmail(e.target.value)}
+              />
+            </div>
+            <div className="field">
+              <label htmlFor="fGuestPhone">Guest phone (Owners &amp; Managers only)</label>
+              <input
+                id="fGuestPhone"
+                type="tel"
+                value={guestPhone}
+                disabled={!contactLoaded}
+                placeholder="04xx xxx xxx"
+                onChange={(e) => setGuestPhone(e.target.value)}
+              />
+            </div>
+            <div className="field">
+              <label htmlFor="fGuestNotes">Guest notes (Owners &amp; Managers only)</label>
+              <textarea
+                id="fGuestNotes"
+                rows={2}
+                value={guestNotes}
+                disabled={!contactLoaded}
+                placeholder="Arrival time, preferences, deposit received…"
+                onChange={(e) => setGuestNotes(e.target.value)}
+              />
+            </div>
+          </>
+        )}
 
         <div className="field">
           <label htmlFor="fPlatform">Booking platform</label>

@@ -475,6 +475,14 @@ export default function HandbookPage() {
                   name. It decides the colored badge on the bar.
                 </li>
                 <li>
+                  <strong>Direct bookings &amp; guest contact</strong> — taking a booking without a
+                  platform? Enter it with + New booking, set the platform to{" "}
+                  <em>Direct</em>, and fill in the guest&apos;s <strong>email</strong>,{" "}
+                  <strong>phone</strong> and <strong>guest notes</strong>. These are visible to
+                  Owners and Managers only; cleaners see just the guest name once a job is theirs,
+                  and the details never go out in the calendar link.
+                </li>
+                <li>
                   <strong>Check-in, Checkout, Nights</strong> — the three are linked: change any
                   one and the others follow. A booking can be 1 to 30 nights.
                 </li>

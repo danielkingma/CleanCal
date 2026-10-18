@@ -69,10 +69,38 @@ async function notifyAssignment(
 
 export async function createBooking(input: BookingInput) {
   const supabase = await createClient();
-  const { error } = await supabase.from("bookings").insert(input);
+  const { data, error } = await supabase.from("bookings").insert(input).select("id").single();
   if (error) throw new Error(error.message);
   revalidatePath("/calendar");
   await notifyAssignment(supabase, input);
+  return data.id as string;
+}
+
+export interface GuestContactInput {
+  email: string;
+  phone: string;
+  notes: string;
+}
+
+// Staff-only guest contact for a booking. Lives in its own table (RLS:
+// Owners/Managers only) so cleaners never receive it with the booking.
+export async function saveGuestContact(bookingId: string, input: GuestContactInput) {
+  const email = input.email.trim().slice(0, 200);
+  const phone = input.phone.trim().slice(0, 50);
+  const notes = input.notes.trim().slice(0, 2000);
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw new Error("That guest email doesn't look right.");
+  }
+  const supabase = await createClient();
+  if (!email && !phone && !notes) {
+    const { error } = await supabase.from("booking_guest_contacts").delete().eq("booking_id", bookingId);
+    if (error) throw new Error(error.message);
+    return;
+  }
+  const { error } = await supabase
+    .from("booking_guest_contacts")
+    .upsert({ booking_id: bookingId, email, phone, notes }, { onConflict: "booking_id" });
+  if (error) throw new Error(error.message);
 }
 
 export async function updateBookingAdmin(id: string, input: BookingInput) {
