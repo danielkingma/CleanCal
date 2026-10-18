@@ -2775,3 +2775,18 @@ h1, h2, .brand { letter-spacing: -0.02em; font-weight: 700; }
   body, .stmt-public { background: #fff !important; padding: 0 !important; }
   .stmt-doc { border: 0; padding: 0; max-width: none; }
 }
+
+/* Cleaning history: keep the table inside its card and the columns tidy */
+.history-card { max-width: 1100px; overflow-x: auto; padding: 8px 16px 12px; }
+.history-table { min-width: 760px; }
+.history-table .h-prop { min-width: 200px; max-width: 280px; }
+.history-table .h-guest { min-width: 110px; }
+.history-table .h-date,
+.history-table .h-num,
+.history-table .h-src,
+.history-table .h-cleaner,
+.history-table .h-disp { white-space: nowrap; }
+.history-table .h-num { text-align: center; }
+.history-table .h-rating { min-width: 150px; max-width: 320px; }
+.history-table .h-rating .rating-summary { white-space: normal; }
+.history-table td { vertical-align: middle; }

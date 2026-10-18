@@ -94,18 +94,18 @@ export default async function HistoryPage() {
               : "You haven't completed a clean yet — once you do, it'll show up here."}
           </p>
         ) : (
-          <div className="property-card">
-            <table className="feed-table">
+          <div className="property-card history-card">
+            <table className="feed-table history-table">
               <thead>
                 <tr>
-                  <th>Property</th>
-                  <th>Guest(s)</th>
-                  <th>Check-in</th>
-                  <th>Nights</th>
-                  <th>Source</th>
-                  {staffView ? <th>Cleaner</th> : null}
-                  <th>Rating</th>
-                  <th>Dispute</th>
+                  <th className="h-prop">Property</th>
+                  <th className="h-guest">Guest(s)</th>
+                  <th className="h-date">Check-in</th>
+                  <th className="h-num">Nights</th>
+                  <th className="h-src">Source</th>
+                  {staffView ? <th className="h-cleaner">Cleaner</th> : null}
+                  <th className="h-rating">Rating</th>
+                  <th className="h-disp">Dispute</th>
                 </tr>
               </thead>
               <tbody>
@@ -113,11 +113,11 @@ export default async function HistoryPage() {
                   const platform = getPlatformBadge(b.platform_label);
                   return (
                     <tr key={b.id}>
-                      <td>{propertyNameById[b.property_id] ?? "—"}</td>
-                      <td>{b.guests || "—"}</td>
-                      <td>{new Date(b.checkin_date).toLocaleDateString()}</td>
-                      <td>{b.nights}</td>
-                      <td>
+                      <td className="h-prop">{propertyNameById[b.property_id] ?? "—"}</td>
+                      <td className="h-guest">{b.guests || "—"}</td>
+                      <td className="h-date">{new Date(b.checkin_date).toLocaleDateString("en-AU")}</td>
+                      <td className="h-num">{b.nights}</td>
+                      <td className="h-src">
                         {platform ? (
                           <span className="source-pill" style={{ background: platform.color }}>
                             {platform.name}
@@ -127,7 +127,7 @@ export default async function HistoryPage() {
                         )}
                       </td>
                       {staffView ? (
-                        <td>
+                        <td className="h-cleaner">
                           {b.assigned_cleaner_id && cleanerColorById[b.assigned_cleaner_id] ? (
                             <span
                               className="cleaner-color-dot"
@@ -137,7 +137,7 @@ export default async function HistoryPage() {
                           {(b.assigned_cleaner_id && cleanerNameById[b.assigned_cleaner_id]) || "—"}
                         </td>
                       ) : null}
-                      <td>
+                      <td className="h-rating">
                         {b.rating != null ? (
                           <span className="rating-summary">
                             ★ {b.rating}
@@ -147,7 +147,7 @@ export default async function HistoryPage() {
                           "—"
                         )}
                       </td>
-                      <td>
+                      <td className="h-disp">
                         {b.dispute_status && b.dispute_status !== "none" ? (
                           <span className={`dispute-pill ${b.dispute_status}`}>
                             {b.dispute_status === "open" ? "Open" : "Resolved"}
