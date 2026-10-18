@@ -24,6 +24,14 @@ export default function StatementDocument({ s }: { s: StatementSnapshot }) {
         </div>
       </header>
 
+      {s.excluded_payouts && s.excluded_payouts.length > 0 ? (
+        <div className="stmt-warn">
+          Not included: {s.excluded_payouts.map((e) => `${e.count} payout${e.count === 1 ? "" : "s"} in ${e.currency} (${formatCents(e.total_cents, e.currency)})`).join(", ")}.
+          This statement is in {s.currency}, and payouts in another currency aren&apos;t converted. Change the
+          client&apos;s currency in Clients &amp; fees if this is wrong.
+        </div>
+      ) : null}
+
       <table className="stmt-table stmt-summary">
         <tbody>
           <tr>

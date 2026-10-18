@@ -190,6 +190,7 @@ export interface Booking {
 
 export interface PropertyOwner {
   id: string;
+  currency?: string;
   name: string;
   email: string;
   phone: string;

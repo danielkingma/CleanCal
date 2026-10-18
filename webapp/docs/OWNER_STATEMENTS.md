@@ -84,8 +84,14 @@ update public.organizations set statements_enabled = true where id = '<org id>';
   1 Mar, US/CA/IE/other calendar year); `fy2025` means the year that
   starts in 2025 in that country. The choice is remembered in a
   `stmt_region` cookie. Saved statements store their own dates, so they
-  label themselves ("FY 2025-26" or "2025"). Amounts are always shown in
-  AUD ($): multi-currency statements are not built. The fee is worked
+  label themselves ("FY 2025-26" or "2025").
+- **Currency (migration 0048)** — `property_owners.currency` (ISO code,
+  default AUD) is the currency of that client's statements and expenses.
+  A payout line in any other currency is left out of the totals and
+  flagged on the statement (no conversion). Imports use the file's
+  currency column when present, otherwise the "Currency" choice on the
+  Payouts page. Cleaning charges, fees and expenses are assumed to be in
+  the client's currency; there is no exchange-rate handling. The fee is worked
   out per month and summed, so the year equals its months. A statement
   is refused if any query hits PostgREST's 1000-row cap, rather than
   silently under-reporting; use months for very large clients. GST and

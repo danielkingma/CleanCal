@@ -65,3 +65,18 @@ test("regional financial years", () => {
   assert.equal(fyLabel(2025, "us"), "2025");
   assert.deepEqual(periodRange("fy2025", "nz"), { start: "2025-04-01", end: "2026-03-31", kind: "fy" });
 });
+
+test("other-currency payouts are excluded and flagged", () => {
+  const s = buildStatement({
+    clientName: "A", organizationName: "Org", currency: "USD", start: "2026-10-01", end: "2026-10-31", generatedAt: "x",
+    properties: [prop],
+    lines: [
+      { property_id: "p1", line_type: "reservation", guest_name: "G", checkin_date: "2026-10-02", nights: 2, payout_date: "2026-10-05", amount_cents: 50000, currency: "USD", platform: "airbnb", confirmation_code: "" },
+      { property_id: "p1", line_type: "reservation", guest_name: "H", checkin_date: "2026-10-03", nights: 2, payout_date: "2026-10-06", amount_cents: 30000, currency: "AUD", platform: "airbnb", confirmation_code: "" },
+    ],
+    bookings: [], expenses: [],
+  });
+  assert.equal(s.currency, "USD");
+  assert.equal(s.payouts_cents, 50000);
+  assert.deepEqual(s.excluded_payouts, [{ currency: "AUD", count: 1, total_cents: 30000 }]);
+});

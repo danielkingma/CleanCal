@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { requireStatementsAccess } from "@/lib/statements-access";
+import { isCurrency } from "@/lib/currencies";
 import {
   buildMatchContext,
   matchPayoutRow,
@@ -28,6 +29,7 @@ export interface ImportPayoutsInput {
   text: string;
   platform: Platform | "auto";
   dateOrder: DateOrder;
+  defaultCurrency?: string;
 }
 
 export interface ImportPayoutsResult {
@@ -114,7 +116,11 @@ export async function importPayouts(input: ImportPayoutsInput): Promise<ImportPa
 
   let parsed: ParseResult;
   try {
-    parsed = parsePayoutCsv(input.text, { platform: input.platform, dateOrder: input.dateOrder });
+    parsed = parsePayoutCsv(input.text, {
+      platform: input.platform,
+      dateOrder: input.dateOrder,
+      defaultCurrency: isCurrency(input.defaultCurrency) ? input.defaultCurrency : "AUD",
+    });
   } catch (e) {
     if (e instanceof PayoutImportError) throw new Error(e.message);
     throw e;

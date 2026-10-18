@@ -1164,8 +1164,9 @@ export default function HandbookPage() {
               </p>
               <ul>
                 <li>
-                  <strong>Add a client</strong> — name, email (where statements will go) and
-                  phone. A client&apos;s row in the table shows how many properties they have, with{" "}
+                  <strong>Add a client</strong> — name, <strong>statement currency</strong>{" "}
+                  (AUD, NZD, GBP, EUR, USD, CAD, ZAR, INR, SGD or JPY), email (where statements
+                  will go) and phone. A client&apos;s row in the table shows how many properties they have, with{" "}
                   <strong>Edit</strong> and <strong>Remove</strong>. Removing a client leaves their
                   properties in place, just unassigned.
                 </li>
@@ -1198,8 +1199,9 @@ export default function HandbookPage() {
                   roughly 900 KB).
                 </li>
                 <li>
-                  Choose the file, leave <strong>Platform</strong> and <strong>Dates in
-                  file</strong> on <em>Detect automatically</em> (or pick Airbnb, Booking.com,
+                  Choose the file, set <strong>Currency (if the file doesn&apos;t say)</strong>{" "}
+                  for exports with no currency column, leave <strong>Platform</strong> and{" "}
+                  <strong>Dates in file</strong> on <em>Detect automatically</em> (or pick Airbnb, Booking.com,
                   Other, and Day/month/year or Month/day/year if the result looks wrong), and
                   press <span className="hb-kbd-chip">Import</span>.
                 </li>
@@ -1244,7 +1246,7 @@ export default function HandbookPage() {
                   Ireland; <em>Calendar year (other)</em> covers anywhere else).
                   A financial-year statement adds a month-by-month table and a total, which you
                   can give to the owner or their accountant for tax time (it&apos;s a summary of
-                  your records, not tax advice, and GST, VAT and other sales taxes aren&apos;t calculated; amounts are shown in dollars). The statement
+                  your records, not tax advice, and GST, VAT and other sales taxes aren&apos;t calculated). Amounts show in the client&apos;s currency, and payouts in another currency are left out and flagged rather than converted. The statement
                   is worked out live: platform payouts (by payout date) less a cleaning charge for
                   each stay that checked out that month, less your management fee, less expenses.
                   It&apos;s broken down property by property.

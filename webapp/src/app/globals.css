@@ -2794,3 +2794,5 @@ h1, h2, .brand { letter-spacing: -0.02em; font-weight: 700; }
 .stmt-months th.stmt-num { text-align: right; }
 .stmt-months td:first-child { width: auto; }
 .stmt-doc { overflow-x: auto; }
+.stmt-warn { background: #fff6e0; border: 1px solid #ecd9a4; border-radius: 8px; padding: 10px 12px; font-size: 13px; margin: 0 0 12px; }
+@media print { .stmt-warn { border-color: #999; background: #fff; } }

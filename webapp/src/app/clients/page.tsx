@@ -18,7 +18,7 @@ export default async function ClientsPage() {
 
   const [{ data: owners }, { data: properties }, { data: financials }, { data: listings }, { data: feeds }] =
     await Promise.all([
-      supabase.from("property_owners").select("id, name, email, phone, notes").order("name"),
+      supabase.from("property_owners").select("*").order("name"),
       supabase.from("properties").select("id, name, payout_rate_cents, linen_fee_cents").order("name"),
       supabase
         .from("property_financials")

@@ -15,6 +15,7 @@ import {
   type ClientInput,
 } from "@/app/clients/actions";
 import { dollarsToCents, formatCents } from "@/lib/money";
+import { CURRENCIES } from "@/lib/currencies";
 import { ALL_PLATFORM_BADGES, getPlatformBadge } from "@/lib/platform-badge";
 import type { FeeBasis, PlatformListing, Property, PropertyFinancials, PropertyOwner } from "@/lib/types";
 
@@ -69,7 +70,7 @@ function PlatformDot({ platform }: { platform: string }) {
   );
 }
 
-const EMPTY_CLIENT: ClientInput = { name: "", email: "", phone: "", notes: "" };
+const EMPTY_CLIENT: ClientInput = { name: "", email: "", phone: "", notes: "", currency: "AUD" };
 
 // Raw strings while editing (same reason as SuppliesView: coercing on
 // every keystroke fights the user), parsed on save.
@@ -335,6 +336,18 @@ export default function ClientsView({
                           value={editDraft.name}
                           onChange={(e) => setEditDraft({ ...editDraft, name: e.target.value })}
                         />
+                        <select
+                          aria-label="Statement currency"
+                          value={editDraft.currency ?? "AUD"}
+                          onChange={(e) => setEditDraft({ ...editDraft, currency: e.target.value })}
+                          style={{ marginTop: 6 }}
+                        >
+                          {CURRENCIES.map((c) => (
+                            <option key={c.code} value={c.code}>
+                              {c.code} – {c.name}
+                            </option>
+                          ))}
+                        </select>
                       </td>
                       <td>
                         <input
@@ -368,7 +381,10 @@ export default function ClientsView({
                     </tr>
                   ) : (
                     <tr key={o.id}>
-                      <td style={{ fontWeight: 500 }}>{o.name}</td>
+                      <td style={{ fontWeight: 500 }}>
+                        {o.name}
+                        <span style={{ color: "var(--muted)", fontWeight: 400, fontSize: 12.5 }}> · {o.currency ?? "AUD"}</span>
+                      </td>
                       <td>{o.email || <span style={{ color: "var(--muted)" }}>—</span>}</td>
                       <td>{o.phone || <span style={{ color: "var(--muted)" }}>—</span>}</td>
                       <td>{propertyCountByOwner.get(o.id) ?? 0}</td>
@@ -379,7 +395,7 @@ export default function ClientsView({
                           disabled={busyClientId === o.id}
                           onClick={() => {
                             setEditingId(o.id);
-                            setEditDraft({ name: o.name, email: o.email, phone: o.phone, notes: o.notes });
+                            setEditDraft({ name: o.name, email: o.email, phone: o.phone, notes: o.notes, currency: o.currency ?? "AUD" });
                           }}
                         >
                           Edit
@@ -411,6 +427,20 @@ export default function ClientsView({
                 value={newClient.name}
                 onChange={(e) => setNewClient({ ...newClient, name: e.target.value })}
               />
+            </div>
+            <div className="field">
+              <label htmlFor="clientCurrency">Statement currency</label>
+              <select
+                id="clientCurrency"
+                value={newClient.currency ?? "AUD"}
+                onChange={(e) => setNewClient({ ...newClient, currency: e.target.value })}
+              >
+                {CURRENCIES.map((c) => (
+                  <option key={c.code} value={c.code}>
+                    {c.code} – {c.name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="field">
               <label htmlFor="clientEmail">Email (statements go here)</label>

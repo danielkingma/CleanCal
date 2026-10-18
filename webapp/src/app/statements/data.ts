@@ -22,7 +22,7 @@ export async function loadStatement(
   start: string,
   end: string,
 ): Promise<{ snapshot: StatementSnapshot; expenses: PeriodExpense[]; properties: { id: string; name: string }[] } | null> {
-  const { data: owner } = await supabase.from("property_owners").select("id, name, organization_id").eq("id", ownerId).maybeSingle();
+  const { data: owner } = await supabase.from("property_owners").select("*").eq("id", ownerId).maybeSingle();
   if (!owner) return null;
 
   const [{ data: org }, { data: financials }] = await Promise.all([
@@ -45,7 +45,7 @@ export async function loadStatement(
       supabase.from("properties").select("id, name, payout_rate_cents, linen_box_count, linen_fee_cents").in("id", ids).order("name"),
       supabase
         .from("payout_lines")
-        .select("property_id, line_type, guest_name, checkin_date, nights, payout_date, amount_cents, platform, confirmation_code")
+        .select("property_id, line_type, guest_name, checkin_date, nights, payout_date, amount_cents, currency, platform, confirmation_code")
         .in("property_id", ids)
         .neq("match_status", "ignored")
         .or(`and(payout_date.gte.${start},payout_date.lte.${end}),and(payout_date.is.null,checkin_date.gte.${start},checkin_date.lte.${end})`),
@@ -90,6 +90,7 @@ export async function loadStatement(
 
   const snapshot = buildStatement({
     clientName: owner.name as string,
+    currency: ((owner.currency as string | undefined) ?? "AUD").toUpperCase(),
     organizationName: (org?.name as string) ?? "",
     start,
     end,

@@ -14,6 +14,7 @@ import {
   type ImportPayoutsResult,
 } from "@/app/payouts/actions";
 import { formatCents } from "@/lib/money";
+import { CURRENCIES } from "@/lib/currencies";
 import type { DateOrder, Platform } from "@/lib/payout-import";
 import type { PayoutImport, PayoutLine, PayoutLineType, PayoutPlatform, Property } from "@/lib/types";
 
@@ -74,6 +75,7 @@ export default function PayoutsView({
   const [file, setFile] = useState<File | null>(null);
   const [platform, setPlatform] = useState<Platform | "auto">("auto");
   const [dateOrder, setDateOrder] = useState<DateOrder>("auto");
+  const [defaultCurrency, setDefaultCurrency] = useState("AUD");
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
   const [result, setResult] = useState<ImportPayoutsResult | null>(null);
@@ -89,7 +91,7 @@ export default function PayoutsView({
     setResult(null);
     try {
       const text = await file.text();
-      setResult(await importPayouts({ fileName: file.name, text, platform, dateOrder }));
+      setResult(await importPayouts({ fileName: file.name, text, platform, dateOrder, defaultCurrency }));
     } catch (e) {
       setImportError(e instanceof Error ? e.message : "Couldn't import that file.");
     } finally {
@@ -355,6 +357,16 @@ export default function PayoutsView({
                 <option value="auto">Detect automatically</option>
                 <option value="dmy">Day/month/year</option>
                 <option value="mdy">Month/day/year</option>
+              </select>
+            </div>
+            <div className="field">
+              <label htmlFor="payoutCurrency">Currency (if the file doesn&apos;t say)</label>
+              <select id="payoutCurrency" value={defaultCurrency} onChange={(e) => setDefaultCurrency(e.target.value)}>
+                {CURRENCIES.map((c) => (
+                  <option key={c.code} value={c.code}>
+                    {c.code} – {c.name}
+                  </option>
+                ))}
               </select>
             </div>
           </div>

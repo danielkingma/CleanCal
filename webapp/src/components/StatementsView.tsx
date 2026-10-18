@@ -249,7 +249,7 @@ export default function StatementsView({ owners, ownerId, month, region, current
                           {e.expense_date} · {propName[e.property_id]} · {e.description}
                         </span>
                         <span>
-                          {formatCents(e.amount_cents)}{" "}
+                          {formatCents(e.amount_cents, snapshot?.currency ?? "AUD")}{" "}
                           <button type="button" className="btn" disabled={busy} onClick={() => run(() => deleteOwnerExpense(e.id))}>
                             Remove
                           </button>
@@ -278,7 +278,7 @@ export default function StatementsView({ owners, ownerId, month, region, current
                     <input id="expDesc" type="text" value={expDesc} placeholder="Replacement kettle" onChange={(e) => setExpDesc(e.target.value)} />
                   </div>
                   <div className="field">
-                    <label htmlFor="expAmt">Amount ($)</label>
+                    <label htmlFor="expAmt">Amount ({snapshot?.currency ?? "AUD"})</label>
                     <input id="expAmt" type="text" inputMode="decimal" value={expAmount} onChange={(e) => setExpAmount(e.target.value)} />
                   </div>
                 </div>

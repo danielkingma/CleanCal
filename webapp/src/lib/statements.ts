@@ -31,6 +31,7 @@ export interface StatementPayoutLine {
   nights: number | null;
   payout_date: string | null;
   amount_cents: number;
+  currency?: string;
   platform: string;
   confirmation_code: string;
 }
@@ -109,6 +110,9 @@ export interface StatementSnapshot {
   // Month-by-month totals across all properties. Absent on statements
   // saved before financial-year statements existed.
   months?: StatementMonthRow[];
+  // Payouts in a currency other than the statement's, left out of every
+  // total above rather than mixed in without a conversion.
+  excluded_payouts?: { currency: string; count: number; total_cents: number }[];
 }
 
 // Financial / tax years by country. A year is identified by the calendar
@@ -225,6 +229,7 @@ export function cleaningChargeCents(p: StatementProperty, linenPickup: boolean):
 export function buildStatement(input: {
   clientName: string;
   organizationName: string;
+  currency?: string;
   start: string;
   end: string;
   generatedAt: string;
@@ -234,10 +239,21 @@ export function buildStatement(input: {
   expenses: StatementExpense[];
 }): StatementSnapshot {
   const { start, end } = input;
+  const currency = (input.currency ?? "AUD").toUpperCase();
+  const sameCurrency = (l: StatementPayoutLine) => (l.currency ?? currency).toUpperCase() === currency;
+  const excluded = new Map<string, { count: number; total: number }>();
+  for (const l of input.lines) {
+    if (sameCurrency(l) || !inRange(l.payout_date ?? l.checkin_date, start, end)) continue;
+    const c = (l.currency as string).toUpperCase();
+    const e = excluded.get(c) ?? { count: 0, total: 0 };
+    e.count += 1;
+    e.total += l.amount_cents;
+    excluded.set(c, e);
+  }
   const monthFees = new Map<string, number>();
   const sections: StatementPropertySection[] = input.properties.map((p) => {
     const payouts = input.lines
-      .filter((l) => l.property_id === p.id && inRange(l.payout_date ?? l.checkin_date, start, end))
+      .filter((l) => sameCurrency(l) && l.property_id === p.id && inRange(l.payout_date ?? l.checkin_date, start, end))
       .sort((a, b) => (a.payout_date ?? a.checkin_date ?? "").localeCompare(b.payout_date ?? b.checkin_date ?? ""))
       .map<StatementPayoutRow>((l) => ({
         date: l.payout_date ?? l.checkin_date,
@@ -319,7 +335,7 @@ export function buildStatement(input: {
     period_start: start,
     period_end: end,
     generated_at: input.generatedAt,
-    currency: "AUD",
+    currency,
     properties: sections,
     payouts_cents: sum((s) => s.payouts_cents),
     cleaning_cents: sum((s) => s.cleaning_cents),
@@ -327,5 +343,6 @@ export function buildStatement(input: {
     expenses_cents: sum((s) => s.expenses_cents),
     net_cents: sum((s) => s.net_cents),
     months,
+    excluded_payouts: [...excluded].map(([c, e]) => ({ currency: c, count: e.count, total_cents: e.total })),
   };
 }

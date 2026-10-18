@@ -4,9 +4,11 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireStatementsAccess } from "@/lib/statements-access";
 import { normaliseListing } from "@/lib/payout-import";
+import { isCurrency } from "@/lib/currencies";
 import type { FeeBasis } from "@/lib/types";
 
 export interface ClientInput {
+  currency?: string;
   name: string;
   email: string;
   phone: string;
@@ -16,7 +18,9 @@ export interface ClientInput {
 function cleanClient(input: ClientInput): ClientInput {
   const name = input.name.trim();
   if (!name) throw new Error("A client needs a name.");
-  return { name, email: input.email.trim(), phone: input.phone.trim(), notes: input.notes.trim() };
+  const currency = input.currency ?? "AUD";
+  if (!isCurrency(currency)) throw new Error("Choose a currency from the list.");
+  return { name, currency, email: input.email.trim(), phone: input.phone.trim(), notes: input.notes.trim() };
 }
 
 // All writes below are also enforced by staff-only RLS
