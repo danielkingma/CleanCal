@@ -8,6 +8,10 @@ const FEATURES = [
     body: "Airbnb, Vrbo, Booking.com, a direct-booking site, or any calendar link -- sync bookings in from all of them, and CleanCal syncs back out so nobody double-books a turnover. Colour-coded by cleaning status, with a platform badge on every stay.",
   },
   {
+    title: "Take direct bookings too",
+    body: "No platform? No problem. Add a direct booking in seconds, with a guest record (name, email, phone and notes) that only you and your managers can see. Your cleaners only ever get the guest name -- contact details stay private.",
+  },
+  {
     title: "A cleaning team that runs itself",
     body: "Assign a job directly, or post it open for any cleaner on your team to claim -- first to tap gets it, so two cleaners can never grab the same job. Cleaners confirm or decline, and a declined job goes straight back on the board.",
   },
@@ -94,6 +98,10 @@ const FAQ = [
   {
     q: "Does CleanCal connect to my PMS?",
     a: "CleanCal doesn't connect directly into a property management system. It works from calendar (iCal) links instead: paste each property's calendar export link from Airbnb, Vrbo, Booking.com, your own website or any system that offers one, and your bookings appear on one shared calendar. Check whether yours can give you a calendar link -- if it can, it will work alongside it.",
+  },
+  {
+    q: "Can I take direct bookings in CleanCal?",
+    a: "Yes. Add a booking by hand, set the platform to Direct, and save the guest's email, phone and notes with it. Those contact details are visible to Owners and Managers only -- cleaners never see them. There is no public booking form or online payment yet; you enter the booking yourself.",
   },
   {
     q: "Do I need a credit card?",
