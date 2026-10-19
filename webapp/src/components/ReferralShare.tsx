@@ -7,7 +7,7 @@ import { useState } from "react";
 export default function ReferralShare({ link }: { link: string }) {
   const SITE = link;
   const [copied, setCopied] = useState<"link" | "message" | null>(null);
-  const message = `Hi! I use CleanCal to run the cleaning side of my short-stay properties: a shared calendar, cleaner assignment and room-by-room checklists with photos. It has a 3-month free trial and no card is needed to start. Have a look when you get a chance: ${SITE}`;
+  const message = `Hi! I use CleanCal to run the cleaning side of my short-stay properties: a shared calendar, cleaner assignment and room-by-room checklists with photos. It has a 3-month free trial and no card is needed to start, and if you sign up through my link you'll get $20 of CleanCal credit for your own account. Have a look when you get a chance: ${SITE}`;
   const mailtoHref = `mailto:?subject=${encodeURIComponent("A tool I use for short-stay cleaning")}&body=${encodeURIComponent(message)}`;
 
   async function copy(what: "link" | "message", text: string) {
@@ -24,7 +24,7 @@ export default function ReferralShare({ link }: { link: string }) {
     <div className="property-card">
       <h2 style={{ fontSize: 18, margin: 0 }}>Refer another business</h2>
       <p style={{ fontSize: 13, color: "var(--muted)", margin: "6px 0 14px" }}>
-        Know another host or property manager who&apos;d like CleanCal? Send them the link or the message below. They
+        Know another host or property manager who&apos;d like CleanCal? Send them the link or the message below. They get $20 of welcome credit, and you get $20 once they start paying monthly. They
         sign up with their own account and their own business, separate from yours.
       </p>
       <div className="add-feed-row">
