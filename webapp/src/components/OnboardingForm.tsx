@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createOrganization, forgetInviteToken, redeemInvite } from "@/app/onboarding/actions";
 import InstallAppStep from "./InstallAppStep";
 import Logo from "./Logo";
+import PropertySetupWizard from "./PropertySetupWizard";
 import SignOutButton from "./SignOutButton";
 
 export default function OnboardingForm({
@@ -35,6 +36,12 @@ export default function OnboardingForm({
   // the app" step in front of the redirect below, rather than sending a
   // brand-new person straight into a browser tab with no nudge to install.
   const [readyToInstall, setReadyToInstall] = useState(false);
+  // Only the "start a new business" branch goes through PropertySetupWizard
+  // -- someone joining an existing business via invite is joining a
+  // property set-up that already exists, so there's nothing for a brand-new
+  // property wizard to do there; handleJoin skips straight to
+  // readyToInstall like it always has.
+  const [settingUpProperty, setSettingUpProperty] = useState(false);
 
   function goToCalendar() {
     router.push("/calendar");
@@ -48,7 +55,7 @@ export default function OnboardingForm({
     setError(null);
     try {
       await createOrganization(name, accountType === "business" ? businessName : undefined);
-      setReadyToInstall(true);
+      setSettingUpProperty(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Couldn't get you set up.");
       setSaving(false);
@@ -85,6 +92,10 @@ export default function OnboardingForm({
 
   if (readyToInstall) {
     return <InstallAppStep onContinue={goToCalendar} />;
+  }
+
+  if (settingUpProperty) {
+    return <PropertySetupWizard onDone={() => setReadyToInstall(true)} />;
   }
 
   if (inviteToken) {

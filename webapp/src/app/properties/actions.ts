@@ -8,13 +8,23 @@ import { syncOneFeed } from "@/lib/ical-sync";
 // `ical_feeds_admin_all`) to actually enforce admin-only -- a non-admin
 // calling these just gets a permission error back from Supabase.
 
-export async function createProperty(name: string) {
+// Returns the new row's id so a caller can chain further setup against it
+// (PropertySetupWizard does this immediately after -- profile, linen, and
+// calendar feed inserts all need the id and would otherwise have to guess
+// at it or re-query for "the property I just made"). The one pre-existing
+// caller (PropertiesAdmin's "Add a property" button) just discards it.
+export async function createProperty(name: string): Promise<string> {
   if (!name.trim()) throw new Error("Give the property a name.");
   const supabase = await createClient();
-  const { error } = await supabase.from("properties").insert({ name: name.trim() });
-  if (error) throw new Error(error.message);
+  const { data, error } = await supabase
+    .from("properties")
+    .insert({ name: name.trim() })
+    .select("id")
+    .single();
+  if (error || !data) throw new Error(error?.message ?? "Couldn't create that property.");
   revalidatePath("/properties");
   revalidatePath("/calendar");
+  return data.id as string;
 }
 
 // Cascades in the database: deleting a property also deletes every

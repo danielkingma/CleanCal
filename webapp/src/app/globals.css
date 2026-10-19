@@ -1738,6 +1738,79 @@ main {
   color: var(--teal-deep);
 }
 
+/* ---- Property setup wizard (PropertySetupWizard.tsx, post-signup) ---- */
+.wizard-progress {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+.wizard-progress span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--line);
+}
+.wizard-progress span.active {
+  width: 20px;
+  border-radius: 4px;
+  background: var(--teal-deep);
+}
+.wizard-type-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.wizard-type-chip {
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 10px;
+  background: var(--white);
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  line-height: 1.5;
+}
+.wizard-type-chip.sel {
+  border-color: var(--teal);
+  background: var(--mint);
+  color: var(--teal-deep);
+}
+.wizard-platform-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.wizard-platform-chip {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 12px;
+  background: var(--white);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+}
+.wizard-platform-chip.sel {
+  border-color: var(--teal);
+  background: var(--mint);
+  color: var(--teal-deep);
+}
+.wizard-feed-added {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
 @media (max-width: 900px) {
   .py-year-grid {
     grid-template-columns: 1fr;
