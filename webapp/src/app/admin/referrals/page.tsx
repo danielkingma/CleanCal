@@ -41,7 +41,8 @@ export default async function AdminReferralsPage() {
       <h1 style={{ fontSize: 22 }}>Referral credits</h1>
       <p style={{ fontSize: 13, color: "var(--muted)" }}>
         Mark a referred business as paying to credit ${(REFERRAL_CREDIT_CENTS / 100).toFixed(0)} to the referrer&apos;s
-        wallet. Each referral can only be credited once.
+        wallet. This is in-app credit only (no cash is paid), usable solely against the referrer&apos;s CleanCal
+        subscription. Each referral can only be credited once.
       </p>
       {(referrals ?? []).length === 0 ? <p>No referrals yet.</p> : null}
       {(referrals ?? []).map((r) => (
