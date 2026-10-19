@@ -12,6 +12,10 @@ const FEATURES = [
     body: "No platform? No problem. Add a direct booking in seconds, with a guest record (name, email, phone and notes) that only you and your managers can see. Your cleaners only ever get the guest name -- contact details stay private.",
   },
   {
+    title: "Spot turnover clashes early",
+    body: "A same-day conflict spotter checks your calendar against each clean and flags tight or overlapping turnovers before they become a problem, such as a clean that's due to finish 20 minutes after the next guest's earliest check-in.",
+  },
+  {
     title: "A cleaning team that runs itself",
     body: "Assign a job directly, or post it open for any cleaner on your team to claim -- first to tap gets it, so two cleaners can never grab the same job. Cleaners confirm or decline, and a declined job goes straight back on the board.",
   },

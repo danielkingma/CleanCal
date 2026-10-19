@@ -66,6 +66,7 @@ export default function HandbookPage() {
 
           <div className="hb-side-group-title">Insight</div>
           <a className="hb-side-link" href="#dashboard">Dashboard</a>
+          <a className="hb-side-link" href="#conflict-spotter">Same-day conflict spotter</a>
           <a className="hb-side-link" href="#reports">Reports &amp; CSV export</a>
 
           <div className="hb-side-group-title">Add-on (beta)</div>
@@ -1105,6 +1106,37 @@ export default function HandbookPage() {
                 unclaimed open job — type, property, date (marked &quot;past&quot; if it&apos;s
                 already gone by) and detail — oldest first. When there&apos;s nothing to chase it
                 says so.
+              </p>
+            </section>
+
+            <section className="hb-section" id="conflict-spotter">
+              <h2>Same-day conflict spotter</h2>
+              <p>
+                A built-in checker (Owner/Manager) that cross-checks the calendar against cleaning
+                status and flags tight or overlapping turnovers before they become a problem. It
+                runs every time you open <span className="hb-kbd-chip">Manage → Dashboard</span>
+                and looks at today and the next 3 days. For each turnover where one guest checks
+                out and the next checks in on the same day, it works out when the clean should
+                finish and compares that with the next guest&apos;s earliest check-in.
+              </p>
+              <ul>
+                <li><strong>Conflict</strong> — the clean is expected to finish after the next check-in, e.g. &quot;This clean is scheduled to finish 20 minutes after the next guest&apos;s earliest check-in (3:00 pm)&quot;. Also used for overlapping bookings, a check-in time set at or before check-out, and a same-day turnover today with no cleaner assigned.</li>
+                <li><strong>Tight</strong> — the clean should finish, but with under an hour to spare. Same-day turnovers on later days with no cleaner assigned also show here.</li>
+              </ul>
+              <p>
+                <strong>Setting it up:</strong> under <span className="hb-kbd-chip">Manage →
+                Properties</span>, each property has <em>Turnover times</em>: check-out time,
+                earliest check-in, usual clean length (minutes) and time zone. The defaults are
+                10:00 am, 3:00 pm, 120 minutes and Australia/Sydney. Once three cleans at a
+                property have been timed by cleaners, the average of those recorded cleans is used
+                instead of the usual length.
+              </p>
+              <p>
+                <strong>What it can and can&apos;t do:</strong> it follows set rules rather than
+                predicting the future, so it only knows what is on the calendar and the times you
+                give it. A clean that has been started uses its real start time; one that hasn&apos;t
+                is assumed to start at check-out (or now, if check-out has passed). It doesn&apos;t
+                send alerts: check the Dashboard on turnover days.
               </p>
             </section>
 
