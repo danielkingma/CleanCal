@@ -6,6 +6,9 @@ import type { Profile, Role } from "@/lib/types";
 
 const ROLE_OPTIONS: Role[] = ["owner", "manager", "cleaner"];
 
+// Owners first, then Managers, then Cleaners; by name within each.
+const ROLE_RANK: Record<Role, number> = { owner: 0, manager: 1, cleaner: 2 };
+
 interface TeamRolesProps {
   profiles: Profile[];
   currentUserId: string;
@@ -37,7 +40,12 @@ export default function TeamRoles({ profiles, currentUserId, emailById }: TeamRo
       </p>
       {error ? <div className="error-banner">{error}</div> : null}
       <div className="team-role-list">
-        {profiles.map((p) => (
+        {[...profiles]
+          .sort(
+            (a, b) =>
+              (ROLE_RANK[a.role] ?? 3) - (ROLE_RANK[b.role] ?? 3) || (a.name ?? "").localeCompare(b.name ?? ""),
+          )
+          .map((p) => (
           <div className="team-role-row" key={p.id}>
             <span className="team-role-name">
               {p.name || "(no name set)"}
