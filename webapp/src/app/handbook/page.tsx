@@ -187,8 +187,8 @@ export default function HandbookPage() {
               </ul>
               <div className="hb-callout">
                 <strong>Inviting someone to your team</strong>
-                Owners and Managers can generate an invite link from Cleaners → &quot;Invite
-                someone to your team.&quot; Generating one also gives you a ready-to-send message
+                Owners and Managers can generate an invite link from Menu → Invite.
+                Generating one also gives you a ready-to-send message
                 with your business name and the link already in it, plus a button that opens your
                 email app with that message pre-filled — or just copy the plain link and send it
                 however you like (text, WhatsApp, etc.). A Manager can only invite at the Cleaner
@@ -946,7 +946,8 @@ export default function HandbookPage() {
               </p>
               <ul>
                 <li>
-                  <strong>Invite someone to your team</strong> — pick a role, press{" "}
+                  <strong>Invite someone to your team</strong> (now on its own page,{" "}
+                  <span className="hb-kbd-chip">Menu → Invite</span>) — pick a role, press{" "}
                   <span className="hb-kbd-chip">Generate invite link</span>, then copy the link, or
                   copy the ready-made message, or press <strong>Open in email</strong>. Managers
                   can only invite Cleaners; Owners can also invite Managers and Owners. Each link
@@ -959,7 +960,7 @@ export default function HandbookPage() {
                   out.
                 </li>
                 <li>
-                  <strong>One card per cleaner</strong> — name (with their favourite-colour dot),
+                  <strong>One card per cleaner</strong> — each is a collapsed row (name and rating); tap it to open. Inside: name (with their favourite-colour dot),
                   the email address (Owner only), an <strong>ID verified / ID pending / ID not
                   verified</strong> badge, a <strong>Payouts set up / pending / not set up</strong>{" "}
                   badge, their average rating and how many ratings that&apos;s from, their phone and
@@ -1428,7 +1429,7 @@ export default function HandbookPage() {
               <h3>I got a &quot;Signed in on a new device&quot; alert and it wasn&apos;t me</h3>
               <p>Open Menu → My Profile and press <strong>Sign out other devices</strong>, then sign back in on anything you still use. See <a href="#profile">My Profile &amp; devices</a>.</p>
               <h3>My invite link doesn&apos;t work</h3>
-              <p>Each invite link works once, and the page tells you if one is invalid or already used. Ask an Owner or Manager for a new one from the Cleaners page.</p>
+              <p>Each invite link works once, and the page tells you if one is invalid or already used. Ask an Owner or Manager for a new one from Menu → Invite.</p>
               <h3>I&apos;m not getting notifications</h3>
               <p>Turn them on from Menu → Enable notifications, ideally inside the installed app, and check your browser or phone hasn&apos;t blocked notifications for CleanCal. The full list of alerts is under <a href="#notifications">Notifications</a>.</p>
               <h3>Something else isn&apos;t covered here</h3>

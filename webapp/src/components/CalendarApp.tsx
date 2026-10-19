@@ -507,6 +507,11 @@ export default function CalendarApp({
             <Link href="/supplies" className="dropdown-item">
               Supplies
             </Link>
+            {isStaffUser ? (
+              <Link href="/invite" className="dropdown-item">
+                Invite
+              </Link>
+            ) : null}
             <Link href="/profile" className="dropdown-item">
               My Profile
             </Link>

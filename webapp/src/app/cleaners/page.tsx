@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import InviteLink from "@/components/InviteLink";
+import CleanerAccordion from "@/components/CleanerAccordion";
 import Logo from "@/components/Logo";
 import TeamRoles from "@/components/TeamRoles";
 import { RemoveCleanerButton, RestoreCleanerButton, DeleteCleanerButton } from "@/components/CleanerRemoval";
@@ -25,16 +25,6 @@ export default async function CleanersPage() {
     .maybeSingle();
   if (!isStaff(profile?.role)) redirect("/calendar");
   const isOwner = profile?.role === "owner";
-
-  let organizationName = "our team";
-  if (profile?.organization_id) {
-    const { data: org } = await supabase
-      .from("organizations")
-      .select("name")
-      .eq("id", profile.organization_id)
-      .maybeSingle();
-    if (org?.name) organizationName = org.name;
-  }
 
   const { data: cleaners } = await supabase
     .from("profiles")
@@ -127,13 +117,11 @@ export default async function CleanersPage() {
       </div>
 
       <main>
-        <InviteLink isOwner={isOwner} organizationName={organizationName} />
-
         {isOwner ? <TeamRoles profiles={allProfiles} currentUserId={user.id} emailById={emailById} /> : null}
 
         {(cleaners ?? []).length === 0 ? (
           <p className="photo-note" style={{ maxWidth: 760 }}>
-            No cleaners yet — generate an invite link above to bring one onto your team.
+            No cleaners yet — <Link href="/invite">invite someone</Link> to bring one onto your team.
           </p>
         ) : null}
 
@@ -143,7 +131,23 @@ export default async function CleanersPage() {
           const upcomingOff = unavailableByCleanerId.get(cleaner.id) ?? [];
 
           return (
-            <div className="property-card" key={cleaner.id}>
+            <CleanerAccordion
+              key={cleaner.id}
+              id={cleaner.id}
+              title={
+                <>
+                  {cleaner.favorite_color ? (
+                    <span className="cleaner-color-dot" style={{ background: cleaner.favorite_color }} />
+                  ) : null}
+                  {cleaner.name || "(no name set)"}
+                </>
+              }
+              meta={
+                <span className="rating-summary">
+                  {average != null ? `★ ${average.toFixed(1)} (${rating!.count})` : "No ratings yet"}
+                </span>
+              }
+            >
               <div
                 style={{
                   display: "flex",
@@ -154,12 +158,6 @@ export default async function CleanersPage() {
                 }}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", rowGap: 6 }}>
-                  <h2 style={{ fontSize: 18, margin: 0, overflowWrap: "anywhere" }}>
-                    {cleaner.favorite_color ? (
-                      <span className="cleaner-color-dot" style={{ background: cleaner.favorite_color }} />
-                    ) : null}
-                    {cleaner.name || "(no name set)"}
-                  </h2>
                   {isOwner && emailById[cleaner.id] ? (
                     <span style={{ fontSize: 12.5, color: "var(--muted)" }}>{emailById[cleaner.id]}</span>
                   ) : null}
@@ -178,9 +176,6 @@ export default async function CleanersPage() {
                     <span className="sync-pill error">Payouts not set up</span>
                   )}
                 </div>
-                <span className="rating-summary">
-                  {average != null ? `★ ${average.toFixed(1)} (${rating!.count})` : "No ratings yet"}
-                </span>
               </div>
               <p style={{ fontSize: 13, color: "var(--muted)", margin: "10px 0 0" }}>
                 {cleaner.phone ? `${cleaner.phone} · ` : ""}
@@ -198,7 +193,7 @@ export default async function CleanersPage() {
                   : "No upcoming unavailable dates"}
               </p>
               {isOwner ? <RemoveCleanerButton cleanerId={cleaner.id} cleanerName={cleaner.name} /> : null}
-            </div>
+            </CleanerAccordion>
           );
         })}
 
