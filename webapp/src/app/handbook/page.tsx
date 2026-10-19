@@ -173,8 +173,10 @@ export default function HandbookPage() {
               </p>
               <ul>
                 <li>
-                  <strong>Starting your own business</strong> — enter your name and you become its
-                  Owner immediately. There&apos;s no business name to give up front; set one
+                  <strong>Starting your own account</strong> — choose{" "}
+                  <strong>An individual</strong> (the account is named after you) or{" "}
+                  <strong>A business or company</strong> (enter its name as well as your own),
+                  and you become the Owner immediately. You can change the account name
                   whenever you like from Menu → My Profile.
                 </li>
                 <li>

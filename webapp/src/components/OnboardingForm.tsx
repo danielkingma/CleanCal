@@ -23,6 +23,11 @@ export default function OnboardingForm({
   // create_organization() gives a new business a placeholder name, which
   // an Owner can change afterward from My Profile.
   const [name, setName] = useState("");
+  // Signing up as an individual (the account is named after them) or as a
+  // business/company (named after it, with their own name kept for their
+  // profile).
+  const [accountType, setAccountType] = useState<"individual" | "business">("individual");
+  const [businessName, setBusinessName] = useState("");
   const [joinName, setJoinName] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,10 +43,11 @@ export default function OnboardingForm({
 
   async function handleCreate() {
     if (!name.trim()) return;
+    if (accountType === "business" && !businessName.trim()) return;
     setSaving(true);
     setError(null);
     try {
-      await createOrganization(name);
+      await createOrganization(name, accountType === "business" ? businessName : undefined);
       setReadyToInstall(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Couldn't get you set up.");
@@ -157,8 +163,44 @@ export default function OnboardingForm({
           <Logo />
           Clean<span>Cal</span>
         </div>
-        <p className="auth-sub">Tell us your name to get started.</p>
+        <p className="auth-sub">Tell us a little about you to get started.</p>
         <div className="auth-form">
+          <div className="field">
+            <label id="accountTypeLabel">I&apos;m signing up as</label>
+            <div role="radiogroup" aria-labelledby="accountTypeLabel" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              {(
+                [
+                  ["individual", "An individual"],
+                  ["business", "A business or company"],
+                ] as const
+              ).map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  role="radio"
+                  aria-checked={accountType === value}
+                  className={accountType === value ? "btn btn-primary" : "btn btn-secondary"}
+                  onClick={() => setAccountType(value)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+          {accountType === "business" ? (
+            <div className="field">
+              <label htmlFor="businessName">Business or company name</label>
+              <input
+                id="businessName"
+                type="text"
+                required
+                maxLength={120}
+                placeholder="e.g. Canberra Stays Pty Ltd"
+                value={businessName}
+                onChange={(e) => setBusinessName(e.target.value)}
+              />
+            </div>
+          ) : null}
           <div className="field">
             <label htmlFor="orgName">Your name</label>
             <input
@@ -174,13 +216,13 @@ export default function OnboardingForm({
             type="button"
             className="btn btn-primary"
             onClick={handleCreate}
-            disabled={saving || !name.trim()}
+            disabled={saving || !name.trim() || (accountType === "business" && !businessName.trim())}
           >
             {saving ? "Setting up…" : "Continue"}
           </button>
         </div>
         <p className="auth-sub" style={{ marginTop: 10, fontSize: 13 }}>
-          You can name your business afterward from My Profile.
+          You can change the account name afterward from My Profile.
         </p>
         {error ? (
           <p className="auth-error">

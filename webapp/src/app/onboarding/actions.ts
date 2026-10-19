@@ -8,9 +8,17 @@ import { INVITE_COOKIE } from "@/lib/invite-cookie";
 // Both RPCs (create_organization / redeem_invite, see
 // 0016_organizations.sql) refuse to run for a user who already has an
 // organization -- this is just where that error surfaces to the UI.
-export async function createOrganization(name: string) {
+//
+// `name` is the person's own name. `businessName` is optional: given, the
+// account is named after the business or company; left out, it's named
+// after the person (an individual signing up for themselves).
+export async function createOrganization(name: string, businessName?: string) {
   const supabase = await createClient();
-  const { error } = await supabase.rpc("create_organization", { p_name: name });
+  const business = businessName?.trim();
+  const { error } = await supabase.rpc(
+    "create_organization",
+    business ? { p_name: name, p_business_name: business } : { p_name: name },
+  );
   if (error) throw new Error(error.message);
   revalidatePath("/", "layout");
 }
