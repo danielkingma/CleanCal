@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
@@ -38,6 +39,9 @@ export default async function AdminReferralsPage() {
 
   return (
     <main style={{ maxWidth: 800, margin: "0 auto", padding: 16 }}>
+      <Link href="/calendar" className="today-btn" style={{ display: "inline-block", marginBottom: 12 }}>
+        ← Calendar
+      </Link>
       <h1 style={{ fontSize: 22 }}>Referral credits</h1>
       <p style={{ fontSize: 13, color: "var(--muted)" }}>
         Mark a referred business as paying to credit ${(REFERRAL_CREDIT_CENTS / 100).toFixed(0)} to the referrer&apos;s

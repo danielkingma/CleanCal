@@ -39,6 +39,9 @@ export default async function SavedStatementPage({ params }: { params: Promise<{
   return (
     <div className="stmt-public" style={{ flexDirection: "column", alignItems: "center", gap: 12 }}>
       <div className="no-print" style={{ width: "100%", maxWidth: 820, display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+        <Link href="/calendar" className="today-btn">
+          ← Calendar
+        </Link>
         <Link href={`/statements?owner=${row.property_owner_id}${snapshot.period_end.slice(0, 7) === String(row.period_start).slice(0, 7) ? `&month=${String(row.period_start).slice(0, 7)}` : ""}`}>← Statements</Link>
         <PrintButton />
         <span style={{ color: "var(--muted)", fontSize: 13 }}>

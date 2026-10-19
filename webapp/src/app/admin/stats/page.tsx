@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { isSuperadmin } from "@/lib/superadmin";
@@ -70,6 +71,9 @@ export default async function AdminStatsPage() {
 
   return (
     <div style={{ maxWidth: 820, margin: "0 auto", padding: "40px 20px 80px" }}>
+      <Link href="/calendar" className="today-btn" style={{ display: "inline-block", marginBottom: 16 }}>
+        ← Calendar
+      </Link>
       <p style={{ fontSize: 13, opacity: 0.7, marginBottom: 4 }}>Owner-only · not linked anywhere in the app</p>
       <h1 style={{ fontFamily: '"Poppins", sans-serif', marginBottom: 24 }}>Platform stats</h1>
 
