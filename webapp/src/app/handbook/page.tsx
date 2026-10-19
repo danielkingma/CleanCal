@@ -44,6 +44,7 @@ export default function HandbookPage() {
           <div className="hb-side-group-title">Getting started</div>
           <a className="hb-side-link" href="#welcome">Welcome</a>
           <a className="hb-side-link" href="#signing-in">Signing in &amp; your business</a>
+          <a className="hb-side-link" href="#setup-assistant">Setup assistant</a>
           <a className="hb-side-link" href="#roles">Roles at a glance</a>
           <a className="hb-side-link" href="#navigation">Finding your way around</a>
 
@@ -203,6 +204,28 @@ export default function HandbookPage() {
                 A business&apos;s data is completely separate from every other business on
                 CleanCal — nobody outside your team ever sees your properties, bookings, or
                 cleaners, and you never see theirs.
+              </p>
+            </section>
+
+            <section className="hb-section" id="setup-assistant">
+              <h2>Setup assistant</h2>
+              <p>
+                When you create a new business, CleanCal doesn&apos;t drop you onto a blank page.
+                A short guided assistant walks you through setting up your first property, in four
+                steps:
+              </p>
+              <ol>
+                <li><strong>Name and type</strong> — the property&apos;s name, and whether it&apos;s a house, apartment, cabin/cottage or something else. The type only pre-fills sensible room counts for the next step; nothing else is saved from it.</li>
+                <li><strong>Rooms</strong> — bedrooms, bathrooms and whether there&apos;s an outdoor area. Change the suggested numbers to match the real property.</li>
+                <li><strong>Checklist preview</strong> — the cleaning checklist your cleaners will see after every stay, built from those room counts (a bedroom and bathroom section per room). Open any section to see its items. Add rooms later and it updates on its own.</li>
+                <li><strong>Calendar link</strong> — optional. Paste the calendar (iCal) link from Airbnb, Vrbo, Booking.com or anywhere else so bookings flow straight in, or tap a platform name to label it. You can skip it and add links later from Properties.</li>
+              </ol>
+              <p>
+                It runs once, for people starting a new business. Someone joining an existing
+                business with an invite link skips it, because the properties are already set up.
+                It&apos;s a set sequence of questions rather than a free-form chat, and everything it
+                creates can be changed afterwards under <span className="hb-kbd-chip">Manage →
+                Properties</span>.
               </p>
             </section>
 

@@ -12,6 +12,10 @@ const FEATURES = [
     body: "No platform? No problem. Add a direct booking in seconds, with a guest record (name, email, phone and notes) that only you and your managers can see. Your cleaners only ever get the guest name -- contact details stay private.",
   },
   {
+    title: "Set up in minutes, not hours",
+    body: "A short setup assistant asks about your first property, builds a cleaning checklist that fits its rooms and helps you add its calendar link, so you start with a working calendar instead of a blank page.",
+  },
+  {
     title: "Spot turnover clashes early",
     body: "A same-day conflict spotter checks your calendar against each clean and flags tight or overlapping turnovers before they become a problem, such as a clean that's due to finish 20 minutes after the next guest's earliest check-in.",
   },
