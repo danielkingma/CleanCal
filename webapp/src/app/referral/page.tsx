@@ -59,7 +59,8 @@ export default async function ReferralPage() {
         <div className="property-card" style={{ marginTop: 16 }}>
           <h2 style={{ fontSize: 18, margin: 0 }}>Referral wallet</h2>
           <p style={{ fontSize: 13, color: "var(--muted)", margin: "6px 0 10px" }}>
-            You earn $20 of CleanCal credit, once, for each business you refer that starts paying monthly. Credit
+            Referrals are for new businesses only: the business must be new to CleanCal and sign up through your link.
+            You earn $20 of CleanCal credit, once, for each one that starts paying monthly. Credit
             exists only inside CleanCal: it is never paid out as cash, can&apos;t be withdrawn or transferred, and can
             only be used towards your own CleanCal subscription once billing starts.
           </p>
