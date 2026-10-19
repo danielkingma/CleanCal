@@ -192,7 +192,9 @@ export default function HandbookPage() {
                 with your business name and the link already in it, plus a button that opens your
                 email app with that message pre-filled — or just copy the plain link and send it
                 however you like (text, WhatsApp, etc.). A Manager can only invite at the Cleaner
-                level; only an Owner can invite another Owner or Manager. Each link works once.
+                level; only an Owner can invite a Manager. Each link works once. To bring in another business, use{" "}
+                <span className="hb-kbd-chip">Menu → Referral</span> (a shareable link and message; the
+                other business signs up with its own account).
               </div>
               <p>
                 A business&apos;s data is completely separate from every other business on
@@ -281,7 +283,7 @@ export default function HandbookPage() {
                       <td className="no">—</td>
                     </tr>
                     <tr>
-                      <td>Invite a new Manager or Owner</td>
+                      <td>Invite a new Manager</td>
                       <td className="yes">Yes</td>
                       <td className="no">—</td>
                       <td className="no">—</td>
@@ -950,7 +952,7 @@ export default function HandbookPage() {
                   <span className="hb-kbd-chip">Menu → Invite</span>) — pick a role, press{" "}
                   <span className="hb-kbd-chip">Generate invite link</span>, then copy the link, or
                   copy the ready-made message, or press <strong>Open in email</strong>. Managers
-                  can only invite Cleaners; Owners can also invite Managers and Owners. Each link
+                  can only invite Cleaners; Owners can also invite Managers. Each link
                   works once. (More under <a href="#signing-in">Signing in &amp; your business</a>.)
                 </li>
                 <li>

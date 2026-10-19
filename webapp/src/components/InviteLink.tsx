@@ -71,14 +71,13 @@ export default function InviteLink({
     <div className="property-card">
       <h2 style={{ fontSize: 18, margin: 0 }}>Invite someone to your team</h2>
       <p style={{ fontSize: 13, color: "var(--muted)", margin: "6px 0 14px" }}>
-        Share a link to bring a new {isOwner ? "cleaner, manager, or owner" : "cleaner"} into your
+        Share a link to bring a new {isOwner ? "cleaner or manager" : "cleaner"} into your
         business. Each link works once.
       </p>
       <div className="add-feed-row">
         <select value={role} onChange={(e) => setRole(e.target.value as Role)}>
           <option value="cleaner">Cleaner</option>
           {isOwner ? <option value="manager">Manager</option> : null}
-          {isOwner ? <option value="owner">Owner</option> : null}
         </select>
         <button type="button" className="btn btn-primary" onClick={handleGenerate} disabled={generating}>
           {generating ? "Generating…" : "Generate invite link"}

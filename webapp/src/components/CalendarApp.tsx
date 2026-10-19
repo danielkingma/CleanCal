@@ -512,6 +512,11 @@ export default function CalendarApp({
                 Invite
               </Link>
             ) : null}
+            {isStaffUser ? (
+              <Link href="/referral" className="dropdown-item">
+                Referral
+              </Link>
+            ) : null}
             <Link href="/profile" className="dropdown-item">
               My Profile
             </Link>
