@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import type { Booking } from "@/lib/types";
 import MonthGrid from "./MonthGrid";
 
@@ -24,11 +25,28 @@ export default function PropertyYearView({
   cleanerNameById,
   cleanerInitialById,
 }: PropertyYearViewProps) {
+  // On a phone the months stack in one long column, so bring the current
+  // month into view instead of leaving the viewer at January. (Wider
+  // screens show several months at once; nothing to scroll there.)
+  const currentMonthRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (new Date().getFullYear() !== year) return;
+    if (!window.matchMedia("(max-width: 900px)").matches) return;
+    currentMonthRef.current?.scrollIntoView({ block: "start" });
+  }, [year]);
+  const now = new Date();
+  const currentMonth = now.getFullYear() === year ? now.getMonth() : -1;
+
   return (
     <div className="py-year-grid">
       {Array.from({ length: 12 }, (_, m) => (
-        <MonthGrid
+        <div
           key={m}
+          ref={m === currentMonth ? currentMonthRef : undefined}
+          // Leave room for the sticky top bar when scrolled into view.
+          style={{ scrollMarginTop: 130, minWidth: 0 }}
+        >
+        <MonthGrid
           year={year}
           month={m}
           bookings={bookings}
@@ -44,6 +62,7 @@ export default function PropertyYearView({
           // cleaner names/colours existed.
           showCleanerLabel={false}
         />
+        </div>
       ))}
     </div>
   );
