@@ -7,6 +7,7 @@ import NavMenus from "@/components/NavMenus";
 import { addDays, checkoutDate, isoDate } from "@/lib/calendar-utils";
 import { isStaff, type Booking } from "@/lib/types";
 import { isSuperadmin } from "@/lib/superadmin";
+import { spotConflicts } from "@/lib/conflicts";
 
 interface AttentionItem {
   type: "Dispute" | "Unclaimed";
@@ -30,14 +31,16 @@ export default async function DashboardPage() {
     .maybeSingle();
   if (!isStaff(profile?.role)) redirect("/calendar");
 
-  const { data: propertiesData } = await supabase.from("properties").select("id, name");
+  const { data: propertiesData } = await supabase
+    .from("properties")
+    .select("id, name, checkout_time, checkin_time, timezone, clean_minutes");
   const properties = propertiesData ?? [];
   const propertyNameById = Object.fromEntries(properties.map((p) => [p.id, p.name]));
 
   const { data: bookingsData } = await supabase
     .from("bookings")
     .select(
-      "id, property_id, checkin_date, nights, status, is_open_job, assigned_cleaner_id, dispute_status, rating",
+      "id, property_id, checkin_date, nights, status, is_open_job, assigned_cleaner_id, dispute_status, rating, cleaning_started_at, cleaning_completed_at",
     );
   const bookings = (bookingsData ?? []) as Booking[];
 
@@ -82,6 +85,7 @@ export default async function DashboardPage() {
   attentionItems.sort((a, b) => a.date.localeCompare(b.date));
 
   const todayIso = isoDate(today);
+  const conflicts = spotConflicts({ properties, bookings, now: new Date(), horizonDays: 3 });
 
   return (
     <div>
@@ -131,6 +135,44 @@ export default async function DashboardPage() {
             </div>
           </div>
         </div>
+
+        <h2 style={{ fontSize: 18, marginBottom: 6 }}>Same-day conflict spotter</h2>
+        <p className="photo-note" style={{ maxWidth: 760, marginBottom: 10 }}>
+          Checks today and the next 3 days: where a clean is expected to finish compared with the next guest&apos;s
+          earliest check-in. Set each property&apos;s times on the Properties page.
+        </p>
+        {conflicts.length === 0 ? (
+          <p className="photo-note" style={{ maxWidth: 760, marginBottom: 24 }}>
+            No conflicts spotted — every turnover has room to spare.
+          </p>
+        ) : (
+          <div className="property-card" style={{ marginBottom: 24 }}>
+            <table className="feed-table">
+              <thead>
+                <tr>
+                  <th>Level</th>
+                  <th>Property</th>
+                  <th>Date</th>
+                  <th>Detail</th>
+                </tr>
+              </thead>
+              <tbody>
+                {conflicts.map((c) => (
+                  <tr key={c.id}>
+                    <td>
+                      <span className={`attn-type-pill ${c.severity === "critical" ? "dispute" : "unclaimed"}`}>
+                        {c.severity === "critical" ? "Conflict" : "Tight"}
+                      </span>
+                    </td>
+                    <td>{c.propertyName}</td>
+                    <td>{c.date === todayIso ? "Today" : new Date(c.date).toLocaleDateString()}</td>
+                    <td>{c.message}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         <h2 style={{ fontSize: 18, marginBottom: 14 }}>Needs attention</h2>
         {attentionItems.length === 0 ? (

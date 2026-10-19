@@ -1089,7 +1089,19 @@ export default function HandbookPage() {
                 <li><strong>Team rating avg</strong> — the average of every rating given, with how many active cleaners you have.</li>
               </ul>
               <p>
-                Below the tiles, <strong>Needs attention</strong> lists each open dispute and each
+                Below the tiles, the <strong>Same-day conflict spotter</strong> checks today and the
+                next 3 days. Where one guest checks out and the next checks in on the same day, it
+                compares when the clean is expected to finish with the next guest&apos;s earliest
+                check-in, and flags a clean that will run past it (&quot;Conflict&quot;), one with
+                under an hour to spare (&quot;Tight&quot;), overlapping bookings, and same-day
+                turnovers with no cleaner assigned. Set each property&apos;s check-out time, earliest
+                check-in, usual clean length and time zone under <span className="hb-kbd-chip">Manage →
+                Properties</span> (&quot;Turnover times&quot;). Once three cleans at a property have
+                been timed, their average replaces the usual length. It is a set of rules, not a
+                prediction: it only knows what is on the calendar and the times you give it.
+              </p>
+              <p>
+                Then <strong>Needs attention</strong> lists each open dispute and each
                 unclaimed open job — type, property, date (marked &quot;past&quot; if it&apos;s
                 already gone by) and detail — oldest first. When there&apos;s nothing to chase it
                 says so.

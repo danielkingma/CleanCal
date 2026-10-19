@@ -84,6 +84,39 @@ export async function updatePropertyProfile(
   revalidatePath("/calendar");
 }
 
+const HHMM = /^([01][0-9]|2[0-3]):[0-5][0-9]$/;
+
+export async function updateTurnoverTimes(
+  propertyId: string,
+  checkoutTime: string,
+  checkinTime: string,
+  timezone: string,
+  cleanMinutes: number,
+) {
+  if (!HHMM.test(checkoutTime) || !HHMM.test(checkinTime)) throw new Error("Enter the times as hours and minutes.");
+  try {
+    new Intl.DateTimeFormat("en", { timeZone: timezone });
+  } catch {
+    throw new Error("That time zone isn't recognised (e.g. Australia/Sydney).");
+  }
+  if (!Number.isFinite(cleanMinutes) || cleanMinutes < 15 || cleanMinutes > 720) {
+    throw new Error("Clean length must be between 15 and 720 minutes.");
+  }
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("properties")
+    .update({
+      checkout_time: checkoutTime,
+      checkin_time: checkinTime,
+      timezone,
+      clean_minutes: Math.round(cleanMinutes),
+    })
+    .eq("id", propertyId);
+  if (error) throw new Error(error.message);
+  revalidatePath("/properties");
+  revalidatePath("/dashboard");
+}
+
 // Owner-only in practice: enforced by the properties_financials_owner_only
 // trigger (0019_linen_service.sql), not by anything here -- a manager
 // calling this just gets that trigger's error back from Supabase, same

@@ -61,6 +61,11 @@ export interface Property {
   has_outdoor_area?: boolean;
   linen_box_count?: number;
   linen_fee_cents?: number;
+  // Same-day conflict spotter (0053_turnover_times.sql).
+  checkout_time?: string;
+  checkin_time?: string;
+  timezone?: string;
+  clean_minutes?: number;
 }
 
 export type IcalSyncStatus = "never" | "ok" | "error";

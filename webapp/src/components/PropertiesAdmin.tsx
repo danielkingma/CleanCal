@@ -14,6 +14,7 @@ import {
   updateLinenService,
   updatePayoutRate,
   updatePropertyProfile,
+  updateTurnoverTimes,
 } from "@/app/properties/actions";
 import Logo from "./Logo";
 import SignOutButton from "./SignOutButton";
@@ -182,6 +183,14 @@ function PropertyCard({
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileSaved, setProfileSaved] = useState(false);
 
+  const [checkoutTime, setCheckoutTime] = useState(property.checkout_time ?? "10:00");
+  const [checkinTime, setCheckinTime] = useState(property.checkin_time ?? "15:00");
+  const [timezone, setTimezone] = useState(property.timezone ?? "Australia/Sydney");
+  const [cleanMinutes, setCleanMinutes] = useState((property.clean_minutes ?? 120).toString());
+  const [savingTimes, setSavingTimes] = useState(false);
+  const [timesSaved, setTimesSaved] = useState(false);
+  const [timesError, setTimesError] = useState<string | null>(null);
+
   const [linenBoxCount, setLinenBoxCount] = useState((property.linen_box_count ?? 1).toString());
   const [linenFeeRate, setLinenFeeRate] = useState(((property.linen_fee_cents ?? 2000) / 100).toString());
   const [savingLinenService, setSavingLinenService] = useState(false);
@@ -290,6 +299,20 @@ function PropertyCard({
       setProfileSaved(true);
     } finally {
       setSavingProfile(false);
+    }
+  }
+
+  async function handleSaveTimes() {
+    setSavingTimes(true);
+    setTimesSaved(false);
+    setTimesError(null);
+    try {
+      await updateTurnoverTimes(property.id, checkoutTime, checkinTime, timezone.trim(), Number(cleanMinutes));
+      setTimesSaved(true);
+    } catch (e) {
+      setTimesError(e instanceof Error ? e.message : "Couldn't save.");
+    } finally {
+      setSavingTimes(false);
     }
   }
 
@@ -474,6 +497,84 @@ function PropertyCard({
             {savingProfile ? "Saving…" : "Save"}
           </button>
           {profileSaved ? <span style={{ fontSize: 12.5, color: "var(--teal-deep)" }}>Saved</span> : null}
+        </div>
+      </div>
+
+      <div className="field">
+        <label>Turnover times (used by the Same-day conflict spotter on the Dashboard)</label>
+        <div style={{ display: "flex", gap: 16, alignItems: "flex-end", flexWrap: "wrap" }}>
+          <div>
+            <label htmlFor={`co-${property.id}`} style={{ fontSize: 12.5, color: "var(--muted)" }}>
+              Check-out
+            </label>
+            <input
+              id={`co-${property.id}`}
+              type="time"
+              value={checkoutTime}
+              onChange={(e) => {
+                setCheckoutTime(e.target.value);
+                setTimesSaved(false);
+              }}
+              style={{ display: "block" }}
+            />
+          </div>
+          <div>
+            <label htmlFor={`ci-${property.id}`} style={{ fontSize: 12.5, color: "var(--muted)" }}>
+              Earliest check-in
+            </label>
+            <input
+              id={`ci-${property.id}`}
+              type="time"
+              value={checkinTime}
+              onChange={(e) => {
+                setCheckinTime(e.target.value);
+                setTimesSaved(false);
+              }}
+              style={{ display: "block" }}
+            />
+          </div>
+          <div>
+            <label htmlFor={`cm-${property.id}`} style={{ fontSize: 12.5, color: "var(--muted)" }}>
+              Usual clean (minutes)
+            </label>
+            <input
+              id={`cm-${property.id}`}
+              type="number"
+              min="15"
+              max="720"
+              value={cleanMinutes}
+              onChange={(e) => {
+                setCleanMinutes(e.target.value);
+                setTimesSaved(false);
+              }}
+              style={{ maxWidth: 110, display: "block" }}
+            />
+          </div>
+          <div>
+            <label htmlFor={`tz-${property.id}`} style={{ fontSize: 12.5, color: "var(--muted)" }}>
+              Time zone
+            </label>
+            <input
+              id={`tz-${property.id}`}
+              type="text"
+              value={timezone}
+              onChange={(e) => {
+                setTimezone(e.target.value);
+                setTimesSaved(false);
+              }}
+              style={{ maxWidth: 200, display: "block" }}
+            />
+          </div>
+        </div>
+        <p className="access-note" style={{ marginTop: 6, marginBottom: 0 }}>
+          Once three cleans have been timed, the average of the recorded cleans is used instead of the usual length.
+        </p>
+        <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 10 }}>
+          <button type="button" className="btn btn-secondary" onClick={handleSaveTimes} disabled={savingTimes}>
+            {savingTimes ? "Saving…" : "Save"}
+          </button>
+          {timesSaved ? <span style={{ fontSize: 12.5, color: "var(--teal-deep)" }}>Saved</span> : null}
+          {timesError ? <span style={{ fontSize: 12.5, color: "var(--coral)" }}>{timesError}</span> : null}
         </div>
       </div>
 
