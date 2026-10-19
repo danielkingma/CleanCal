@@ -509,7 +509,7 @@ export default function CalendarApp({
             </Link>
             {isStaffUser ? (
               <Link href="/invite" className="dropdown-item">
-                Invite
+                Invite team
               </Link>
             ) : null}
             {isStaffUser ? (

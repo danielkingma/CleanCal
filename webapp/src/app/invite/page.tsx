@@ -46,7 +46,7 @@ export default async function InvitePage() {
           <SignOutButton />
         </div>
         <div className="topbar-row">
-          <div style={{ color: "var(--muted)", fontSize: 14 }}>Invite</div>
+          <div style={{ color: "var(--muted)", fontSize: 14 }}>Invite team</div>
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
             <NavMenus isStaffUser={true} isSuperadmin={isSuperadmin(user.email)} />
             <Link href="/calendar" className="today-btn">

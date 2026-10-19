@@ -87,7 +87,7 @@ export default function NavMenus({
         </Link>
         {isStaffUser ? (
           <Link href="/invite" className="dropdown-item">
-            Invite
+            Invite team
           </Link>
         ) : null}
         {isStaffUser ? (
