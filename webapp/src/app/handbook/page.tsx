@@ -194,7 +194,7 @@ export default function HandbookPage() {
                 however you like (text, WhatsApp, etc.). A Manager can only invite at the Cleaner
                 level; only an Owner can invite a Manager. Each link works once. To bring in another business, use{" "}
                 <span className="hb-kbd-chip">Menu → Referral</span> (your personal referral link and a
-                ready-made message). Referrals are for new businesses only (one that is new to CleanCal and signs up through your link). When a business you referred starts paying monthly, $20 of CleanCal credit goes
+                ready-made message). Referrals are for new businesses only (one that is new to CleanCal and signs up through your link). A business that joins through a referral link gets $20 of welcome credit in its own wallet. When a business you referred starts paying monthly, $20 of CleanCal credit goes
                 into your referral wallet. Credit is never paid out as cash and can only be used towards your own
                 CleanCal subscription once billing starts.
               </div>
