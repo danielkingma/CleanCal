@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { INVITE_COOKIE } from "@/lib/invite-cookie";
+import { REFERRAL_COOKIE, normaliseReferralCode } from "@/lib/referral";
 
 // Both RPCs (create_organization / redeem_invite, see
 // 0016_organizations.sql) refuse to run for a user who already has an
@@ -20,6 +21,19 @@ export async function createOrganization(name: string, businessName?: string) {
     business ? { p_name: name, p_business_name: business } : { p_name: name },
   );
   if (error) throw new Error(error.message);
+
+  // Came from a referral link? Record it. Best effort: a failure here (or
+  // a code that doesn't check out) must never stop the signup itself.
+  const jar = await cookies();
+  const code = normaliseReferralCode(jar.get(REFERRAL_COOKIE)?.value);
+  if (code) {
+    try {
+      await supabase.rpc("record_referral", { p_code: code });
+    } catch {
+      // ignored on purpose
+    }
+    jar.delete(REFERRAL_COOKIE);
+  }
   revalidatePath("/", "layout");
 }
 

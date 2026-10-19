@@ -2,11 +2,10 @@
 
 import { useState } from "react";
 
-const SITE = "https://www.cleancal.net";
-
-// Refer another host or property manager. A plain link and a ready-made
-// message: there's no referral tracking or reward scheme behind it.
-export default function ReferralShare() {
+// Refer another host or property manager with the organization's own
+// referral link, so a signup can be tracked and credited.
+export default function ReferralShare({ link }: { link: string }) {
+  const SITE = link;
   const [copied, setCopied] = useState<"link" | "message" | null>(null);
   const message = `Hi! I use CleanCal to run the cleaning side of my short-stay properties: a shared calendar, cleaner assignment and room-by-room checklists with photos. It has a 3-month free trial and no card is needed to start. Have a look when you get a chance: ${SITE}`;
   const mailtoHref = `mailto:?subject=${encodeURIComponent("A tool I use for short-stay cleaning")}&body=${encodeURIComponent(message)}`;

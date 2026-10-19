@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { REFERRAL_COOKIE, normaliseReferralCode } from "@/lib/referral";
 
 // /api/cron, /api/webhooks (Stripe), and /api/ical/[token] (the outbound
 // .ics export OTAs poll) aren't user-facing at all -- each is hit by
@@ -142,6 +143,19 @@ export async function proxy(request: NextRequest) {
       url.pathname = "/onboarding";
       return NextResponse.redirect(url);
     }
+  }
+
+  // A visitor arriving through a referral link (?ref=CODE) keeps the code
+  // for 30 days, so it survives the sign-in round trip until they create
+  // their business (see createOrganization in onboarding/actions.ts).
+  const ref = normaliseReferralCode(request.nextUrl.searchParams.get("ref"));
+  if (ref && !user) {
+    response.cookies.set(REFERRAL_COOKIE, ref, {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 30,
+      sameSite: "lax",
+      httpOnly: true,
+    });
   }
 
   return response;

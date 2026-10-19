@@ -64,6 +64,11 @@ export default function NavMenus({
               Platform stats ↗
             </a>
           ) : null}
+          {isSuperadmin ? (
+            <a href="/admin/referrals" target="_blank" rel="noopener noreferrer" className="dropdown-item">
+              Referral credits ↗
+            </a>
+          ) : null}
         </Dropdown>
       ) : null}
       <Dropdown label="Menu" triggerClassName="today-btn" align="left">

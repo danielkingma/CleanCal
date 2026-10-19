@@ -478,6 +478,11 @@ export default function CalendarApp({
                   Platform stats ↗
                 </a>
               ) : null}
+              {isSuperadmin ? (
+                <a href="/admin/referrals" target="_blank" rel="noopener noreferrer" className="dropdown-item">
+                  Referral credits ↗
+                </a>
+              ) : null}
             </Dropdown>
           ) : null}
           {isStaffUser ? (
