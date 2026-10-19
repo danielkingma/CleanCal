@@ -32,7 +32,13 @@ export default function PropertyYearView({
   useEffect(() => {
     if (new Date().getFullYear() !== year) return;
     if (!window.matchMedia("(max-width: 900px)").matches) return;
-    currentMonthRef.current?.scrollIntoView({ block: "start" });
+    const el = currentMonthRef.current;
+    if (!el) return;
+    // Measure the sticky top bar so the month's name sits just below it
+    // whatever height it is on this phone.
+    const bar = document.querySelector<HTMLElement>(".topbar");
+    const offset = (bar?.getBoundingClientRect().height ?? 0) + 12;
+    window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - offset });
   }, [year]);
   const now = new Date();
   const currentMonth = now.getFullYear() === year ? now.getMonth() : -1;
@@ -43,8 +49,7 @@ export default function PropertyYearView({
         <div
           key={m}
           ref={m === currentMonth ? currentMonthRef : undefined}
-          // Leave room for the sticky top bar when scrolled into view.
-          style={{ scrollMarginTop: 130, minWidth: 0 }}
+          style={{ minWidth: 0 }}
         >
         <MonthGrid
           year={year}
