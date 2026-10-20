@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { parseIcs } from "./ical";
 import { checkoutDate, daysBetween, fromISO, isoDate } from "./calendar-utils";
 import { notifyUsers } from "./notify";
+import { pickCleaner, shouldKeepCurrentCleaner, type DispatchCandidate } from "./dispatcher";
 
 interface FeedRow {
   id: string;
@@ -84,10 +85,30 @@ export async function syncOneFeed(supabase: SupabaseClient, feed: FeedRow): Prom
           ical_missing_first_seen_at: null,
         };
       });
-      const { error: upsertError } = await supabase
+      const { data: upserted, error: upsertError } = await supabase
         .from("bookings")
-        .upsert(rows, { onConflict: "property_id,external_uid" });
+        .upsert(rows, { onConflict: "property_id,external_uid" })
+        .select("id, external_uid");
       if (upsertError) throw new Error(upsertError.message);
+      const idByUid = new Map((upserted ?? []).map((b) => [b.external_uid as string, b.id as string]));
+
+      // Turnover dispatcher: a brand-new booking (no `prior`), or an
+      // existing one whose check-in date or length just changed (either
+      // one moves which day the clean actually happens on), is a
+      // candidate for automatic assignment/reshuffling. A booking whose
+      // dates didn't change is left alone even if it re-synced, since
+      // nothing about who should clean it could have changed.
+      const changed = rows
+        .map((row) => {
+          const prior = existingByUid.get(row.external_uid);
+          const id = idByUid.get(row.external_uid);
+          if (!id || (prior && prior.checkin_date === row.checkin_date && prior.nights === row.nights)) return null;
+          return { id, checkinDate: row.checkin_date, nights: row.nights, priorAssignedCleanerId: prior?.assigned_cleaner_id ?? null };
+        })
+        .filter((c): c is { id: string; checkinDate: string; nights: number; priorAssignedCleanerId: string | null } => c !== null);
+      if (changed.length > 0) {
+        await dispatchChangedBookings(supabase, feed.property_id, changed);
+      }
     }
 
     // A UID previously imported from this feed that's no longer present
@@ -172,5 +193,115 @@ export async function syncOneFeed(supabase: SupabaseClient, feed: FeedRow): Prom
       .update({ last_synced_at: new Date().toISOString(), last_sync_status: "error", last_sync_error: message })
       .eq("id", feed.id);
     throw e instanceof Error ? e : new Error(message);
+  }
+}
+
+interface ChangedBooking {
+  id: string;
+  checkinDate: string;
+  nights: number;
+  // null for a brand-new booking, or one that was sitting unassigned/on
+  // the open board when its dates changed.
+  priorAssignedCleanerId: string | null;
+}
+
+// The Supabase side of the turnover dispatcher: gathers what
+// src/lib/dispatcher.ts needs (candidates + who's unavailable) and
+// writes the result. A no-op the moment the organization hasn't turned
+// this on (organizations.dispatcher_enabled), so an org that never
+// opts in pays for none of these extra queries beyond the one that
+// checks the flag. See docs/TURNOVER_DISPATCHER.md.
+async function dispatchChangedBookings(
+  supabase: SupabaseClient,
+  propertyId: string,
+  changed: ChangedBooking[],
+): Promise<void> {
+  const { data: property } = await supabase
+    .from("properties")
+    .select("organization_id, name")
+    .eq("id", propertyId)
+    .maybeSingle();
+  if (!property?.organization_id) return;
+
+  const { data: org } = await supabase
+    .from("organizations")
+    .select("dispatcher_enabled")
+    .eq("id", property.organization_id)
+    .maybeSingle();
+  if (!org?.dispatcher_enabled) return;
+
+  const { data: cleanerRows } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("organization_id", property.organization_id)
+    .eq("role", "cleaner")
+    .is("deactivated_at", null);
+  const cleanerIds = (cleanerRows ?? []).map((c) => c.id as string);
+  if (cleanerIds.length === 0) return;
+
+  // Every completed clean any of these cleaners has ever done at this
+  // property -- the only ranking signal v1 has (see dispatcher.ts).
+  const { data: history } = await supabase
+    .from("bookings")
+    .select("assigned_cleaner_id, checkin_date")
+    .eq("property_id", propertyId)
+    .eq("status", "complete")
+    .in("assigned_cleaner_id", cleanerIds);
+  const historyByCleaner = new Map<string, { count: number; lastDate: string }>();
+  for (const row of history ?? []) {
+    const id = row.assigned_cleaner_id as string;
+    const entry = historyByCleaner.get(id) ?? { count: 0, lastDate: "" };
+    entry.count += 1;
+    if ((row.checkin_date as string) > entry.lastDate) entry.lastDate = row.checkin_date as string;
+    historyByCleaner.set(id, entry);
+  }
+  const candidates: DispatchCandidate[] = cleanerIds.map((id) => {
+    const h = historyByCleaner.get(id);
+    return { cleanerId: id, cleaningsAtProperty: h?.count ?? 0, lastCleanedDate: h?.lastDate || null };
+  });
+
+  const propertyName = property.name ?? "A property";
+
+  for (const booking of changed) {
+    const jobDate = isoDate(checkoutDate({ checkin_date: booking.checkinDate, nights: booking.nights }));
+    const { data: unavailableRows } = await supabase
+      .from("cleaner_unavailable_dates")
+      .select("cleaner_id")
+      .eq("date", jobDate)
+      .in("cleaner_id", cleanerIds);
+    const unavailable = new Set((unavailableRows ?? []).map((r) => r.cleaner_id as string));
+
+    if (booking.priorAssignedCleanerId && shouldKeepCurrentCleaner(booking.priorAssignedCleanerId, unavailable)) {
+      continue; // still fine where they are -- nothing to reshuffle
+    }
+    // Either a brand-new booking, or one whose current cleaner can no
+    // longer do it (now in `unavailable`, so pickCleaner() won't re-pick
+    // them) -- look for the best replacement either way.
+    const chosenCleanerId = pickCleaner({ candidates, unavailableCleanerIds: unavailable });
+
+    const when = new Date(booking.checkinDate).toLocaleDateString();
+    if (chosenCleanerId) {
+      await supabase
+        .from("bookings")
+        .update({ assigned_cleaner_id: chosenCleanerId, is_open_job: false })
+        .eq("id", booking.id);
+      await notifyUsers([chosenCleanerId], {
+        title: "New job assigned to you",
+        body: `${propertyName} — check-in ${when}. Assigned automatically based on your history at this property.`,
+        url: "/calendar",
+      });
+    } else {
+      // No one with history at this property is both active and
+      // available -- post it to the open board instead of guessing.
+      await supabase
+        .from("bookings")
+        .update({ assigned_cleaner_id: null, is_open_job: true })
+        .eq("id", booking.id);
+      await notifyUsers(cleanerIds, {
+        title: "New open job posted",
+        body: `${propertyName} — check-in ${when}. First to claim it gets it.`,
+        url: "/calendar",
+      });
+    }
   }
 }

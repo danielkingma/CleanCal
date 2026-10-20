@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   startConnectOnboarding,
   startIdentityVerification,
+  updateDispatcherEnabled,
   updateOrganizationName,
   updateOwnProfile,
 } from "@/app/profile/actions";
@@ -48,12 +49,14 @@ export default function ProfileForm({
   smsAvailable,
   devices,
   organizationName,
+  dispatcherEnabled,
 }: {
   profile: Profile;
   email: string;
   smsAvailable: boolean;
   devices: KnownDevice[];
   organizationName: string | null;
+  dispatcherEnabled: boolean;
 }) {
   // Falls back to splitting the combined `name` the same way the
   // 0042_split_name_fields.sql backfill does, in case this profile's
@@ -76,6 +79,9 @@ export default function ProfileForm({
   const [savingOrgName, setSavingOrgName] = useState(false);
   const [orgNameSaved, setOrgNameSaved] = useState(false);
   const [orgNameError, setOrgNameError] = useState<string | null>(null);
+  const [dispatcherOn, setDispatcherOn] = useState(dispatcherEnabled);
+  const [savingDispatcher, setSavingDispatcher] = useState(false);
+  const [dispatcherError, setDispatcherError] = useState<string | null>(null);
   const [bio, setBio] = useState(profile.bio ?? "");
   const [phone, setPhone] = useState(profile.phone ?? "");
   const [smsOptIn, setSmsOptIn] = useState(profile.sms_opt_in ?? false);
@@ -138,6 +144,25 @@ export default function ProfileForm({
       setOrgNameError(e instanceof Error ? e.message : "Couldn't save.");
     } finally {
       setSavingOrgName(false);
+    }
+  }
+
+  // Optimistic: flips the switch immediately, then reverts it if the
+  // save fails -- same pattern the "Needs attention" checkbox and other
+  // instant-feeling toggles elsewhere in the app already use, rather
+  // than the Save-button-plus-spinner pattern above (orgName, which is
+  // free text someone might still be typing).
+  async function handleToggleDispatcher(next: boolean) {
+    setDispatcherOn(next);
+    setSavingDispatcher(true);
+    setDispatcherError(null);
+    try {
+      await updateDispatcherEnabled(next);
+    } catch (e) {
+      setDispatcherOn(!next);
+      setDispatcherError(e instanceof Error ? e.message : "Couldn't save.");
+    } finally {
+      setSavingDispatcher(false);
     }
   }
 
@@ -354,6 +379,30 @@ export default function ProfileForm({
                 </button>
                 {orgNameSaved ? <span style={{ fontSize: 12.5, color: "var(--teal-deep)" }}>Saved</span> : null}
               </div>
+            </div>
+          </div>
+        ) : null}
+
+        {isStaff(profile.role) ? (
+          <div className="property-card" style={{ maxWidth: 480, marginTop: 16 }}>
+            <div className="field">
+              <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <input
+                  type="checkbox"
+                  checked={dispatcherOn}
+                  disabled={savingDispatcher}
+                  onChange={(e) => handleToggleDispatcher(e.target.checked)}
+                />
+                Turnover dispatcher
+              </label>
+              <p className="access-note">
+                When on, a new or shifted booking is assigned automatically to whichever active
+                cleaner has cleaned that property the most recently and often, skipping anyone
+                marked unavailable that day. When no one fits, it&apos;s posted to the open job
+                board instead of left for someone to notice. Off by default, and your own manual
+                assignments and the open job board work exactly the same either way.
+              </p>
+              {dispatcherError ? <div className="error-banner" style={{ marginTop: 10 }}>{dispatcherError}</div> : null}
             </div>
           </div>
         ) : null}

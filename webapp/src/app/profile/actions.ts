@@ -46,6 +46,18 @@ export async function updateOrganizationName(name: string) {
   revalidatePath("/profile");
 }
 
+// Owner-or-manager (enforced in update_dispatcher_enabled() itself --
+// see 0054_turnover_dispatcher.sql) -- the on/off switch for the
+// turnover dispatcher (src/lib/dispatcher.ts, src/lib/ical-sync.ts).
+// Off by default; this is the only way to turn it on, there's no
+// superadmin-only backdoor like owner statements has.
+export async function updateDispatcherEnabled(enabled: boolean) {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("update_dispatcher_enabled", { p_enabled: enabled });
+  if (error) throw new Error(error.message);
+  revalidatePath("/profile");
+}
+
 // Starts a Stripe-hosted ID verification session for the signed-in
 // cleaner and returns the URL to redirect them to. The *result* of
 // verification only ever comes back through the Stripe webhook

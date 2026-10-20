@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { smsConfigured } from "@/lib/sms";
 import ProfileForm from "@/components/ProfileForm";
-import { isOwner, type Profile } from "@/lib/types";
+import { isOwner, isStaff, type Profile } from "@/lib/types";
 
 export default async function ProfilePage() {
   const supabase = await createClient();
@@ -51,13 +51,19 @@ export default async function ProfilePage() {
   if (!profile) redirect("/calendar");
 
   let organizationName: string | null = null;
-  if (isOwner(profile.role) && profile.organization_id) {
+  // dispatcher_enabled is staff-wide (owner or manager can flip it, same
+  // as the per-property turnover-times settings), while the business
+  // name stays owner-only -- see update_dispatcher_enabled() vs
+  // update_organization_name() in the migrations.
+  let dispatcherEnabled = false;
+  if (isStaff(profile.role) && profile.organization_id) {
     const { data: org } = await supabase
       .from("organizations")
-      .select("name")
+      .select("name, dispatcher_enabled")
       .eq("id", profile.organization_id)
       .maybeSingle();
-    organizationName = org?.name ?? null;
+    if (isOwner(profile.role)) organizationName = org?.name ?? null;
+    dispatcherEnabled = org?.dispatcher_enabled ?? false;
   }
 
   const { data: devices } = await supabase
@@ -76,6 +82,7 @@ export default async function ProfilePage() {
       smsAvailable={smsConfigured()}
       devices={devices ?? []}
       organizationName={organizationName}
+      dispatcherEnabled={dispatcherEnabled}
     />
   );
 }
