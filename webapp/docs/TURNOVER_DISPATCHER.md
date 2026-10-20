@@ -20,11 +20,16 @@ completed a clean at this exact property**, with the most recent clean as
 a tiebreaker. A cleaner with zero history at a property is never
 auto-assigned to it — that's a guess, not "the right cleaner", so it's
 left to the open job board instead (see below). There is no proximity
-signal: CleanCal has no address, suburb, or coordinates for a property or
-a cleaner today (`service_area` on a cleaner's profile is free text, not
-something distance math can use). Adding real proximity later needs new
-Property/Profile fields and a geocoding step; see `src/lib/dispatcher.ts`
-for where that ranking would plug in.
+signal yet. A cleaner can now enter a real home address from My Profile
+(`profiles.address`, migration `0055_profile_address.sql` — separate from
+the older free-text `service_area`, which still isn't something distance
+math can use), shown on the Cleaners directory the same way phone/service
+area already are. Nothing reads it yet: properties still have no location
+of their own, and turning "two addresses" into an actual distance still
+needs a geocoding step. Adding real proximity ranking later needs a
+Property address field and that geocoding step; see
+`src/lib/dispatcher.ts` for where that ranking would plug in once both
+exist.
 
 **Availability** (`cleaner_unavailable_dates`) is checked and genuinely
 excludes a cleaner — unlike everywhere else in the app, where it's only
@@ -82,8 +87,9 @@ leave it alone.
 
 ## Not built yet
 
-- Proximity/location-based ranking (needs new schema + geocoding; see
-  above).
+- Proximity/location-based ranking (cleaners can enter an address now,
+  but properties still have no location, and nothing geocodes either
+  into coordinates yet; see above).
 - Enforcing availability anywhere outside the dispatcher itself — self-
   claiming an open job, or an admin manually assigning someone, still only
   shows a warning, never blocks it.

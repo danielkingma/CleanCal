@@ -32,6 +32,12 @@ export interface Profile {
   phone?: string;
   sms_opt_in?: boolean;
   service_area?: string;
+  // A real home address, self-entered -- distinct from service_area
+  // (a loose "where I'll take jobs" description). Collected so it can
+  // eventually support real distance-based ranking in the turnover
+  // dispatcher once properties also have a location; nothing reads it
+  // yet (see docs/TURNOVER_DISPATCHER.md).
+  address?: string | null;
   identity_status?: IdentityStatus;
   stripe_connect_status?: ConnectStatus;
   deactivated_at?: string | null;

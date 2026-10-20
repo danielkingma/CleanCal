@@ -28,7 +28,7 @@ export default async function CleanersPage() {
 
   const { data: cleaners } = await supabase
     .from("profiles")
-    .select("id, name, bio, phone, service_area, identity_status, stripe_connect_status, deactivated_at, favorite_color")
+    .select("id, name, bio, phone, service_area, address, identity_status, stripe_connect_status, deactivated_at, favorite_color")
     .eq("role", "cleaner")
     .is("deactivated_at", null)
     .order("name");
@@ -181,6 +181,9 @@ export default async function CleanersPage() {
                 {cleaner.phone ? `${cleaner.phone} · ` : ""}
                 {cleaner.service_area || "No service area set"}
               </p>
+              {cleaner.address ? (
+                <p style={{ fontSize: 13, color: "var(--muted)", margin: "4px 0 0" }}>{cleaner.address}</p>
+              ) : null}
               {cleaner.bio ? (
                 <p style={{ fontSize: 13.5, margin: "10px 0 0" }}>{cleaner.bio}</p>
               ) : null}

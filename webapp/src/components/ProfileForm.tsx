@@ -86,6 +86,7 @@ export default function ProfileForm({
   const [phone, setPhone] = useState(profile.phone ?? "");
   const [smsOptIn, setSmsOptIn] = useState(profile.sms_opt_in ?? false);
   const [serviceArea, setServiceArea] = useState(profile.service_area ?? "");
+  const [address, setAddress] = useState(profile.address ?? "");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -111,6 +112,7 @@ export default function ProfileForm({
         serviceArea,
         smsOptIn,
         profile.role === "cleaner" ? favoriteColor : null,
+        address,
       );
       setSaved(true);
     } catch (e) {
@@ -329,6 +331,22 @@ export default function ProfileForm({
               value={serviceArea}
               placeholder="e.g. Canberra, Queanbeyan"
               onChange={(e) => setServiceArea(e.target.value)}
+            />
+          </div>
+
+          <div className="field">
+            <label htmlFor="pAddress">Address</label>
+            <p className="access-note">
+              Shown to your Owner/Manager alongside your other details, the same way your phone
+              number already is. Not used for anything automatically yet -- it&apos;s here so the
+              turnover dispatcher can eventually take distance into account.
+            </p>
+            <input
+              id="pAddress"
+              type="text"
+              value={address}
+              placeholder="e.g. 12 Example St, Queanbeyan NSW 2620"
+              onChange={(e) => setAddress(e.target.value)}
             />
           </div>
 

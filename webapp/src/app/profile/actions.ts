@@ -6,7 +6,7 @@ import { getStripe } from "@/lib/stripe";
 
 // Deliberately takes no `role` param -- the update_own_profile RPC only
 // ever touches given_name/middle_name/surname/bio/phone/service_area/
-// sms_opt_in/favorite_color for the caller's own row (name and
+// sms_opt_in/favorite_color/address for the caller's own row (name and
 // preferred_initial are derived from the name parts server-side), so
 // there's no path here for a user to change their own role.
 export async function updateOwnProfile(
@@ -18,6 +18,7 @@ export async function updateOwnProfile(
   serviceArea: string,
   smsOptIn: boolean,
   favoriteColor: string | null,
+  address: string,
 ) {
   const supabase = await createClient();
   const { error } = await supabase.rpc("update_own_profile", {
@@ -29,6 +30,7 @@ export async function updateOwnProfile(
     p_service_area: serviceArea,
     p_sms_opt_in: smsOptIn,
     p_favorite_color: favoriteColor,
+    p_address: address,
   });
   if (error) throw new Error(error.message);
   revalidatePath("/profile");
