@@ -1,9 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { notifyUsers } from "@/lib/notify";
 import { getStripe } from "@/lib/stripe";
+import { reviewCleaningPhotos } from "@/lib/photo-review";
 import type { BookingStatus, Checklist } from "@/lib/types";
 
 export interface BookingInput {
@@ -469,6 +471,11 @@ export async function updateBookingCleaner(
   checklist: Checklist,
 ) {
   const supabase = await createClient();
+  // Read before writing so we can tell a genuine to-clean/in-progress ->
+  // complete transition apart from a resave of an already-complete job --
+  // the photo reviewer below should only ever run once per job.
+  const { data: before } = await supabase.from("bookings").select("status").eq("id", id).maybeSingle();
+
   const { error } = await supabase.rpc("cleaner_update_booking", {
     p_booking_id: id,
     p_status: status,
@@ -476,4 +483,72 @@ export async function updateBookingCleaner(
   });
   if (error) throw new Error(error.message);
   revalidatePath("/calendar");
+
+  // Scheduled via after() so the cleaner's own save returns immediately --
+  // the vision API call can take a few seconds, and isn't something they
+  // should have to sit and wait on just to mark a job complete.
+  if (before?.status !== "complete" && status === "complete") {
+    after(() => reviewCompletedBookingPhotos(supabase, id).catch(() => {}));
+  }
+}
+
+// Checklist photo reviewer (src/lib/photo-review.ts): a second pair of
+// eyes on the job's photos, run right after the cleaner marks it complete
+// while they may still be on-site to fix anything it flags. Everything
+// here is best-effort -- this runs after the response has already gone
+// back to the cleaner, so nothing is listening for an error any more; the
+// catch() at the call site above is a second line of defence on top of
+// photo-review.ts's own fail-open behaviour.
+async function reviewCompletedBookingPhotos(supabase: SupabaseServer, bookingId: string) {
+  const { data: booking } = await supabase
+    .from("bookings")
+    .select("checklist, assigned_cleaner_id, property_id")
+    .eq("id", bookingId)
+    .maybeSingle();
+  if (!booking) return;
+
+  // Don't overwrite a cleaner's own attention flag/note (BookingModal's
+  // toggleAttentionFlag) with an automated one.
+  const checklist = (booking.checklist ?? {}) as Checklist;
+  if (checklist.attention?.flagged) return;
+
+  const { data: photoRows } = await supabase
+    .from("photos")
+    .select("storage_path")
+    .eq("booking_id", bookingId)
+    .order("created_at", { ascending: true });
+  const paths = (photoRows ?? []).map((p) => p.storage_path);
+  if (paths.length === 0) return;
+
+  const { data: property } = await supabase
+    .from("properties")
+    .select("bedroom_count, bathroom_count, has_outdoor_area")
+    .eq("id", booking.property_id)
+    .maybeSingle();
+
+  const { data: signed } = await supabase.storage.from("booking-photos").createSignedUrls(paths, 3600);
+  const photoUrls = (signed ?? []).map((s) => s.signedUrl).filter((u): u is string => Boolean(u));
+  if (photoUrls.length === 0) return;
+
+  const result = await reviewCleaningPhotos({
+    photoUrls,
+    bedroomCount: property?.bedroom_count ?? 1,
+    bathroomCount: property?.bathroom_count ?? 1,
+    hasOutdoorArea: property?.has_outdoor_area ?? false,
+  });
+  if (!result.ran || !result.flagged) return;
+
+  await supabase.rpc("cleaner_update_booking", {
+    p_booking_id: bookingId,
+    p_checklist: { ...checklist, attention: { flagged: true, note: result.note } },
+  });
+  revalidatePath("/calendar");
+
+  if (booking.assigned_cleaner_id) {
+    await notifyUsers([booking.assigned_cleaner_id], {
+      title: "A photo from your clean got flagged",
+      body: result.note,
+      url: "/calendar",
+    });
+  }
 }
