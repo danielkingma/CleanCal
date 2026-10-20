@@ -790,7 +790,7 @@ export default function BookingModal({
             id="fNights"
             type="number"
             min={1}
-            max={30}
+            max={366}
             value={nights}
             disabled={!canEditCore}
             onChange={(e) => onNightsChange(parseInt(e.target.value, 10))}

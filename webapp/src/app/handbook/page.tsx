@@ -528,7 +528,7 @@ export default function HandbookPage() {
                 </li>
                 <li>
                   <strong>Check-in, Checkout, Nights</strong> — the three are linked: change any
-                  one and the others follow. A booking can be 1 to 30 nights.
+                  one and the others follow. A booking can be 1 to 12 months.
                 </li>
                 <li>
                   <strong>Assignment</strong> — <em>Reserved for a cleaner</em> (pick them in{" "}
