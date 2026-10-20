@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { buildStatement, monthRange, periodRange, currentFY, fyLabel, fyRange } from "../src/lib/statements.ts";
+import { buildStatement, buildOwnerSummary, monthRange, periodRange, currentFY, fyLabel, fyRange } from "../src/lib/statements.ts";
 
 const prop = {
   id: "p1", name: "Guest house", payout_rate_cents: 8000, linen_box_count: 1, linen_fee_cents: 2000,
@@ -79,4 +79,72 @@ test("other-currency payouts are excluded and flagged", () => {
   assert.equal(s.currency, "USD");
   assert.equal(s.payouts_cents, 50000);
   assert.deepEqual(s.excluded_payouts, [{ currency: "AUD", count: 1, total_cents: 30000 }]);
+});
+
+test("owner summary: single property, normal month", () => {
+  const s = buildStatement({
+    clientName: "A", organizationName: "Org", start: "2026-10-01", end: "2026-10-31", generatedAt: "x",
+    properties: [prop],
+    lines: [
+      { property_id: "p1", line_type: "reservation", guest_name: "G", checkin_date: "2026-10-02", nights: 2, payout_date: "2026-10-05", amount_cents: 50000, platform: "airbnb", confirmation_code: "HM1" },
+    ],
+    bookings: [
+      { property_id: "p1", checkin_date: "2026-10-02", nights: 2, guests: "G", linen_pickup: true },
+    ],
+    expenses: [{ property_id: "p1", expense_date: "2026-10-10", description: "Lightbulbs", amount_cents: 1500 }],
+  });
+  const summary = buildOwnerSummary(s);
+  assert.match(summary, /^In October 2026, Guest house had 1 stay, bringing in \$500\.00 in payouts\./);
+  assert.match(summary, /in cleaning/);
+  assert.match(summary, /in management fees/);
+  assert.match(summary, /in expenses/);
+  assert.match(summary, /that left a net payout of/);
+});
+
+test("owner summary: no activity in the period", () => {
+  const s = buildStatement({
+    clientName: "A", organizationName: "Org", start: "2026-10-01", end: "2026-10-31", generatedAt: "x",
+    properties: [prop], lines: [], bookings: [], expenses: [],
+  });
+  assert.equal(buildOwnerSummary(s), "No payouts, cleans or expenses were recorded for Guest house in October 2026.");
+});
+
+test("owner summary: no properties assigned yields no summary", () => {
+  const s = buildStatement({
+    clientName: "A", organizationName: "Org", start: "2026-10-01", end: "2026-10-31", generatedAt: "x",
+    properties: [], lines: [], bookings: [], expenses: [],
+  });
+  assert.equal(buildOwnerSummary(s), "");
+});
+
+test("owner summary: multiple properties names the top performer", () => {
+  const prop2 = { ...prop, id: "p2", name: "Beach unit", mgmt_fee_percent: 0 };
+  const s = buildStatement({
+    clientName: "A", organizationName: "Org", start: "2026-10-01", end: "2026-10-31", generatedAt: "x",
+    properties: [prop, prop2],
+    lines: [
+      { property_id: "p1", line_type: "reservation", guest_name: "G", checkin_date: "2026-10-02", nights: 2, payout_date: "2026-10-05", amount_cents: 50000, platform: "airbnb", confirmation_code: "" },
+      { property_id: "p2", line_type: "reservation", guest_name: "H", checkin_date: "2026-10-04", nights: 2, payout_date: "2026-10-06", amount_cents: 20000, platform: "airbnb", confirmation_code: "" },
+    ],
+    bookings: [
+      { property_id: "p1", checkin_date: "2026-10-02", nights: 2, guests: "G", linen_pickup: false },
+      { property_id: "p2", checkin_date: "2026-10-04", nights: 2, guests: "H", linen_pickup: false },
+    ],
+    expenses: [],
+  });
+  const summary = buildOwnerSummary(s);
+  assert.match(summary, /^Across your 2 properties in October 2026, there were 2 stays in total/);
+  assert.match(summary, /Guest house was the strongest performer, netting \$[\d,.]+\./);
+});
+
+test("owner summary: financial year uses the FY label", () => {
+  const s = buildStatement({
+    clientName: "A", organizationName: "Org", start: "2025-07-01", end: "2026-06-30", generatedAt: "x",
+    properties: [prop],
+    lines: [
+      { property_id: "p1", line_type: "reservation", guest_name: "G", checkin_date: "2025-07-02", nights: 2, payout_date: "2025-07-05", amount_cents: 10001, platform: "airbnb", confirmation_code: "" },
+    ],
+    bookings: [], expenses: [],
+  });
+  assert.match(buildOwnerSummary(s), /^In FY 2025–26, Guest house had 0 stays/);
 });

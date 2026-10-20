@@ -1,5 +1,5 @@
 import { formatCents } from "@/lib/money";
-import type { StatementSnapshot } from "@/lib/statements";
+import { buildOwnerSummary, type StatementSnapshot } from "@/lib/statements";
 
 function day(iso: string | null): string {
   if (!iso) return "";
@@ -11,6 +11,11 @@ function day(iso: string | null): string {
 // only, so it works in server and client components alike.
 export default function StatementDocument({ s }: { s: StatementSnapshot }) {
   const money = (c: number) => formatCents(c, s.currency);
+  // Templated, not AI-generated -- see buildOwnerSummary()'s own comment
+  // for why. Rendered here (rather than a separate route or view) so it
+  // automatically shows up everywhere this document already does: the
+  // live preview, the saved printable copy, and the public owner link.
+  const summary = buildOwnerSummary(s);
   return (
     <article className="stmt-doc">
       <header className="stmt-head">
@@ -23,6 +28,8 @@ export default function StatementDocument({ s }: { s: StatementSnapshot }) {
           {s.organization_name ? <div>Prepared by {s.organization_name}</div> : null}
         </div>
       </header>
+
+      {summary ? <p className="stmt-narrative">{summary}</p> : null}
 
       {s.excluded_payouts && s.excluded_payouts.length > 0 ? (
         <div className="stmt-warn">

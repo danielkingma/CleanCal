@@ -2830,6 +2830,7 @@ h1, h2, .brand { letter-spacing: -0.02em; font-weight: 700; }
 .stmt-head { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; border-bottom: 2px solid #1a2b2b; padding-bottom: 12px; margin-bottom: 14px; }
 .stmt-kicker { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
 .stmt-period { text-align: right; font-size: 14px; color: var(--muted); }
+.stmt-narrative { font-size: 15px; line-height: 1.5; margin: 0 0 14px; }
 .stmt-table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 4px 0 10px; }
 .stmt-table td { padding: 5px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
 .stmt-table td:first-child { white-space: nowrap; width: 1%; }

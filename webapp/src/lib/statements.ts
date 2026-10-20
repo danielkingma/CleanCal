@@ -346,3 +346,89 @@ export function buildStatement(input: {
     excluded_payouts: [...excluded].map(([c, e]) => ({ currency: c, count: e.count, total_cents: e.total })),
   };
 }
+
+// A local copy of ./money.ts's formatCents, kept inline so this file stays
+// import-free like the rest of it (every other function here is plain
+// arithmetic on plain data) and runnable by plain `node --test` with no
+// module resolution to configure. Keep the two in sync if the money
+// formatting ever changes.
+function formatMoney(cents: number, currency: string): string {
+  try {
+    return new Intl.NumberFormat("en-AU", { style: "currency", currency }).format(cents / 100);
+  } catch {
+    return `${currency} ${(cents / 100).toFixed(2)}`;
+  }
+}
+
+function joinWithAnd(items: string[]): string {
+  if (items.length <= 1) return items[0] ?? "";
+  if (items.length === 2) return `${items[0]} and ${items[1]}`;
+  return `${items.slice(0, -1).join(", ")}, and ${items[items.length - 1]}`;
+}
+
+// "October 2026" for a single-month statement; the financial-year label
+// (e.g. "FY 2025–26") for one that spans several months, matching how
+// the saved statement already labels itself elsewhere.
+function periodLabel(s: StatementSnapshot): string {
+  if (s.months && s.months.length > 1) return fyLabelFromDates(s.period_start, s.period_end);
+  const d = new Date(`${s.period_start}T00:00:00Z`);
+  return new Intl.DateTimeFormat("en-AU", { month: "long", year: "numeric", timeZone: "UTC" }).format(d);
+}
+
+// A short, plain-language paragraph of the headline numbers, meant to sit
+// above the tables so an owner can read the gist without parsing every
+// row. Deliberately templated/rule-based -- built only from totals the
+// snapshot already carries, with no AI call and nothing it can get wrong
+// that buildStatement() itself didn't already compute. Returns "" for a
+// client with no properties assigned (StatementDocument shows its own
+// message for that case).
+export function buildOwnerSummary(s: StatementSnapshot): string {
+  if (s.properties.length === 0) return "";
+
+  const money = (c: number) => formatMoney(c, s.currency);
+  const period = periodLabel(s);
+  const propertyCount = s.properties.length;
+  // No direct booking count on the snapshot -- one cleaning row is
+  // charged per booking whose checkout falls in the period, so the
+  // number of cleaning rows is the number of completed stays.
+  const stays = s.properties.reduce((t, p) => t + p.cleaning.length, 0);
+
+  const noActivity = s.payouts_cents === 0 && s.cleaning_cents === 0 && s.expenses_cents === 0 && stays === 0;
+  if (noActivity) {
+    return propertyCount === 1
+      ? `No payouts, cleans or expenses were recorded for ${s.properties[0].property_name} in ${period}.`
+      : `No payouts, cleans or expenses were recorded across your ${propertyCount} properties in ${period}.`;
+  }
+
+  const stayWord = stays === 1 ? "stay" : "stays";
+  const opening =
+    propertyCount === 1
+      ? `In ${period}, ${s.properties[0].property_name} had ${stays} ${stayWord}, bringing in ${money(s.payouts_cents)} in payouts.`
+      : `Across your ${propertyCount} properties in ${period}, there ${stays === 1 ? "was" : "were"} ${stays} ${stayWord} in total, bringing in ${money(s.payouts_cents)} in payouts.`;
+
+  const deductions: string[] = [];
+  if (s.cleaning_cents > 0) deductions.push(`${money(s.cleaning_cents)} in cleaning`);
+  if (s.fee_cents > 0) deductions.push(`${money(s.fee_cents)} in management fees`);
+  if (s.expenses_cents > 0) deductions.push(`${money(s.expenses_cents)} in expenses`);
+
+  const netPhrase =
+    s.net_cents < 0 ? `a shortfall of ${money(Math.abs(s.net_cents))} owed by the owner` : `a net payout of ${money(s.net_cents)}`;
+  const costSentence =
+    deductions.length === 0
+      ? `With no cleaning, management fees or expenses charged this period, that left ${netPhrase}.`
+      : `After ${joinWithAnd(deductions)}, that left ${netPhrase}.`;
+
+  const sentences = [opening, costSentence];
+
+  // Only worth calling out a standout property when there's more than one
+  // to compare, and only when it actually netted something -- a top
+  // "performer" that lost the least money isn't a useful headline.
+  if (propertyCount > 1) {
+    const top = [...s.properties].sort((a, b) => b.net_cents - a.net_cents)[0];
+    if (top && top.net_cents > 0) {
+      sentences.push(`${top.property_name} was the strongest performer, netting ${money(top.net_cents)}.`);
+    }
+  }
+
+  return sentences.join(" ");
+}
