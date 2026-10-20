@@ -24,8 +24,16 @@ const FEATURES = [
     body: "Assign a job directly, or post it open for any cleaner on your team to claim -- first to tap gets it, so two cleaners can never grab the same job. Cleaners confirm or decline, and a declined job goes straight back on the board.",
   },
   {
+    title: "Turnover dispatcher -- automatic assignment",
+    body: "Flip one switch and a new or shifted booking gets handed straight to whichever of your cleaners knows that property best and is actually free that day -- no one left to notice a job needs covering. No match? It's posted to the open board instead of guessing, and it's entirely optional -- off until you turn it on, and your own manual assignments always work exactly the same.",
+  },
+  {
     title: "Room-by-room checklists with photo proof",
     body: "A professional turnover checklist that scales to each property's real bedrooms, bathrooms and outdoor area. Cleaners add photos as they go (blurry ones get flagged), and flag anything that needs your attention with one tap.",
+  },
+  {
+    title: "A second pair of eyes on every clean",
+    body: "The moment a cleaner marks a job complete, their photos get a quick automated check against the basics -- bed made, bins emptied, surfaces clear -- and a flagged job nudges the cleaner right away, while there's still time to fix it before the guest arrives.",
   },
   {
     title: "Know who you're sending",
@@ -61,7 +69,7 @@ const FEATURES = [
   },
   {
     title: "Owner statements -- in beta",
-    body: "Manage properties for landlords? Add your clients and fee rules, then import Airbnb and Booking.com payouts and have them matched to the right property and stay. Then get a monthly owner statement with cleaning, your fee and expenses worked out, ready to print or share by private link.",
+    body: "Manage properties for landlords? Add your clients and fee rules, then import Airbnb and Booking.com payouts and have them matched to the right property and stay. Every statement opens with a plain-language summary of the month -- stays, payouts, costs and the net payout -- before the owner ever reaches a table, ready to print or share by private link.",
   },
 ];
 
@@ -73,6 +81,7 @@ const ROLES = [
       "Full control of team, roles and pay rates",
       "Dashboard, reports and CSV export",
       "Owner statements add-on (beta)",
+      "Turn on automatic job dispatch whenever you're ready",
     ],
   },
   {
@@ -82,6 +91,7 @@ const ROLES = [
       "Assign, rate and resolve disputes",
       "Properties, maintenance and supplies",
       "Invite new cleaners in a tap",
+      "Automatic dispatch handles the routine jobs for you",
     ],
   },
   {
@@ -91,6 +101,7 @@ const ROLES = [
       "Simple checklist and photos on your phone",
       "Mark the days you can't work",
       "See your history and ratings",
+      "A quick nudge if a photo needs a second look, while you can still fix it",
     ],
   },
 ];

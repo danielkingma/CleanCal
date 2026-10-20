@@ -68,6 +68,7 @@ export default function HandbookPage() {
           <div className="hb-side-group-title">Insight</div>
           <a className="hb-side-link" href="#dashboard">Dashboard</a>
           <a className="hb-side-link" href="#conflict-spotter">Same-day conflict spotter</a>
+          <a className="hb-side-link" href="#dispatcher">Turnover dispatcher</a>
           <a className="hb-side-link" href="#reports">Reports &amp; CSV export</a>
 
           <div className="hb-side-group-title">Add-on (beta)</div>
@@ -717,6 +718,16 @@ export default function HandbookPage() {
                 before the job can be marked complete — retake any that are flagged and remove the
                 bad ones.
               </p>
+              <p>
+                Where it&apos;s turned on, marking a job complete also triggers an automated photo
+                review: the photos get a quick AI check against the basics a guest would notice —
+                bed made, bins emptied, surfaces clear, nothing left behind. A clean that looks fine
+                passes through with nothing extra to do. One that doesn&apos;t gets the same red
+                &quot;!&quot; badge as the Needs attention checkbox above, with a short note on
+                what looked off, and the cleaner gets a push notification right away — while
+                there&apos;s usually still time to go back and fix it before the next guest
+                arrives.
+              </p>
             </section>
 
             <section className="hb-section" id="team">
@@ -1075,10 +1086,22 @@ export default function HandbookPage() {
                   extra <strong>Also text me booking/job alerts</strong> tick-box appears under
                   Phone (standard SMS rates may apply).
                 </li>
+                <li>
+                  <strong>Address</strong> — everyone can add a home address here. It&apos;s shown
+                  on the Cleaners directory alongside phone and service area today; it&apos;s not
+                  used for anything automatic yet, but it&apos;s there for when the{" "}
+                  <a href="#dispatcher">Turnover dispatcher</a> starts taking proximity into
+                  account.
+                </li>
                 <li><strong>Bio</strong> — a short intro: experience, availability, specialties.</li>
                 <li>
                   <strong>Business name</strong> (Owner only) — shown on invite messages and in the
                   Handbook. Signing up doesn&apos;t ask for one, so set it here whenever you like.
+                </li>
+                <li>
+                  <strong>Turnover dispatcher</strong> (Owner/Manager) — a switch that turns
+                  automatic job assignment on or off for the whole team. See{" "}
+                  <a href="#dispatcher">Turnover dispatcher</a>.
                 </li>
                 <li>
                   <strong>Identity verification</strong> and <strong>Payouts</strong> (cleaners) —
@@ -1160,6 +1183,39 @@ export default function HandbookPage() {
                 give it. A clean that has been started uses its real start time; one that hasn&apos;t
                 is assumed to start at check-out (or now, if check-out has passed). It doesn&apos;t
                 send alerts: check the Dashboard on turnover days.
+              </p>
+            </section>
+
+            <section className="hb-section" id="dispatcher">
+              <h2>Turnover dispatcher</h2>
+              <p>
+                An optional automation (Owner/Manager) that assigns a cleaner to a new or
+                reshuffled booking for you, instead of it waiting for a human to notice or a
+                cleaner to claim it from the open board. It runs every time a calendar syncs — the
+                per-feed <em>Sync now</em> button, <em>Sync all feeds</em>, or an automatic
+                scheduled sync — so it reacts the moment a booking appears or its dates move.
+              </p>
+              <ul>
+                <li><strong>A brand-new booking</strong> is assigned to whichever active cleaner has cleaned that exact property the most, tie-broken by whoever did it most recently, skipping anyone marked unavailable that day.</li>
+                <li><strong>No one fits</strong> (nobody with history there is free that day) — it&apos;s posted to the open job board instead of guessing, same as if you&apos;d opened it yourself.</li>
+                <li><strong>A booking&apos;s dates shift</strong> and the cleaner already on it is still free — nothing changes. They only get swapped out if they&apos;ve since marked themselves unavailable for the new date.</li>
+              </ul>
+              <p>
+                <strong>Turning it on:</strong> from <span className="hb-kbd-chip">My Profile</span>,
+                an Owner or Manager can flip the Turnover dispatcher switch at any time. It&apos;s
+                off by default, and turning it on or off never touches bookings that are already
+                assigned — it only acts on what changes from that point on. Your own manual
+                assignments and the open job board work exactly the same whether it&apos;s on or
+                off.
+              </p>
+              <p>
+                <strong>What it can and can&apos;t do:</strong> it currently ranks cleaners only by
+                how often they&apos;ve worked a property and whether they&apos;re free — it doesn&apos;t
+                yet consider how close a cleaner lives to a property, even though a cleaner can add
+                a home address from My Profile (see below). Once an organization has turned it on, a
+                date shift can reshuffle <em>any</em> booking whose cleaner becomes unavailable, not
+                only ones the dispatcher itself originally assigned — so a manual assignment can
+                still get reshuffled if the date moves and that cleaner is no longer free.
               </p>
             </section>
 
@@ -1344,6 +1400,13 @@ export default function HandbookPage() {
                   <strong>Replace link</strong> whenever you want it to stop working.
                 </li>
               </ol>
+              <p>
+                Every statement opens with a short plain-language summary above the tables —
+                stays, payouts, deductions and the net payout, in a sentence or two, plus which
+                property drove the most of it when a client has more than one. It&apos;s written
+                straight from the same numbers as the tables below it, so an owner who only reads
+                the first line still gets the gist.
+              </p>
               <p>
                 The cleaning charge per stay is the property&apos;s &quot;Cleaning charged to
                 owner&quot; amount if you set one, otherwise the cleaner payout rate plus the

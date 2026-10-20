@@ -95,6 +95,15 @@ export default function CleanerGuidePage() {
                   confirm. Can&apos;t make it after all? Decline, and it goes back to the open
                   board for someone else.
                 </li>
+                <li>
+                  <strong>Auto-assigned</strong> — some hosts turn on automatic job assignment, so
+                  a new or shifted booking can land straight in your Assigned list — usually one
+                  you&apos;ve cleaned at that property before — with no one having to hand it to
+                  you. It behaves exactly like a job your host assigned directly: confirm or
+                  decline it the same way. If a booking&apos;s dates move and you&apos;ve marked
+                  yourself unavailable for the new date, it&apos;s handed to someone else or
+                  posted to the open board instead of staying with you.
+                </li>
               </ul>
               <p>
                 <strong>Assigned</strong> lists every job you&apos;ve claimed or confirmed that
@@ -154,6 +163,14 @@ export default function CleanerGuidePage() {
                 it Complete, so set those at the real start and finish.
               </p>
               <p>
+                Where your host has it switched on, marking a job complete also runs a quick
+                automated check of your photos against the basics — bed made, bins emptied,
+                surfaces clear. A clean that looks fine just goes through with nothing more for
+                you to do. If something looks off, you&apos;ll get a notification and a short note
+                on what to double-check — usually while there&apos;s still time to fix it before
+                the next guest arrives.
+              </p>
+              <p>
                 Your finished jobs are in <span className="hb-kbd-chip">Menu → History</span>, with
                 the rating and note you got for each one.
               </p>
@@ -165,8 +182,8 @@ export default function CleanerGuidePage() {
               <ol className="hb-step-list">
                 <li>
                   Fill in <span className="hb-kbd-chip">Menu → My Profile</span> — your name,
-                  phone, service area, and a favourite colour (your name and initial show in it, so
-                  your jobs are easy to spot). You can also switch on{" "}
+                  phone, service area, address, and a favourite colour (your name and initial show
+                  in it, so your jobs are easy to spot). You can also switch on{" "}
                   <span className="hb-kbd-chip">Menu → Enable notifications</span> to get alerts
                   when jobs are posted or assigned to you.
                 </li>
