@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useRef, useState, type CSSProperties } from "react";
 import { claimUnassignedBooking } from "@/app/calendar/actions";
 import type { Booking, Property } from "@/lib/types";
 import {
@@ -87,6 +87,37 @@ export default function Timeline({
     }
   }
 
+  // Phone only: when the strip is wider than the screen (the Month view),
+  // open it scrolled so today's column is in view, with the day before it
+  // for context. Re-runs when the month (or day width) changes.
+  const outerRef = useRef<HTMLDivElement>(null);
+  const firstDayISO = days.length ? isoDate(days[0]) : "";
+  useEffect(() => {
+    const el = outerRef.current;
+    if (!el || !compactLabels || !firstDayISO) return;
+    const idx = daysBetween(fromISO(firstDayISO), new Date());
+    if (idx < 0 || idx >= days.length || el.scrollWidth <= el.clientWidth) {
+      el.scrollLeft = 0;
+      return;
+    }
+    el.scrollLeft = Math.max(0, (idx - 1) * dayW);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [firstDayISO, days.length, dayW, compactLabels]);
+
+  // Keeps --sl (the strip's horizontal scroll, px) up to date as a CSS
+  // variable, so a booking's broom + initial label can ride along at the
+  // visible left edge while its start has scrolled off. Done in CSS, not
+  // React state, so scrolling doesn't re-render the whole grid.
+  const hasDays = days.length > 0;
+  useEffect(() => {
+    const el = outerRef.current;
+    if (!el) return;
+    const update = () => el.style.setProperty("--sl", `${el.scrollLeft}px`);
+    update();
+    el.addEventListener("scroll", update, { passive: true });
+    return () => el.removeEventListener("scroll", update);
+  }, [hasDays]);
+
   if (days.length === 0) return null;
 
   const rangeStart = days[0];
@@ -99,7 +130,7 @@ export default function Timeline({
   const todayIdx = daysBetween(rangeStart, today);
 
   return (
-    <div className={`cal-outer${weekly ? " weekly" : ""}`}>
+    <div ref={outerRef} className={`cal-outer${weekly ? " weekly" : ""}`}>
       <div className="cal-inner" style={weekly ? { minWidth: totalW } : { width: totalW }}>
         <div className="cal-header" style={weekly ? { minWidth: totalW } : { width: totalW }}>
           <div
@@ -264,7 +295,7 @@ export default function Timeline({
                     isAssignedToCleaner && b.assigned_cleaner_id ? cleanerColorById?.[b.assigned_cleaner_id] : undefined;
                   // A non-weekly bar only ever labels its start segment --
                   // later segments of a multi-day bar stay blank.
-                  const showBroomLabel = Boolean(assignedCleanerInitial) && (weekly || isStart);
+                  const showBroomLabel = Boolean(assignedCleanerInitial);
                   // No cleaner on it yet -- rather than spell out "To
                   // Clean"/"In Progress"/"Complete" (which just repeats what
                   // the bar's own colour already says, and clutters a narrow
@@ -327,13 +358,21 @@ export default function Timeline({
                             {isStart || weekly ? "Assign" : ""}
                           </label>
                         ) : showBroomLabel ? (
-                          <>
+                          <span
+                            className="bar-label"
+                            style={
+                              {
+                                "--bl": `${left}px`,
+                                "--bmax": `${Math.max(0, width - (weekly ? 96 : 50))}px`,
+                              } as CSSProperties
+                            }
+                          >
                             🧹{" "}
                             <span style={assignedCleanerColor ? { color: assignedCleanerColor } : undefined}>
                               {assignedCleanerInitial}
                             </span>
                             {weekly ? ` · ${b.nights}n` : null}
-                          </>
+                          </span>
                         ) : (
                           label
                         )}

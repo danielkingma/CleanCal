@@ -9,7 +9,6 @@ import Dropdown from "./Dropdown";
 import NotificationsToggle from "./NotificationsToggle";
 import Timeline from "./Timeline";
 import MobileAgenda from "./MobileAgenda";
-import MonthGrid from "./MonthGrid";
 import DayPickerSheet from "./DayPickerSheet";
 import PropertyYearView from "./PropertyYearView";
 import BookingModal from "./BookingModal";
@@ -247,22 +246,6 @@ export default function CalendarApp({
     });
   }
 
-  // Tapping a day on the mobile Month grid: MonthGrid's bars are already
-  // individually tappable (opens that booking directly), but two
-  // same-day-turnover bars can be hard to hit precisely on a phone, so
-  // tapping the day itself is a reliable fallback -- straight to the
-  // booking if there's exactly one, a small picker if there's more.
-  function handleMobileMonthDayTap(dateIso: string) {
-    const dayBookings = bookings.filter(
-      (b) => b.property_id === yearPropertyId && isoDate(checkoutDate(b)) === dateIso,
-    );
-    if (dayBookings.length === 1) {
-      setModal({ mode: "edit", booking: dayBookings[0] });
-    } else if (dayBookings.length > 1) {
-      setDayPicker({ dateIso, bookings: dayBookings });
-    }
-  }
-
   function openNewModal(propertyId?: string, dateIso?: string) {
     if (!isStaff(currentProfile.role)) return;
     setModal({ mode: "new", presetPropertyId: propertyId, presetDate: dateIso });
@@ -427,7 +410,7 @@ export default function CalendarApp({
           </div>
           </div>
           <div className="topbar-right">
-          {(derivedView === "year" || (isMobile && derivedView === "month")) && properties.length > 0 ? (
+          {derivedView === "year" && properties.length > 0 ? (
             <select
               className="year-property-select"
               value={yearPropertyId}
@@ -592,8 +575,7 @@ export default function CalendarApp({
             </Dropdown>
             {derivedView !== "year" &&
             derivedView !== "assigned" &&
-            derivedView !== "completed" &&
-            !(isMobile && derivedView === "month") ? (
+            derivedView !== "completed" ? (
               <div className="prop-count">{properties.length} properties</div>
             ) : null}
           </div>
@@ -643,30 +625,12 @@ export default function CalendarApp({
           ) : (
             <p className="photo-note">{noPropertiesMessage}</p>
           )
-        ) : isMobile && derivedView === "month" ? (
-          yearPropertyId ? (
-            <MonthGrid
-              year={cursor.getFullYear()}
-              month={cursor.getMonth()}
-              bookings={bookings.filter((b) => b.property_id === yearPropertyId)}
-              onSelectBooking={(booking) => setModal({ mode: "edit", booking })}
-              onSelectDate={handleMobileMonthDayTap}
-              showTitle={false}
-              viewerId={currentProfile.id}
-              isStaffViewer={isStaffUser}
-              cleanerNameById={cleanerNameById}
-              cleanerInitialById={cleanerInitialById}
-              cleanerColorById={cleanerColorById}
-            />
-          ) : (
-            <p className="photo-note">{noPropertiesMessage}</p>
-          )
         ) : properties.length === 0 ? (
           <p className="photo-note">{noPropertiesMessage}</p>
         ) : (
           <Timeline
             days={days}
-            dayW={derivedView === "week" ? (isMobile ? 46 : DAY_W_WEEK) : DAY_W_MONTH}
+            dayW={isMobile ? 46 : derivedView === "week" ? DAY_W_WEEK : DAY_W_MONTH}
             labelW={isMobile ? 80 : undefined}
             weekly={derivedView === "week"}
             properties={properties}

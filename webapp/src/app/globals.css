@@ -484,6 +484,16 @@ main {
    isClaimableBooking) reads as unassigned rather than by its actual
    cleaning status -- overrides whichever status color is also in the
    class list above. */
+/* The cleaner's broom + initial slides right along with the horizontal
+   scroll (--sl, set by Timeline), so it stays in view until the booking
+   ends. --bl is the bar's left edge in the strip, --bmax how far the
+   label may travel before it would run off the bar's end. */
+.bar-label {
+  display: inline-block;
+  white-space: nowrap;
+  transform: translateX(clamp(0px, calc(var(--sl, 0px) - var(--bl, 0px)), var(--bmax, 0px)));
+  will-change: transform;
+}
 .booking-bar.requestable {
   background: var(--muted);
 }
