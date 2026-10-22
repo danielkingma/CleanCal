@@ -107,7 +107,7 @@ const ROLES = [
 ];
 
 const WHY = [
-  { title: "Priced per property", body: "Never per booking, never per cleaner. One property is free, and up to 50 are free for 3 months." },
+  { title: "Priced per property", body: "Never per booking, never per cleaner. One property is free, and up to 10 are free for 3 months." },
   { title: "No card to start", body: "Sign up with just your email -- there's no password to remember, and nothing is charged while you try it." },
   { title: "Set up in an afternoon", body: "Paste each property's calendar link, invite your cleaners with a link, and you're running." },
   { title: "Self-serve with a real Handbook", body: "A full Handbook and a short cleaner guide walk through every screen, and we answer every email to support@cleancal.net." },
@@ -124,7 +124,7 @@ const FAQ = [
   },
   {
     q: "Do I need a credit card?",
-    a: "No. You can start with just your email. One property is free, and 2 to 50 properties are free for 3 months. You'll be reminded well before anything would ever be billed.",
+    a: "No. You can start with just your email. One property is free, and 2 to 10 properties are free for 3 months. You'll be reminded well before anything would ever be billed.",
   },
   {
     q: "Do my cleaners need to pay or install anything?",
@@ -165,9 +165,9 @@ const STEPS = [
 
 const PRICING = [
   { tier: "1 property", price: "Free" },
-  { tier: "2 – 50 properties", price: "Free for 3 months, then $5/property/mo" },
-  { tier: "51 – 100 properties", price: "$295 / mo flat" },
-  { tier: "101 – 500 properties", price: "$495 / mo flat" },
+  { tier: "2 – 10 properties", price: "Free for 3 months, then $4/property/mo" },
+  { tier: "11 – 100 properties", price: "$50 / mo flat" },
+  { tier: "101 – 500 properties", price: "$100 / mo flat" },
   { tier: "501+ properties", price: "Custom enterprise pricing" },
 ];
 
@@ -192,7 +192,7 @@ export default function LandingPage() {
 
       <main>
         <section className="landing-hero">
-          <span className="landing-badge">✦ 1 property free, or up to 50 free for 3 months</span>
+          <span className="landing-badge">✦ 1 property free, or up to 10 free for 3 months</span>
           <h1>Every turnover, tracked, cleaned, and paid.</h1>
           <p className="landing-hero-sub">
             The cleaning-operations calendar for short-term rental hosts and managers. Sync every
@@ -211,7 +211,7 @@ export default function LandingPage() {
           <p className="landing-hero-note">No credit card required to start.</p>
           <ul className="landing-chips">
             <li>Free for 1 property</li>
-            <li>3 months free up to 50</li>
+            <li>3 months free up to 10</li>
             <li>Works on any phone</li>
             <li>No app store needed</li>
             <li>Built in Canberra</li>
@@ -328,7 +328,7 @@ export default function LandingPage() {
 
         <section className="landing-pricing" id="pricing">
           <span className="landing-section-eyebrow">Pricing</span>
-          <h2 className="landing-section-title">1 property free, or up to 50 free for 3 months</h2>
+          <h2 className="landing-section-title">1 property free, or up to 10 free for 3 months</h2>
           <p className="landing-pricing-sub">
             No credit card required to start. Beyond that, pricing scales with
             how many properties you run -- never per booking, never per cleaner. Billing is
