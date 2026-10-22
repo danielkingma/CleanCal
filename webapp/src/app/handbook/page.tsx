@@ -1502,7 +1502,7 @@ export default function HandbookPage() {
                 <table>
                   <tbody>
                     <tr><th>Properties</th><th>Price</th></tr>
-                    <tr><td>1</td><td>Free</td></tr>
+                    <tr><td>1</td><td>Free for 12 months, then $4/month</td></tr>
                     <tr><td>2 – 10</td><td>Free for 3 months, then $4/property/month</td></tr>
                     <tr><td>11 – 100</td><td>$50/month (flat)</td></tr>
                     <tr><td>101 – 500</td><td>$100/month (flat)</td></tr>
