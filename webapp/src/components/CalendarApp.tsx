@@ -49,6 +49,11 @@ interface CalendarAppProps {
   trialEndsAt: string | null;
   customMonthlyPriceCents: number | null;
   pricingAgreementNotes: string | null;
+  // organizations.subscription_status -- null until an owner has started
+  // Checkout at least once (see startBillingCheckout). Lets TrialNotice
+  // stand down once billing is a real, in-progress thing rather than
+  // still just a countdown.
+  subscriptionStatus: string | null;
   // Daniel's own account only -- see src/lib/superadmin.ts. Shows a
   // "Platform stats" link in the Manage menu; irrelevant to every other
   // Owner/Manager/Cleaner, so it's computed server-side in
@@ -79,6 +84,7 @@ export default function CalendarApp({
   trialEndsAt,
   customMonthlyPriceCents,
   pricingAgreementNotes,
+  subscriptionStatus,
   isSuperadmin,
   statementsEnabled = false,
 }: CalendarAppProps) {
@@ -522,6 +528,7 @@ export default function CalendarApp({
           trialEndsAt={trialEndsAt}
           customMonthlyPriceCents={customMonthlyPriceCents}
           pricingAgreementNotes={pricingAgreementNotes}
+          subscriptionStatus={subscriptionStatus}
         />
       ) : null}
 

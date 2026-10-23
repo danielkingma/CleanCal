@@ -67,6 +67,7 @@ export default async function CalendarPage() {
   let customMonthlyPriceCents: number | null = null;
   let pricingAgreementNotes: string | null = null;
   let statementsEnabled = false;
+  let subscriptionStatus: string | null = null;
   if (isStaff(currentProfile.role)) {
     const { data } = await supabase
       .from("profiles")
@@ -84,12 +85,18 @@ export default async function CalendarPage() {
     // there's no in-app way for an owner to grant this to themselves.
     const { data: org } = await supabase
       .from("organizations")
-      .select("trial_ends_at, custom_monthly_price_cents, pricing_agreement_notes, statements_enabled")
+      .select("trial_ends_at, custom_monthly_price_cents, pricing_agreement_notes, statements_enabled, subscription_status")
       .maybeSingle();
     trialEndsAt = org?.trial_ends_at ?? null;
     customMonthlyPriceCents = org?.custom_monthly_price_cents ?? null;
     pricingAgreementNotes = org?.pricing_agreement_notes ?? null;
     statementsEnabled = Boolean(org?.statements_enabled);
+    // Once there's any real subscription (even just "trialing" -- a
+    // payment method on file via Checkout, see startBillingCheckout),
+    // the Profile page's own Billing section becomes the one place that
+    // explains what happens next. TrialNotice's countdown below is only
+    // for an owner who hasn't engaged with billing at all yet.
+    subscriptionStatus = org?.subscription_status ?? null;
 
     const { data: ratedBookings } = await supabase
       .from("bookings")
@@ -178,6 +185,7 @@ export default async function CalendarPage() {
         trialEndsAt={trialEndsAt}
         customMonthlyPriceCents={customMonthlyPriceCents}
         pricingAgreementNotes={pricingAgreementNotes}
+        subscriptionStatus={subscriptionStatus}
         isSuperadmin={isSuperadmin(user.email)}
         statementsEnabled={statementsEnabled}
       />

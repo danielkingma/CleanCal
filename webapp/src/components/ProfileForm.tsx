@@ -3,6 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import {
+  openBillingPortal,
+  startBillingCheckout,
   startConnectOnboarding,
   startIdentityVerification,
   updateDispatcherEnabled,
@@ -50,6 +52,8 @@ export default function ProfileForm({
   devices,
   organizationName,
   dispatcherEnabled,
+  subscriptionStatus,
+  trialEndsAt,
 }: {
   profile: Profile;
   email: string;
@@ -57,6 +61,8 @@ export default function ProfileForm({
   devices: KnownDevice[];
   organizationName: string | null;
   dispatcherEnabled: boolean;
+  subscriptionStatus: string | null;
+  trialEndsAt: string | null;
 }) {
   // Falls back to splitting the combined `name` the same way the
   // 0042_split_name_fields.sql backfill does, in case this profile's
@@ -94,6 +100,10 @@ export default function ProfileForm({
   const [verifyError, setVerifyError] = useState<string | null>(null);
   const [onboarding, setOnboarding] = useState(false);
   const [onboardError, setOnboardError] = useState<string | null>(null);
+  const [startingBilling, setStartingBilling] = useState(false);
+  const [billingError, setBillingError] = useState<string | null>(null);
+  const [openingPortal, setOpeningPortal] = useState(false);
+  const [portalError, setPortalError] = useState<string | null>(null);
   const [signingOutOthers, setSigningOutOthers] = useState(false);
   const [signedOutOthers, setSignedOutOthers] = useState(false);
   const [signOutError, setSignOutError] = useState<string | null>(null);
@@ -196,6 +206,30 @@ export default function ProfileForm({
     } catch (e) {
       setOnboardError(e instanceof Error ? e.message : "Couldn't start payout setup.");
       setOnboarding(false);
+    }
+  }
+
+  async function handleStartBilling() {
+    setStartingBilling(true);
+    setBillingError(null);
+    try {
+      const url = await startBillingCheckout(`${window.location.origin}/profile`);
+      window.location.href = url;
+    } catch (e) {
+      setBillingError(e instanceof Error ? e.message : "Couldn't start checkout.");
+      setStartingBilling(false);
+    }
+  }
+
+  async function handleOpenBillingPortal() {
+    setOpeningPortal(true);
+    setPortalError(null);
+    try {
+      const url = await openBillingPortal(`${window.location.origin}/profile`);
+      window.location.href = url;
+    } catch (e) {
+      setPortalError(e instanceof Error ? e.message : "Couldn't open billing portal.");
+      setOpeningPortal(false);
     }
   }
 
@@ -397,6 +431,56 @@ export default function ProfileForm({
                 </button>
                 {orgNameSaved ? <span style={{ fontSize: 12.5, color: "var(--teal-deep)" }}>Saved</span> : null}
               </div>
+            </div>
+          </div>
+        ) : null}
+
+        {isOwner(profile.role) ? (
+          <div className="property-card" style={{ maxWidth: 480, marginTop: 16 }}>
+            <div className="field">
+              <label>Billing</label>
+              <p className="access-note">
+                {subscriptionStatus === "active"
+                  ? "Active — $2 per property per month."
+                  : subscriptionStatus === "trialing"
+                    ? `Payment details on file${
+                        trialEndsAt ? ` — billing starts ${new Date(trialEndsAt).toLocaleDateString()}` : ""
+                      }. You won't be charged before then.`
+                    : subscriptionStatus === "past_due"
+                      ? "Your last payment failed — update your payment method to keep your subscription active."
+                      : subscriptionStatus === "canceled"
+                        ? "Your subscription was canceled."
+                        : trialEndsAt && new Date(trialEndsAt).getTime() > Date.now()
+                          ? `Free until ${new Date(trialEndsAt).toLocaleDateString()}. Adding payment details before then is entirely optional -- some owners do it anyway for Stripe's verification/fraud-protection benefits, but you won't be charged until the trial ends. $2 per property per month after that.`
+                          : "Your free trial has ended. Subscribe to keep using CleanCal -- $2 per property per month."}
+              </p>
+              {subscriptionStatus === "trialing" || subscriptionStatus === "active" || subscriptionStatus === "past_due" ? (
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={handleOpenBillingPortal}
+                  disabled={openingPortal}
+                >
+                  {openingPortal ? "Redirecting…" : subscriptionStatus === "past_due" ? "Update payment method" : "Manage billing"}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={handleStartBilling}
+                  disabled={startingBilling}
+                >
+                  {startingBilling
+                    ? "Redirecting…"
+                    : subscriptionStatus === "canceled"
+                      ? "Resubscribe"
+                      : trialEndsAt && new Date(trialEndsAt).getTime() > Date.now()
+                        ? "Add payment details"
+                        : "Subscribe now"}
+                </button>
+              )}
+              {billingError ? <div className="error-banner" style={{ marginTop: 10 }}>{billingError}</div> : null}
+              {portalError ? <div className="error-banner" style={{ marginTop: 10 }}>{portalError}</div> : null}
             </div>
           </div>
         ) : null}

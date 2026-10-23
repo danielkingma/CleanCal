@@ -53,16 +53,22 @@ export default async function ProfilePage() {
   let organizationName: string | null = null;
   // dispatcher_enabled is staff-wide (owner or manager can flip it, same
   // as the per-property turnover-times settings), while the business
-  // name stays owner-only -- see update_dispatcher_enabled() vs
-  // update_organization_name() in the migrations.
+  // name and billing stay owner-only -- see update_dispatcher_enabled()
+  // vs update_organization_name() in the migrations.
   let dispatcherEnabled = false;
+  let subscriptionStatus: string | null = null;
+  let trialEndsAt: string | null = null;
   if (isStaff(profile.role) && profile.organization_id) {
     const { data: org } = await supabase
       .from("organizations")
-      .select("name, dispatcher_enabled")
+      .select("name, dispatcher_enabled, subscription_status, trial_ends_at")
       .eq("id", profile.organization_id)
       .maybeSingle();
-    if (isOwner(profile.role)) organizationName = org?.name ?? null;
+    if (isOwner(profile.role)) {
+      organizationName = org?.name ?? null;
+      subscriptionStatus = org?.subscription_status ?? null;
+      trialEndsAt = org?.trial_ends_at ?? null;
+    }
     dispatcherEnabled = org?.dispatcher_enabled ?? false;
   }
 
@@ -83,6 +89,8 @@ export default async function ProfilePage() {
       devices={devices ?? []}
       organizationName={organizationName}
       dispatcherEnabled={dispatcherEnabled}
+      subscriptionStatus={subscriptionStatus}
+      trialEndsAt={trialEndsAt}
     />
   );
 }

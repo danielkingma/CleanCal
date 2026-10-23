@@ -43,13 +43,29 @@ interface TrialNoticeProps {
   // a plain informational note instead, regardless of trialEndsAt.
   customMonthlyPriceCents: number | null;
   pricingAgreementNotes: string | null;
+  // organizations.subscription_status -- null until an owner has started
+  // Checkout at least once (startBillingCheckout in
+  // src/app/profile/actions.ts). Once that's happened, whether billing
+  // will actually start and when is Stripe's own trial_end on the
+  // subscription Checkout created, which the Profile page's Billing
+  // section explains -- this countdown banner stands down rather than
+  // risk contradicting it (it predates real billing existing at all, and
+  // used to flatly promise "nothing will be charged automatically",
+  // which stopped being true the moment a subscription with a trial_end
+  // exists).
+  subscriptionStatus: string | null;
 }
 
 function formatCents(cents: number): string {
   return (cents / 100).toLocaleString(undefined, { minimumFractionDigits: cents % 100 === 0 ? 0 : 2 });
 }
 
-export default function TrialNotice({ trialEndsAt, customMonthlyPriceCents, pricingAgreementNotes }: TrialNoticeProps) {
+export default function TrialNotice({
+  trialEndsAt,
+  customMonthlyPriceCents,
+  pricingAgreementNotes,
+  subscriptionStatus,
+}: TrialNoticeProps) {
   const hasCustomAgreement = customMonthlyPriceCents != null || !!pricingAgreementNotes;
   const customKey = hasCustomAgreement ? `pricing-notice-dismissed-${new Date().toISOString().slice(0, 10)}` : null;
   const customDismissedPersisted = usePersistedDismissed(customKey);
@@ -104,6 +120,12 @@ export default function TrialNotice({ trialEndsAt, customMonthlyPriceCents, pric
     );
   }
 
+  // Once Checkout has actually been started (see subscriptionStatus's
+  // comment above), the Profile page's Billing section is the
+  // authoritative place for what happens next -- this banner stands down
+  // rather than potentially contradict it.
+  if (subscriptionStatus != null) return null;
+
   if (daysRemaining == null || daysRemaining > WARNING_WINDOW_DAYS || dismissed) return null;
 
   function handleDismiss() {
@@ -122,10 +144,10 @@ export default function TrialNotice({ trialEndsAt, customMonthlyPriceCents, pric
     <div className={`trial-notice${ended ? " ended" : ""}`}>
       <span>
         {ended
-          ? "Your free trial period has ended. Billing isn't turned on yet, so nothing has been charged -- but pricing is coming soon, so plan to add a payment method."
+          ? "Your free trial period has ended. Nothing has been charged -- you haven't set up billing yet, so there's no subscription to bill. Head to your Profile's Billing section whenever you're ready ($2/property/month)."
           : daysRemaining === 0
-            ? "Your free trial ends today. Billing isn't turned on yet, so nothing will be charged automatically -- but pricing is coming soon, so enjoy full access for free while it lasts."
-            : `Your free trial ends in ${daysRemaining} day${daysRemaining === 1 ? "" : "s"}. Billing isn't turned on yet, so nothing will be charged automatically -- but pricing is coming soon, so enjoy full access for free while it lasts.`}
+            ? "Your free trial ends today. You haven't set up billing yet, so enjoy full access for free while it lasts -- set it up any time from your Profile's Billing section ($2/property/month)."
+            : `Your free trial ends in ${daysRemaining} day${daysRemaining === 1 ? "" : "s"}. You haven't set up billing yet -- do that from your Profile's Billing section whenever suits ($2/property/month) so you're not interrupted once the trial ends.`}
       </span>
       <button type="button" className="trial-notice-dismiss" onClick={handleDismiss} aria-label="Dismiss">
         ✕
