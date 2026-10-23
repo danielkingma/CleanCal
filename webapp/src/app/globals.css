@@ -2722,7 +2722,13 @@ main {
 .phone-screen img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  /* contain, not cover -- same reasoning as .monitor-screen img above:
+     "cover" crops a screenshot's top/bottom (or sides) the moment its
+     proportions don't land exactly on the frame's 9:19.5, and a real
+     phone capture (status bar included) rarely does. "contain" always
+     shows the whole screenshot, letterboxed against the screen's own
+     background instead of silently losing part of the picture. */
+  object-fit: contain;
   object-position: top;
   display: block;
 }
