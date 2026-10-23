@@ -1,9 +1,8 @@
 import Stripe from "stripe";
 
 // Single server-side Stripe client, shared by every Stripe-backed feature
-// (Identity verification, Connect payouts, Billing subscriptions). Never
-// import this from client-side code -- the secret key must never reach
-// the browser.
+// (Identity verification, subscription Billing). Never import this from
+// client-side code -- the secret key must never reach the browser.
 let client: Stripe | null = null;
 
 export function getStripe(): Stripe {
