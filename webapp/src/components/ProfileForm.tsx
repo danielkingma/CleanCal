@@ -448,7 +448,7 @@ export default function ProfileForm({
         ) : null}
 
         {isOwner(profile.role) ? (
-          <div className="property-card" style={{ maxWidth: 480, marginTop: 16 }}>
+          <div id="billing" className="property-card" style={{ maxWidth: 480, marginTop: 16 }}>
             <div className="field">
               <label>Billing</label>
               <p className="access-note">
