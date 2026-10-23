@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { getStripe } from "@/lib/stripe";
+import { mapStripeSubscriptionStatus } from "@/lib/billing";
 import { createServiceClient } from "@/lib/supabase/service";
 
 // Single endpoint for every Stripe-backed feature (Identity today;
@@ -60,6 +61,46 @@ export async function POST(request: Request) {
         .from("profiles")
         .update({ stripe_connect_status: account.payouts_enabled ? "active" : "pending" })
         .eq("stripe_connect_account_id", account.id);
+      break;
+    }
+    // Subscription billing (see src/lib/billing.ts and
+    // startBillingCheckout in src/app/profile/actions.ts). Checkout only
+    // ever creates the Customer + Checkout Session -- the subscription
+    // itself, and every status change after that (renewal, a failed
+    // card, cancellation), only ever reaches our data through these
+    // three events. organizations has no generic write policy (same as
+    // profiles.stripe_connect_status), so this -- the service-role
+    // client -- is the only writer of stripe_subscription_id and
+    // subscription_status from here on.
+    case "checkout.session.completed": {
+      const session = event.data.object as Stripe.Checkout.Session;
+      if (session.mode !== "subscription" || !session.subscription || !session.customer) break;
+      const subscriptionId =
+        typeof session.subscription === "string" ? session.subscription : session.subscription.id;
+      const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+      await supabase
+        .from("organizations")
+        .update({
+          stripe_subscription_id: subscription.id,
+          subscription_status: mapStripeSubscriptionStatus(subscription.status),
+        })
+        .eq("stripe_customer_id", typeof session.customer === "string" ? session.customer : session.customer.id);
+      break;
+    }
+    case "customer.subscription.updated": {
+      const subscription = event.data.object as Stripe.Subscription;
+      await supabase
+        .from("organizations")
+        .update({ subscription_status: mapStripeSubscriptionStatus(subscription.status) })
+        .eq("stripe_subscription_id", subscription.id);
+      break;
+    }
+    case "customer.subscription.deleted": {
+      const subscription = event.data.object as Stripe.Subscription;
+      await supabase
+        .from("organizations")
+        .update({ subscription_status: "canceled" })
+        .eq("stripe_subscription_id", subscription.id);
       break;
     }
     default:

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe";
+import { pricingTierForPropertyCount } from "@/lib/billing";
 
 // Deliberately takes no `role` param -- the update_own_profile RPC only
 // ever touches given_name/middle_name/surname/bio/phone/service_area/
@@ -136,4 +137,115 @@ export async function startConnectOnboarding(returnUrl: string): Promise<string>
 
   revalidatePath("/profile");
   return link.url;
+}
+
+// Owner-only, same reasoning as updateOrganizationName -- but unlike that
+// one, there's no RPC enforcing the role for the read-only lookups below
+// (organizations_select_own and profiles_select_own_or_admin let any org
+// member read this data), so the check happens here, same shape as
+// cleaners/actions.ts's delete-cleaner guard. The one write this makes
+// (start_own_organization_billing, to record a newly-created Stripe
+// customer) *is* RPC-enforced, belt and suspenders.
+//
+// Starts (or resumes) a Stripe Checkout subscription for the signed-in
+// owner's organization, priced for its current property count (see
+// lib/billing.ts for the tier math) and returns the URL to redirect them
+// to. The subscription doesn't actually take effect in our own data until
+// the checkout.session.completed webhook fires -- this only ever creates
+// a Stripe Customer (reused on every later call) and a Checkout Session.
+export async function startBillingCheckout(returnUrl: string): Promise<string> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not signed in.");
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role, organization_id")
+    .eq("id", user.id)
+    .single();
+  if (!profile?.organization_id) throw new Error("No organization found.");
+  if (profile.role !== "owner") throw new Error("Only the organization owner can manage billing.");
+
+  const { data: org } = await supabase
+    .from("organizations")
+    .select("id, stripe_customer_id")
+    .eq("id", profile.organization_id)
+    .single();
+  if (!org) throw new Error("No organization found.");
+
+  const { count } = await supabase
+    .from("properties")
+    .select("id", { count: "exact", head: true })
+    .eq("organization_id", org.id);
+  const propertyCount = count ?? 0;
+  if (propertyCount === 0) throw new Error("Add at least one property before subscribing.");
+
+  const tier = pricingTierForPropertyCount(propertyCount);
+  if (tier.mode === "enterprise") {
+    throw new Error(
+      "501+ properties is custom enterprise pricing -- contact support@cleancal.net instead of self-serve checkout.",
+    );
+  }
+
+  const stripe = getStripe();
+  let customerId = org.stripe_customer_id as string | null;
+  if (!customerId) {
+    const customer = await stripe.customers.create({
+      email: user.email ?? undefined,
+      metadata: { organization_id: org.id },
+    });
+    customerId = customer.id;
+    const { error } = await supabase.rpc("start_own_organization_billing", { p_customer_id: customerId });
+    if (error) throw new Error(error.message);
+  }
+
+  const session = await stripe.checkout.sessions.create({
+    mode: "subscription",
+    customer: customerId,
+    line_items: [{ price: tier.priceId, quantity: tier.quantity }],
+    success_url: returnUrl,
+    cancel_url: returnUrl,
+    subscription_data: { metadata: { organization_id: org.id } },
+  });
+  if (!session.url) throw new Error("Stripe didn't return a checkout URL.");
+
+  revalidatePath("/profile");
+  return session.url;
+}
+
+// Owner-only (see startBillingCheckout above for why the check lives
+// here). Opens Stripe's hosted Billing Portal for the organization's
+// existing subscription -- update payment method, change plan, view
+// invoices, cancel. Requires a Stripe customer to already exist, i.e. the
+// owner has been through startBillingCheckout at least once.
+export async function openBillingPortal(returnUrl: string): Promise<string> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not signed in.");
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role, organization_id")
+    .eq("id", user.id)
+    .single();
+  if (!profile?.organization_id) throw new Error("No organization found.");
+  if (profile.role !== "owner") throw new Error("Only the organization owner can manage billing.");
+
+  const { data: org } = await supabase
+    .from("organizations")
+    .select("stripe_customer_id")
+    .eq("id", profile.organization_id)
+    .single();
+  if (!org?.stripe_customer_id) throw new Error("No billing account yet -- subscribe first.");
+
+  const stripe = getStripe();
+  const session = await stripe.billingPortal.sessions.create({
+    customer: org.stripe_customer_id,
+    return_url: returnUrl,
+  });
+  return session.url;
 }
