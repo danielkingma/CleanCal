@@ -1,32 +1,33 @@
 import type Stripe from "stripe";
 
 // Subscription billing: maps an organization's current property count to
-// the Stripe Price (and quantity) its subscription should be on, per the
-// published tiers (see LandingPage.tsx's PRICING array and the Handbook's
-// pricing table, which this must stay in sync with):
+// the Stripe Price and quantity its subscription should be on, per the
+// published pricing (see LandingPage.tsx's PRICING array and the
+// Handbook's pricing table, which this must stay in sync with):
 //
-//   1 property        -- free for 12 months, then $4/month
-//   2 - 10 properties  -- free for 3 months, then $4/property/month
-//   11 - 100 properties -- $50/month flat
-//   101 - 500 properties -- $100/month flat
-//   501+ properties     -- custom enterprise pricing (no self-serve Price)
+//   Any number of properties -- free for 3 months, then a flat
+//   $2/property/month. No enterprise cutoff or custom tier -- the same
+//   rate applies uncapped.
 //
-// The 1-property and 2-10 tiers bill identically ($4/property/month) --
-// they only differ in how long the free period lasts, which is governed
-// by organizations.trial_ends_at, not by anything here. So there are only
-// two real Stripe Prices for the self-serve range plus one flat tier
-// above that, not four.
+// Every organization gets the same 3-month free period regardless of
+// property count -- that's just organizations.trial_ends_at, already set
+// uniformly by create_organization() (0039_three_month_trial.sql), not
+// anything this file needs to account for.
 //
-// Price IDs live in env vars (set from the Stripe Dashboard) rather than
-// hardcoded here, same reasoning as STRIPE_SECRET_KEY in lib/stripe.ts --
-// they differ between Stripe's test and live modes.
+// $2/property is a single plain per-unit Stripe Price -- Stripe multiplies
+// it by the quantity passed at checkout, so there's one Price for every
+// organization, same as any other per-seat SaaS price.
+//
+// The Price id lives in an env var (set from the Stripe Dashboard) rather
+// than hardcoded here, same reasoning as STRIPE_SECRET_KEY in
+// lib/stripe.ts -- it differs between Stripe's test and live modes.
 
-export type PropertyPricingTier =
-  | { mode: "per_unit"; priceId: string; quantity: number }
-  | { mode: "flat"; priceId: string; quantity: 1 }
-  | { mode: "enterprise" };
+export interface PropertyPricingTier {
+  priceId: string;
+  quantity: number;
+}
 
-function requirePriceEnv(name: "STRIPE_PRICE_PER_PROPERTY" | "STRIPE_PRICE_TIER_11_100" | "STRIPE_PRICE_TIER_101_500"): string {
+function requirePriceEnv(name: "STRIPE_PRICE_PER_PROPERTY"): string {
   const value = process.env[name];
   if (!value) {
     throw new Error(`${name} is not set -- create the Price in Stripe and add its id to the environment.`);
@@ -38,18 +39,7 @@ function requirePriceEnv(name: "STRIPE_PRICE_PER_PROPERTY" | "STRIPE_PRICE_TIER_
 // property count (queried server-side) -- never a value taken from the
 // client, since it determines what gets billed.
 export function pricingTierForPropertyCount(propertyCount: number): PropertyPricingTier {
-  if (propertyCount <= 10) {
-    // Covers both the 1-property and 2-10 tiers: same per-unit rate,
-    // just a different free period (trial_ends_at), not a different Price.
-    return { mode: "per_unit", priceId: requirePriceEnv("STRIPE_PRICE_PER_PROPERTY"), quantity: propertyCount };
-  }
-  if (propertyCount <= 100) {
-    return { mode: "flat", priceId: requirePriceEnv("STRIPE_PRICE_TIER_11_100"), quantity: 1 };
-  }
-  if (propertyCount <= 500) {
-    return { mode: "flat", priceId: requirePriceEnv("STRIPE_PRICE_TIER_101_500"), quantity: 1 };
-  }
-  return { mode: "enterprise" };
+  return { priceId: requirePriceEnv("STRIPE_PRICE_PER_PROPERTY"), quantity: propertyCount };
 }
 
 // organizations.subscription_status only allows ('trialing', 'active',

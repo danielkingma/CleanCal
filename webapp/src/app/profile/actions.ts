@@ -183,11 +183,6 @@ export async function startBillingCheckout(returnUrl: string): Promise<string> {
   if (propertyCount === 0) throw new Error("Add at least one property before subscribing.");
 
   const tier = pricingTierForPropertyCount(propertyCount);
-  if (tier.mode === "enterprise") {
-    throw new Error(
-      "501+ properties is custom enterprise pricing -- contact support@cleancal.net instead of self-serve checkout.",
-    );
-  }
 
   const stripe = getStripe();
   let customerId = org.stripe_customer_id as string | null;
