@@ -5,7 +5,6 @@ import Link from "next/link";
 import {
   openBillingPortal,
   startBillingCheckout,
-  startConnectOnboarding,
   startIdentityVerification,
   updateDispatcherEnabled,
   updateOrganizationName,
@@ -109,8 +108,6 @@ export default function ProfileForm({
   const [error, setError] = useState<string | null>(null);
   const [verifying, setVerifying] = useState(false);
   const [verifyError, setVerifyError] = useState<string | null>(null);
-  const [onboarding, setOnboarding] = useState(false);
-  const [onboardError, setOnboardError] = useState<string | null>(null);
   const [wantsPro, setWantsPro] = useState(false);
   const [startingBilling, setStartingBilling] = useState(false);
   const [billingError, setBillingError] = useState<string | null>(null);
@@ -206,18 +203,6 @@ export default function ProfileForm({
       setSignOutError(e instanceof Error ? e.message : "Couldn't sign out other devices.");
     } finally {
       setSigningOutOthers(false);
-    }
-  }
-
-  async function handleSetUpPayouts() {
-    setOnboarding(true);
-    setOnboardError(null);
-    try {
-      const url = await startConnectOnboarding(`${window.location.origin}/profile`);
-      window.location.href = url;
-    } catch (e) {
-      setOnboardError(e instanceof Error ? e.message : "Couldn't start payout setup.");
-      setOnboarding(false);
     }
   }
 
@@ -590,31 +575,11 @@ export default function ProfileForm({
             <div className="field">
               <label>Payouts</label>
               <p className="access-note">
-                {profile.stripe_connect_status === "active"
-                  ? "Payout account connected ✓"
-                  : profile.stripe_connect_status === "pending"
-                    ? "Payout setup started — finish it to get paid for jobs."
-                    : "Not set up yet — connect a payout account to get paid for completed jobs."}
+                Your Owner or Manager pays you directly (bank transfer, cash, however your business
+                normally works) based on the payout rate set for each property you clean, plus any
+                linen fee. There&apos;s nothing to set up here -- check with them if you&apos;re
+                ever unsure whether a job&apos;s been paid.
               </p>
-              {profile.stripe_connect_status !== "active" ? (
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={handleSetUpPayouts}
-                  disabled={onboarding}
-                >
-                  {onboarding
-                    ? "Redirecting…"
-                    : profile.stripe_connect_status === "pending"
-                      ? "Finish payout setup"
-                      : "Set up payouts"}
-                </button>
-              ) : null}
-              {onboardError ? (
-                <div className="error-banner" style={{ marginTop: 10 }}>
-                  {onboardError}
-                </div>
-              ) : null}
             </div>
           </div>
         ) : null}

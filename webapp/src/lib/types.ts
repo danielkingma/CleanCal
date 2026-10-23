@@ -14,7 +14,6 @@ export function isOwner(role: Role | undefined): boolean {
 export type BookingStatus = "to-clean" | "in-progress" | "complete";
 
 export type IdentityStatus = "unverified" | "pending" | "verified" | "failed";
-export type ConnectStatus = "not_started" | "pending" | "active";
 
 export interface Profile {
   id: string;
@@ -39,7 +38,6 @@ export interface Profile {
   // yet (see docs/TURNOVER_DISPATCHER.md).
   address?: string | null;
   identity_status?: IdentityStatus;
-  stripe_connect_status?: ConnectStatus;
   deactivated_at?: string | null;
   // Shown instead of the full name on a booking bar too narrow to fit
   // it -- one letter per filled name part (given/middle/surname),

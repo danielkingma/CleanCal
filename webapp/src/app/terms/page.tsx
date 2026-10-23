@@ -35,8 +35,8 @@ export default function TermsPage() {
         <p>
           CleanCal is a scheduling and coordination tool for short-term rental cleaning
           operations: syncing bookings across listing platforms, assigning cleaning jobs to a
-          team, running per-property cleaning checklists, and facilitating cleaner payouts via
-          Stripe Connect. CleanCal is not a party to the underlying rental agreements between
+          team, running per-property cleaning checklists, and tracking what each cleaner is owed
+          for completed jobs. CleanCal is not a party to the underlying rental agreements between
           hosts and guests, and is not affiliated with Airbnb, Vrbo, Booking.com, or any other
           listing platform.
         </p>
@@ -51,21 +51,25 @@ export default function TermsPage() {
 
         <h2>Subscriptions and payment</h2>
         <p>
-          Pricing is described on our pricing page and in the Handbook. CleanCal does not
-          currently charge for access or enforce these pricing tiers — this may change in the
-          future, and we&apos;ll give notice before we begin billing existing accounts.
+          Pricing is described on our pricing page and in the Handbook: a free trial period,
+          then a subscription billed per property, plus an optional add-on tier, both processed
+          through Stripe. Payment card details are collected and held by Stripe directly — we
+          never see or store your card number. You can view your subscription status and manage
+          or cancel it at any time from My Profile &rarr; Billing. We&apos;ll give notice before
+          any material change to pricing for existing accounts.
         </p>
 
         <h2>Cleaner payouts</h2>
         <p>
-          Cleaner payouts are processed by Stripe, a third-party payment processor, through
-          Stripe Connect. CleanCal facilitates the payout instruction at an Owner or
-          Manager&apos;s direction; we don&apos;t hold your funds ourselves, and we&apos;re not
-          responsible for delays, failures, or errors caused by Stripe or by incorrect payout
-          details you or a cleaner enters. Disputes about whether a job was completed
-          satisfactorily, or what a cleaner should be paid, are between the organization and the
-          cleaner — our in-app dispute tool is provided to help resolve these, but we don&apos;t
-          arbitrate or guarantee an outcome.
+          CleanCal does not process, hold, or transmit payments between an organization and its
+          cleaners. CleanCal calculates and displays what&apos;s owed for a completed job (based
+          on the payout rate and any linen fee an Owner sets), and an Owner or Manager pays the
+          cleaner directly by whatever means their business normally uses; CleanCal only records
+          that a payout was marked done. We&apos;re not a party to that payment and aren&apos;t
+          responsible for whether, when, or how it&apos;s actually made. Disputes about whether a
+          job was completed satisfactorily, or what a cleaner should be paid, are between the
+          organization and the cleaner — our in-app dispute tool is provided to help resolve
+          these, but we don&apos;t arbitrate or guarantee an outcome.
         </p>
 
         <h2>Identity verification and background checks</h2>

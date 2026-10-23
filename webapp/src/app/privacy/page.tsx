@@ -48,12 +48,6 @@ export default function PrivacyPage() {
           do not receive or store the ID image or selfie ourselves — we only receive and store
           the verification result (verified, pending, or failed).
         </p>
-        <h3>Payout information</h3>
-        <p>
-          If you connect a payout account as a cleaner, your bank and identity details for that
-          purpose are collected and held by Stripe (via Stripe Connect), not by us. We store only
-          the connected account&apos;s status and ID, not your bank details.
-        </p>
         <h3>Booking and property information</h3>
         <p>
           If you connect a calendar feed from Airbnb, Vrbo, Booking.com, or another platform, we
@@ -76,7 +70,7 @@ export default function PrivacyPage() {
 
         <h2>How we use this information</h2>
         <ul>
-          <li>To operate the core service: syncing calendars, assigning cleaning jobs, running checklists, and processing payouts.</li>
+          <li>To operate the core service: syncing calendars, assigning cleaning jobs, running checklists, and tracking what each cleaner is owed.</li>
           <li>To verify a cleaner&apos;s identity before they can be assigned jobs, where that feature is used.</li>
           <li>To send you sign-in codes, job notifications, and service-related emails or push notifications.</li>
           <li>To investigate and resolve disputes raised through the in-app dispute tool.</li>
@@ -92,9 +86,10 @@ export default function PrivacyPage() {
             on CleanCal. It is never visible to a different business on CleanCal.
           </li>
           <li>
-            <strong>Stripe</strong>, for identity verification (Stripe Identity) and cleaner
-            payouts (Stripe Connect). Stripe&apos;s own privacy policy governs the data it
-            processes directly.
+            <strong>Stripe</strong>, for identity verification (Stripe Identity) and your
+            organization&apos;s own subscription billing (payment card details are collected and
+            held by Stripe directly -- we never see or store your card number). Stripe&apos;s own
+            privacy policy governs the data it processes directly.
           </li>
           <li>
             <strong>Supabase</strong>, our database, authentication, and file-storage provider.

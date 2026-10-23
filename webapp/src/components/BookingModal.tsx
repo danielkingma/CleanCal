@@ -8,7 +8,7 @@ import {
   createBooking,
   declineAssignedBooking,
   deleteBooking,
-  payCleanerForBooking,
+  markCleanerPaid,
   postDisputeMessage,
   rateBooking,
   saveGuestContact,
@@ -329,17 +329,16 @@ export default function BookingModal({
   const [payError, setPayError] = useState<string | null>(null);
   const [justPaid, setJustPaid] = useState(false);
   const property = properties.find((p) => p.id === propertyId);
-  const assignedCleaner = cleaners.find((c) => c.id === booking?.assigned_cleaner_id);
 
-  async function handlePayCleaner() {
+  async function handleMarkPaid() {
     if (!booking) return;
     setPayingCleaner(true);
     setPayError(null);
     try {
-      await payCleanerForBooking(booking.id);
+      await markCleanerPaid(booking.id);
       setJustPaid(true);
     } catch (e) {
-      setPayError(e instanceof Error ? e.message : "Couldn't pay cleaner.");
+      setPayError(e instanceof Error ? e.message : "Couldn't mark this paid.");
     } finally {
       setPayingCleaner(false);
     }
@@ -1136,25 +1135,29 @@ export default function BookingModal({
               <p className="photo-note">Paid ✓</p>
             ) : !property?.payout_rate_cents ? (
               <p className="photo-note">No payout rate set for this property — set one on the Properties page.</p>
-            ) : assignedCleaner?.stripe_connect_status !== "active" ? (
-              <p className="photo-note">This cleaner hasn&apos;t finished setting up payouts yet.</p>
             ) : (
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={handlePayCleaner}
-                  disabled={payingCleaner}
-                >
-                  {payingCleaner
-                    ? "Paying…"
-                    : `Pay $${(
-                        (property.payout_rate_cents +
-                          (linenPickup ? (property.linen_box_count ?? 0) * (property.linen_fee_cents ?? 0) : 0)) /
-                        100
-                      ).toFixed(2)}`}
-                </button>
-              </div>
+              <>
+                <p className="photo-note">
+                  Owes $
+                  {(
+                    (property.payout_rate_cents +
+                      (linenPickup ? (property.linen_box_count ?? 0) * (property.linen_fee_cents ?? 0) : 0)) /
+                    100
+                  ).toFixed(2)}{" "}
+                  — pay them directly (bank transfer, cash, however you normally do), then mark it
+                  here so it&apos;s tracked.
+                </p>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={handleMarkPaid}
+                    disabled={payingCleaner}
+                  >
+                    {payingCleaner ? "Saving…" : "Mark as paid"}
+                  </button>
+                </div>
+              </>
             )}
             {payError ? (
               <div className="error-banner" style={{ marginTop: 10 }}>

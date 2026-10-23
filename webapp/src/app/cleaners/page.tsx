@@ -28,7 +28,7 @@ export default async function CleanersPage() {
 
   const { data: cleaners } = await supabase
     .from("profiles")
-    .select("id, name, bio, phone, service_area, address, identity_status, stripe_connect_status, deactivated_at, favorite_color")
+    .select("id, name, bio, phone, service_area, address, identity_status, deactivated_at, favorite_color")
     .eq("role", "cleaner")
     .is("deactivated_at", null)
     .order("name");
@@ -167,13 +167,6 @@ export default async function CleanersPage() {
                     <span className="sync-pill never">ID pending</span>
                   ) : (
                     <span className="sync-pill error">ID not verified</span>
-                  )}
-                  {cleaner.stripe_connect_status === "active" ? (
-                    <span className="sync-pill ok">Payouts set up</span>
-                  ) : cleaner.stripe_connect_status === "pending" ? (
-                    <span className="sync-pill never">Payouts pending</span>
-                  ) : (
-                    <span className="sync-pill error">Payouts not set up</span>
                   )}
                 </div>
               </div>

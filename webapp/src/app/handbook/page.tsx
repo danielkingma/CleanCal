@@ -1001,10 +1001,10 @@ export default function HandbookPage() {
                 <li>
                   <strong>One card per cleaner</strong> — each is a collapsed row (name and rating); tap it to open. Inside: name (with their favourite-colour dot),
                   the email address (Owner only), an <strong>ID verified / ID pending / ID not
-                  verified</strong> badge, a <strong>Payouts set up / pending / not set up</strong>{" "}
-                  badge, their average rating and how many ratings that&apos;s from, their phone and
-                  service area, their bio, and the next few days they&apos;ve marked themselves
-                  unavailable (see <a href="#availability">Availability</a>).
+                  verified</strong> badge, their average rating and how many ratings that&apos;s
+                  from, their phone and service area, their bio, and the next few days
+                  they&apos;ve marked themselves unavailable (see{" "}
+                  <a href="#availability">Availability</a>).
                 </li>
               </ul>
               <h3>Removing a cleaner</h3>
@@ -1450,9 +1450,11 @@ export default function HandbookPage() {
             <section className="hb-section" id="payments">
               <h2>Cleaner payouts</h2>
               <p>
-                Payouts are per-property, not automatic, and always a deliberate action — nothing
-                moves money on its own. Setting the dollar amounts is Owner-only; triggering an
-                actual payment is open to any staff.
+                CleanCal never moves money for a cleaner payout itself — you pay your cleaners
+                directly, however your business already does (bank transfer, cash, whatever works),
+                and CleanCal&apos;s job is just making sure everyone can see exactly what&apos;s
+                owed. Setting the dollar amounts is Owner-only; marking a payout done is open to
+                any staff.
               </p>
               <ol className="hb-step-list">
                 <li>
@@ -1461,26 +1463,23 @@ export default function HandbookPage() {
                   per-box rate and how many boxes the property uses (roughly one box per one-bed
                   bedroom, though it can differ).
                 </li>
-                <li>A cleaner connects their own payout account from Menu → My Profile (&quot;Set up payouts&quot;) — a short Stripe-hosted onboarding flow.</li>
                 <li>
                   If a specific booking needs its linen picked up, staff tick &quot;Cleaner takes
                   linen off-site to clean&quot; in that booking (next to Assignment) — this is a
                   per-booking choice, since not every clean needs it.
                 </li>
                 <li>
-                  Once a booking is marked Complete and has an assigned cleaner, staff see a
-                  &quot;Pay $X&quot; button right in that booking — the total already includes the
-                  linen fee if that box was ticked. Clicking it sends the payout.
+                  Once a booking is marked Complete and has an assigned cleaner, staff see exactly
+                  what&apos;s owed right in that booking&apos;s <strong>Cleaner payout</strong>{" "}
+                  section — the total already includes the linen fee if that box was ticked. Pay
+                  the cleaner however you normally do, then click <strong>Mark as paid</strong> to
+                  record it.
                 </li>
               </ol>
               <p>
-                In place of the button, that <strong>Cleaner payout</strong> section tells you why
-                it isn&apos;t available: <em>Paid ✓</em> once it&apos;s been sent, <em>No payout
-                rate set for this property</em> (set one on the Properties page), or{" "}
-                <em>This cleaner hasn&apos;t finished setting up payouts yet</em>. On the{" "}
-                <a href="#cleaners-page">Cleaners page</a>, each cleaner&apos;s card shows a{" "}
-                <strong>Payouts set up / pending / not set up</strong> badge so you can see this
-                before you assign them.
+                That same section shows <em>Paid ✓</em> once it&apos;s been marked, or{" "}
+                <em>No payout rate set for this property</em> if one still needs to be added on the
+                Properties page.
               </p>
               <div className="hb-callout">
                 <strong>What a cleaner sees</strong>

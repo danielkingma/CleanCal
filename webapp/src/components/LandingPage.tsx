@@ -65,7 +65,7 @@ const FEATURES = [
   },
   {
     title: "Cleaner payouts",
-    body: "Set a rate per property once, and pay a cleaner with a single click once a job is complete, linen fee included -- a real payment, sent straight to their connected account.",
+    body: "Set a rate per property once, linen fee included, and CleanCal tells you exactly what each cleaner is owed the moment a job's complete -- pay them however you already do, then mark it done.",
   },
   {
     title: "Owner statements -- in beta",
@@ -151,15 +151,15 @@ const STEPS = [
   },
   {
     title: "Build your team",
-    body: "Send an invite link. A cleaner verifies their own ID and sets up their own payout account -- nothing for you to chase.",
+    body: "Send an invite link. A cleaner verifies their own ID in a couple of minutes -- nothing for you to chase.",
   },
   {
     title: "Jobs get claimed, done, and rated",
     body: "One-click claim, a photo-backed checklist, a rating when it's done. A dispute, if one comes up, stays contained to that one booking.",
   },
   {
-    title: "Pay in one click",
-    body: "A \"Pay $X\" button right on the completed job, linen fee included -- click it, and that's the whole payroll process.",
+    title: "Know what everyone's owed",
+    body: "The exact payout for each completed job, linen fee included, right there on the booking -- pay your cleaner however you always have, then mark it done.",
   },
 ];
 

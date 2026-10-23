@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { notifyUsers } from "@/lib/notify";
-import { getStripe } from "@/lib/stripe";
 import { reviewCleaningPhotos } from "@/lib/photo-review";
 import { orgHasPro } from "@/lib/pro-access";
 import type { BookingStatus, Checklist } from "@/lib/types";
@@ -398,65 +397,40 @@ export async function resolveDispute(bookingId: string) {
   revalidatePath("/calendar");
 }
 
-// Staff-triggered, one booking at a time -- money movement here is
-// always an explicit action someone approves, never an automatic side
-// effect of marking a booking complete (same "you approve every step
-// that touches money" posture as the rest of the app's admin actions).
-// A failure (e.g. the platform's Stripe balance can't cover the
-// transfer yet) surfaces directly to whoever clicked the button, unlike
-// push notifications' deliberately-swallowed errors -- this is a real
-// financial action, not a best-effort convenience.
-export async function payCleanerForBooking(bookingId: string) {
+// CleanCal never moves money for a cleaner payout -- an Owner pays their
+// cleaners however they already do (bank transfer, cash, whatever), and
+// this just records that it happened. It used to actually send a Stripe
+// Connect transfer here; that was removed (see docs/BACKLOG.md item 1)
+// because it had no way to collect the payout amount from the Owner
+// first, so every transfer was quietly paid out of CleanCal's own
+// Stripe balance rather than the Owner's. Reading what's owed is still
+// exact (payout rate plus linen fee, computed server-side from the
+// property/booking rows, same as before) -- only the "and then actually
+// send it" step is gone.
+export async function markCleanerPaid(bookingId: string) {
   const supabase = await createClient();
   const { data: booking, error } = await supabase
     .from("bookings")
-    .select("id, property_id, assigned_cleaner_id, status, payout_status, linen_pickup")
+    .select("id, property_id, assigned_cleaner_id, status, payout_status")
     .eq("id", bookingId)
     .maybeSingle();
   if (error || !booking) throw new Error(error?.message ?? "Booking not found.");
   if (booking.status !== "complete") throw new Error("Booking isn't marked complete yet.");
   if (!booking.assigned_cleaner_id) throw new Error("No cleaner assigned to this booking.");
-  if (booking.payout_status === "paid") throw new Error("This booking has already been paid out.");
+  if (booking.payout_status === "paid") throw new Error("This booking has already been marked paid.");
 
   const { data: property } = await supabase
     .from("properties")
-    .select("payout_rate_cents, linen_box_count, linen_fee_cents")
+    .select("payout_rate_cents")
     .eq("id", booking.property_id)
     .maybeSingle();
   if (!property?.payout_rate_cents) {
     throw new Error("This property has no payout rate set -- add one on the Properties page first.");
   }
 
-  // The linen fee (box count and per-box rate, both set per property
-  // since different host businesses charge different amounts) is
-  // computed from the property/booking rows read here, never trusted
-  // from the client, since this is what actually gets transferred via
-  // Stripe.
-  const linenFeeCents = booking.linen_pickup
-    ? (property.linen_box_count ?? 0) * (property.linen_fee_cents ?? 0)
-    : 0;
-  const totalCents = property.payout_rate_cents + linenFeeCents;
-
-  const { data: cleaner } = await supabase
-    .from("profiles")
-    .select("stripe_connect_account_id, stripe_connect_status")
-    .eq("id", booking.assigned_cleaner_id)
-    .maybeSingle();
-  if (!cleaner?.stripe_connect_account_id || cleaner.stripe_connect_status !== "active") {
-    throw new Error("This cleaner hasn't finished setting up payouts yet.");
-  }
-
-  const stripe = getStripe();
-  const transfer = await stripe.transfers.create({
-    amount: totalCents,
-    currency: "aud",
-    destination: cleaner.stripe_connect_account_id,
-    metadata: { booking_id: bookingId },
-  });
-
   const { error: updateError } = await supabase
     .from("bookings")
-    .update({ payout_status: "paid", stripe_transfer_id: transfer.id })
+    .update({ payout_status: "paid" })
     .eq("id", bookingId);
   if (updateError) throw new Error(updateError.message);
 

@@ -4,8 +4,10 @@ import { getStripe } from "@/lib/stripe";
 import { isProAddonPrice, mapStripeSubscriptionStatus } from "@/lib/billing";
 import { createServiceClient } from "@/lib/supabase/service";
 
-// Single endpoint for every Stripe-backed feature (Identity today;
-// Connect and Billing events land here too as they're added) -- Stripe
+// Single endpoint for every Stripe-backed feature that needs one
+// (Identity and subscription Billing; cleaner payouts don't -- CleanCal
+// never moves money for those, see markCleanerPaid in
+// src/app/calendar/actions.ts) -- Stripe
 // itself has no user session to authenticate with, so signature
 // verification against STRIPE_WEBHOOK_SECRET is what stands in for auth,
 // same role CRON_SECRET plays on /api/cron/sync-ical. Writes always go
@@ -61,26 +63,14 @@ export async function POST(request: Request) {
         .eq("stripe_identity_session_id", session.id);
       break;
     }
-    case "account.updated": {
-      const account = event.data.object as Stripe.Account;
-      // payouts_enabled is the actual signal Connect onboarding is
-      // complete -- charges_enabled alone doesn't mean Stripe has
-      // verified enough to pay this account out yet.
-      await supabase
-        .from("profiles")
-        .update({ stripe_connect_status: account.payouts_enabled ? "active" : "pending" })
-        .eq("stripe_connect_account_id", account.id);
-      break;
-    }
     // Subscription billing (see src/lib/billing.ts and
     // startBillingCheckout in src/app/profile/actions.ts). Checkout only
     // ever creates the Customer + Checkout Session -- the subscription
     // itself, and every status change after that (renewal, a failed
     // card, cancellation), only ever reaches our data through these
-    // three events. organizations has no generic write policy (same as
-    // profiles.stripe_connect_status), so this -- the service-role
-    // client -- is the only writer of stripe_subscription_id and
-    // subscription_status from here on.
+    // three events. organizations has no generic write policy, so this
+    // -- the service-role client -- is the only writer of
+    // stripe_subscription_id and subscription_status from here on.
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
       if (session.mode !== "subscription" || !session.subscription || !session.customer) break;

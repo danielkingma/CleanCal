@@ -466,46 +466,35 @@ Identity**'s hosted verification flow.
 
 ## Cleaner payouts (slice 14)
 
-Cleaners get paid for completed jobs via **Stripe Connect** (Express
-accounts) — chosen over **Stripe Treasury** (a much heavier
-embedded-banking product with its own approval process, meant for
-holding balances/issuing cards, not needed just to pay someone for a
-job). Pay is **per property**, not per cleaner: whoever cleans a given
-property is paid that property's rate.
+CleanCal never moves money for a cleaner payout — an Owner pays their
+cleaners directly, however their business already does (bank transfer,
+cash, whatever), and the app's job is just making sure what's owed is
+exact and visible. Pay is **per property**, not per cleaner: whoever
+cleans a given property is owed that property's rate.
+
+This used to go through Stripe Connect (Express accounts) — a real
+`stripe.transfers.create` sent from the platform's own Stripe balance to
+the cleaner's connected account. That was removed: a Transfer moves
+money that's already in *this platform's own* Stripe balance, not the
+property owner's, and nothing in this repo ever collected the payout
+amount from the owner first. Every payout was quietly coming out of the
+platform's own pocket rather than the host business's, with no way to
+recover it — see `docs/BACKLOG.md` for the decision. Reinstating push
+payments properly would mean charging the owner (a destination charge or
+similar) before transferring to the cleaner, which is a real payments
+business (chargeback/dispute handling, KYC/OFAC exposure through
+Connect) rather than a quick fix.
 
 - **`/properties`** (staff): each property card has a payout rate field
   (dollars, converted to cents on save) — leave it blank and that
   property just has no payout wired up yet.
-- **`/profile`** (cleaner role only): a "Set up payouts" button starts
-  Stripe Connect Express onboarding and redirects there; resuming later
-  reuses the same Connect account rather than creating a new one each
-  time. Whether the account can actually *receive* money
-  (`stripe_connect_status = 'active'`) is set only by the
-  `account.updated` webhook once Stripe confirms `payouts_enabled` —
-  same "the client never grants itself a status" pattern as Identity.
 - **In the booking modal**, once a booking is marked Complete and has an
-  assigned cleaner, staff see a "Pay $X" button (the property's rate) if
-  the cleaner's payout account is active, or a plain note explaining why
-  not yet (no rate set / cleaner not onboarded) if it isn't. Paying is
-  always a deliberate click, never an automatic side effect of marking a
-  booking complete — same "you approve every step that touches money"
-  posture as the rest of the app's staff actions. A failed transfer (e.g.
-  the platform's own Stripe balance can't cover it yet) surfaces the real
-  error to whoever clicked, rather than failing silently.
-- Staff see each cleaner's payout setup status as a badge on `/cleaners`,
-  next to their ID verification badge.
-- **Setup**: also add `account.updated` to the same webhook endpoint's
-  subscribed events (from the Identity section above) in the Stripe
-  dashboard. No extra env vars needed beyond `STRIPE_SECRET_KEY` /
-  `STRIPE_WEBHOOK_SECRET`.
-- **A funding note**: a Stripe Transfer moves money that's already in
-  *this platform's own* Stripe balance out to a connected account — it
-  doesn't pull money from the property owner or guest. Nothing in this
-  repo puts money into that balance yet (that's the still-open question
-  of how a clean actually gets paid for — see Backlog), so in a fresh
-  Stripe account a real payout attempt will fail with an
-  insufficient-balance error until the platform balance is funded some
-  other way (a manual top-up, or a future charge-to-host flow).
+  assigned cleaner, staff see exactly what's owed (the property's rate
+  plus any linen fee) in the "Cleaner payout" section, or a plain note
+  if the property has no payout rate set yet. Pay the cleaner however
+  you normally do, then click "Mark as paid" to record it —
+  `markCleanerPaid` in `src/app/calendar/actions.ts` is a plain
+  `payout_status` update, no Stripe call.
 
 ## Multi-tenancy (slice 15)
 
@@ -934,15 +923,16 @@ Waiting on something outside this repo before there's anything to build:
   faked, since it involves legally regulated handling of background-check
   data (FCRA compliance in the US). Once you have an account and keys,
   say so and this gets wired up properly.
-- **Subscription billing (Stripe Billing/Invoicing)** — now that
-  multi-tenancy exists, this is the next real step: a Stripe Customer +
-  subscription per organization, computed from the property-count tiers
-  you specified, with a read-only lockout when a subscription lapses.
-- **How a clean actually gets paid for** — the missing piece the payout
-  funding note above points at: some mechanism needs to put money into
-  the platform's Stripe balance before a cleaner payout can actually
-  succeed (charging the property owner per clean, funding it from
-  subscription revenue, or something else).
+- **A read-only lockout on non-payment** — subscription billing itself is
+  live (see the Billing section elsewhere in this doc), but
+  `subscription_status` is currently only ever displayed, never enforced:
+  an organization that goes `past_due` or `canceled` keeps full,
+  unrestricted access today. Needs a decision on what happens at each
+  state before it's worth building.
+- **Push cleaner payouts, done properly** — see the Cleaner payouts
+  section above for why this was removed rather than left half-working;
+  reinstating it needs an owner-charge step (a destination charge or
+  similar) before any transfer, not just restoring the old Connect flow.
 
 ## Setup
 

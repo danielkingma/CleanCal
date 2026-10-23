@@ -192,11 +192,8 @@ export default function CleanerGuidePage() {
                   handled by Stripe. It&apos;s quick, and the result comes back automatically.
                 </li>
                 <li>
-                  Connect your payout account from the same page (&quot;Set up payouts&quot;) — a
-                  short Stripe-hosted flow.
-                </li>
-                <li>
-                  Once your host marks a job paid, the money moves to your connected account.
+                  Your host pays you directly for each completed job (bank transfer, cash, however
+                  your business normally works) — there&apos;s nothing to set up for this.
                   Payout status isn&apos;t shown to cleaners in the app yet — check with your
                   Owner or Manager if you&apos;re ever unsure.
                 </li>
