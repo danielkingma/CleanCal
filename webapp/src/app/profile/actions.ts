@@ -170,7 +170,7 @@ export async function startBillingCheckout(returnUrl: string): Promise<string> {
 
   const { data: org } = await supabase
     .from("organizations")
-    .select("id, stripe_customer_id")
+    .select("id, stripe_customer_id, trial_ends_at")
     .eq("id", profile.organization_id)
     .single();
   if (!org) throw new Error("No organization found.");
@@ -196,13 +196,28 @@ export async function startBillingCheckout(returnUrl: string): Promise<string> {
     if (error) throw new Error(error.message);
   }
 
+  // Nobody is required to add payment details before their free trial
+  // ends -- but nothing stops an owner choosing to start checkout early
+  // either (e.g. wanting the verification/fraud-protection benefits of
+  // having a card on file sooner). Either way they're never charged
+  // before trial_ends_at (set by create_organization(),
+  // 0039_three_month_trial.sql) actually arrives: if it's still in the
+  // future, tell Stripe not to bill the subscription until then. A
+  // trial that's already over (or was never set) just starts billing
+  // right away, same as Stripe's own default.
+  const trialEndsAt = org.trial_ends_at ? new Date(org.trial_ends_at as string) : null;
+  const trialEnd = trialEndsAt && trialEndsAt.getTime() > Date.now() ? Math.floor(trialEndsAt.getTime() / 1000) : undefined;
+
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     customer: customerId,
     line_items: [{ price: tier.priceId, quantity: tier.quantity }],
     success_url: returnUrl,
     cancel_url: returnUrl,
-    subscription_data: { metadata: { organization_id: org.id } },
+    subscription_data: {
+      metadata: { organization_id: org.id },
+      ...(trialEnd ? { trial_end: trialEnd } : {}),
+    },
   });
   if (!session.url) throw new Error("Stripe didn't return a checkout URL.");
 
