@@ -64,8 +64,8 @@ const FEATURES = [
     body: "Cleaners mark the days they can't work, and you get a warning if you try to give them a job on one of those days.",
   },
   {
-    title: "Cleaner payouts -- coming soon",
-    body: "Set a rate per property once, and pay a cleaner with a single click once a job is complete, linen fee included. The rates and setup are already in the app; switching on live payments is next.",
+    title: "Cleaner payouts",
+    body: "Set a rate per property once, and pay a cleaner with a single click once a job is complete, linen fee included -- a real payment, sent straight to their connected account.",
   },
   {
     title: "Owner statements -- in beta",
@@ -158,8 +158,8 @@ const STEPS = [
     body: "One-click claim, a photo-backed checklist, a rating when it's done. A dispute, if one comes up, stays contained to that one booking.",
   },
   {
-    title: "Pay in one click (coming soon)",
-    body: "Live payments are being switched on next: you'll see a \"Pay $X\" button right on the completed job, click it, and that's the whole payroll process.",
+    title: "Pay in one click",
+    body: "A \"Pay $X\" button right on the completed job, linen fee included -- click it, and that's the whole payroll process.",
   },
 ];
 
