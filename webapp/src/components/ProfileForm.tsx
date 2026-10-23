@@ -615,9 +615,6 @@ export default function ProfileForm({
                   {onboardError}
                 </div>
               ) : null}
-              <p className="access-note" style={{ marginTop: 8, fontSize: 12.5, color: "var(--amber)" }}>
-                Coming soon — payouts aren&apos;t operational yet.
-              </p>
             </div>
           </div>
         ) : null}

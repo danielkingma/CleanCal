@@ -201,12 +201,6 @@ export default function CleanerGuidePage() {
                   Owner or Manager if you&apos;re ever unsure.
                 </li>
               </ol>
-              <div className="hb-callout warn">
-                <strong>Not live yet</strong>
-                Payouts aren&apos;t operational yet — this is coming soon. The steps above are
-                what it&apos;ll look like once it&apos;s switched on; check with your Owner or
-                Manager about getting paid in the meantime.
-              </div>
             </section>
 
             <section className="hb-section">

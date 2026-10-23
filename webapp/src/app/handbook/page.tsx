@@ -1487,12 +1487,6 @@ export default function HandbookPage() {
                 Today, payout status isn&apos;t shown to cleaners directly in the app — check with
                 your Owner or Manager if you&apos;re unsure whether a job&apos;s been paid.
               </div>
-              <div className="hb-callout warn">
-                <strong>Not live yet</strong>
-                Payouts aren&apos;t operational yet — Stripe isn&apos;t connected on this account.
-                This is coming soon; the steps above are what it&apos;ll look like once it&apos;s
-                switched on.
-              </div>
             </section>
 
             <section className="hb-section" id="pricing">
@@ -1521,12 +1515,6 @@ export default function HandbookPage() {
                 note that you have a custom pricing agreement (with the monthly amount, if one was
                 set), and the standard pricing above doesn&apos;t apply to your account.
               </p>
-              <div className="hb-callout warn">
-                <strong>Not billed yet — but coming soon</strong>
-                This is the intended pricing structure. Billing isn&apos;t turned on yet and
-                nothing about your account access changes based on property count today, but
-                that&apos;s starting soon — enjoy full access for free while it lasts.
-              </div>
             </section>
 
             <section className="hb-section" id="faq">

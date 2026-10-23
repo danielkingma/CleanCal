@@ -1156,12 +1156,6 @@ export default function BookingModal({
                 </button>
               </div>
             )}
-            {booking.payout_status !== "paid" && !justPaid ? (
-              <p className="photo-note" style={{ marginTop: 8, color: "var(--amber)" }}>
-                Coming soon — payouts aren&apos;t operational yet (Stripe isn&apos;t connected on
-                this account).
-              </p>
-            ) : null}
             {payError ? (
               <div className="error-banner" style={{ marginTop: 10 }}>
                 {payError}
