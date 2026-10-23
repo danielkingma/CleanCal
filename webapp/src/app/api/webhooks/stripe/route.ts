@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { getStripe } from "@/lib/stripe";
-import { mapStripeSubscriptionStatus } from "@/lib/billing";
+import { isProAddonPrice, mapStripeSubscriptionStatus } from "@/lib/billing";
 import { createServiceClient } from "@/lib/supabase/service";
 
 // Single endpoint for every Stripe-backed feature (Identity today;
@@ -34,6 +34,15 @@ export async function POST(request: Request) {
   }
 
   const supabase = createServiceClient();
+
+  // Recomputed fresh from a subscription's actual line items every time --
+  // never toggled by hand, never assumed to still hold from a prior event.
+  // See pro_addon_active's comment in 0057_pro_addon.sql for why this is a
+  // separate column from the hand-toggled statements_enabled rather than
+  // something that could ever clobber it.
+  function hasProAddonItem(subscription: Stripe.Subscription): boolean {
+    return subscription.items.data.some((item) => isProAddonPrice(item.price.id));
+  }
 
   switch (event.type) {
     case "identity.verification_session.verified": {
@@ -83,6 +92,7 @@ export async function POST(request: Request) {
         .update({
           stripe_subscription_id: subscription.id,
           subscription_status: mapStripeSubscriptionStatus(subscription.status),
+          pro_addon_active: hasProAddonItem(subscription),
         })
         .eq("stripe_customer_id", typeof session.customer === "string" ? session.customer : session.customer.id);
       break;
@@ -91,7 +101,10 @@ export async function POST(request: Request) {
       const subscription = event.data.object as Stripe.Subscription;
       await supabase
         .from("organizations")
-        .update({ subscription_status: mapStripeSubscriptionStatus(subscription.status) })
+        .update({
+          subscription_status: mapStripeSubscriptionStatus(subscription.status),
+          pro_addon_active: hasProAddonItem(subscription),
+        })
         .eq("stripe_subscription_id", subscription.id);
       break;
     }
@@ -99,7 +112,7 @@ export async function POST(request: Request) {
       const subscription = event.data.object as Stripe.Subscription;
       await supabase
         .from("organizations")
-        .update({ subscription_status: "canceled" })
+        .update({ subscription_status: "canceled", pro_addon_active: false })
         .eq("stripe_subscription_id", subscription.id);
       break;
     }

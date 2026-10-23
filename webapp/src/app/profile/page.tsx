@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { smsConfigured } from "@/lib/sms";
 import ProfileForm from "@/components/ProfileForm";
 import { isOwner, isStaff, type Profile } from "@/lib/types";
+import { isSuperadmin } from "@/lib/superadmin";
 
 export default async function ProfilePage() {
   const supabase = await createClient();
@@ -58,18 +59,26 @@ export default async function ProfilePage() {
   let dispatcherEnabled = false;
   let subscriptionStatus: string | null = null;
   let trialEndsAt: string | null = null;
+  let proAddonActive = false;
+  // Whether the dispatcher toggle (Pro-gated as of 0058_pro_gated_features.sql)
+  // should even be offered -- same OR as orgHasPro() in lib/pro-access.ts,
+  // computed inline here instead of calling it a second time since the
+  // organizations row is already being fetched for the fields above.
+  let hasPro = isSuperadmin(user.email);
   if (isStaff(profile.role) && profile.organization_id) {
     const { data: org } = await supabase
       .from("organizations")
-      .select("name, dispatcher_enabled, subscription_status, trial_ends_at")
+      .select("name, dispatcher_enabled, subscription_status, trial_ends_at, pro_addon_active, statements_enabled")
       .eq("id", profile.organization_id)
       .maybeSingle();
     if (isOwner(profile.role)) {
       organizationName = org?.name ?? null;
       subscriptionStatus = org?.subscription_status ?? null;
       trialEndsAt = org?.trial_ends_at ?? null;
+      proAddonActive = org?.pro_addon_active ?? false;
     }
     dispatcherEnabled = org?.dispatcher_enabled ?? false;
+    hasPro = hasPro || Boolean(org?.statements_enabled) || Boolean(org?.pro_addon_active);
   }
 
   const { data: devices } = await supabase
@@ -91,6 +100,8 @@ export default async function ProfilePage() {
       dispatcherEnabled={dispatcherEnabled}
       subscriptionStatus={subscriptionStatus}
       trialEndsAt={trialEndsAt}
+      proAddonActive={proAddonActive}
+      hasPro={hasPro}
     />
   );
 }

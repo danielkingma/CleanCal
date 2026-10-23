@@ -9,10 +9,17 @@ export interface StatementsAccess {
   allowed: boolean;
 }
 
-// The owner statements add-on is staff-only and switched on per org
-// (organizations.statements_enabled). The superadmin account always has
-// it, so it can be tried before any org pays for it. RLS on the
-// add-on's tables is staff-only regardless; this check only decides
+// The owner statements add-on is staff-only and granted per org two
+// independent ways: a hand-toggled negotiated grant
+// (organizations.statements_enabled -- see docs/OWNER_STATEMENTS.md) or
+// buying the Pro add-on through real billing (organizations.pro_addon_active,
+// set only by the Stripe webhook from the subscription's actual line
+// items -- see src/lib/billing.ts). Either one is enough; deliberately
+// OR'd rather than folded into one column so a Stripe webhook can never
+// silently revoke a hand-granted beta spot, and a cancelled Pro add-on
+// can never silently revoke a negotiated deal. The superadmin account
+// always has it, so it can be tried before any org pays for it. RLS on
+// the add-on's tables is staff-only regardless; this check only decides
 // whether the pages and nav links appear.
 export async function getStatementsAccess(supabase: SupabaseClient): Promise<StatementsAccess | null> {
   const {
@@ -32,10 +39,10 @@ export async function getStatementsAccess(supabase: SupabaseClient): Promise<Sta
   if (!enabled) {
     const { data: org } = await supabase
       .from("organizations")
-      .select("statements_enabled")
+      .select("statements_enabled, pro_addon_active")
       .eq("id", profile.organization_id)
       .maybeSingle();
-    enabled = Boolean(org?.statements_enabled);
+    enabled = Boolean(org?.statements_enabled) || Boolean(org?.pro_addon_active);
   }
 
   return {

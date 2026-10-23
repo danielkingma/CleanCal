@@ -54,6 +54,8 @@ export default function ProfileForm({
   dispatcherEnabled,
   subscriptionStatus,
   trialEndsAt,
+  proAddonActive,
+  hasPro,
 }: {
   profile: Profile;
   email: string;
@@ -63,6 +65,15 @@ export default function ProfileForm({
   dispatcherEnabled: boolean;
   subscriptionStatus: string | null;
   trialEndsAt: string | null;
+  // organizations.pro_addon_active -- specifically whether the paid Pro
+  // add-on is active, for the Billing card's own status line.
+  proAddonActive: boolean;
+  // Whether this org has Pro by *any* means (the add-on above, a
+  // hand-granted negotiated deal, or the superadmin account) -- same OR
+  // as orgHasPro() in lib/pro-access.ts, computed server-side in
+  // profile/page.tsx. Used to gate the turnover dispatcher toggle below
+  // (also enforced server-side in update_dispatcher_enabled() itself).
+  hasPro: boolean;
 }) {
   // Falls back to splitting the combined `name` the same way the
   // 0042_split_name_fields.sql backfill does, in case this profile's
@@ -100,6 +111,7 @@ export default function ProfileForm({
   const [verifyError, setVerifyError] = useState<string | null>(null);
   const [onboarding, setOnboarding] = useState(false);
   const [onboardError, setOnboardError] = useState<string | null>(null);
+  const [wantsPro, setWantsPro] = useState(false);
   const [startingBilling, setStartingBilling] = useState(false);
   const [billingError, setBillingError] = useState<string | null>(null);
   const [openingPortal, setOpeningPortal] = useState(false);
@@ -213,7 +225,7 @@ export default function ProfileForm({
     setStartingBilling(true);
     setBillingError(null);
     try {
-      const url = await startBillingCheckout(`${window.location.origin}/profile`);
+      const url = await startBillingCheckout(`${window.location.origin}/profile`, wantsPro);
       window.location.href = url;
     } catch (e) {
       setBillingError(e instanceof Error ? e.message : "Couldn't start checkout.");
@@ -454,6 +466,29 @@ export default function ProfileForm({
                           ? `Free until ${new Date(trialEndsAt).toLocaleDateString()}. Adding payment details before then is entirely optional -- some owners do it anyway for Stripe's verification/fraud-protection benefits, but you won't be charged until the trial ends. $2 per property per month after that.`
                           : "Your free trial has ended. Subscribe to keep using CleanCal -- $2 per property per month."}
               </p>
+              {proAddonActive ? (
+                <p className="access-note" style={{ color: "var(--teal-deep)" }}>
+                  Pro add-on active ✓ — owner statements, the turnover dispatcher, and reports
+                  benchmarking are all unlocked.
+                </p>
+              ) : subscriptionStatus === "trialing" || subscriptionStatus === "active" || subscriptionStatus === "past_due" ? (
+                <p className="access-note" style={{ fontSize: 12.5 }}>
+                  Want owner statements, the turnover dispatcher, or reports benchmarking? Add the
+                  Pro add-on ($19/month) from Manage billing below.
+                </p>
+              ) : null}
+              {!proAddonActive &&
+              subscriptionStatus !== "trialing" &&
+              subscriptionStatus !== "active" &&
+              subscriptionStatus !== "past_due" ? (
+                <label
+                  style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, marginBottom: 4, fontWeight: 400 }}
+                >
+                  <input type="checkbox" checked={wantsPro} onChange={(e) => setWantsPro(e.target.checked)} />
+                  Also add the Pro add-on ($19/month) — owner statements, the turnover dispatcher,
+                  and reports benchmarking
+                </label>
+              ) : null}
               {subscriptionStatus === "trialing" || subscriptionStatus === "active" || subscriptionStatus === "past_due" ? (
                 <button
                   type="button"
@@ -492,7 +527,7 @@ export default function ProfileForm({
                 <input
                   type="checkbox"
                   checked={dispatcherOn}
-                  disabled={savingDispatcher}
+                  disabled={savingDispatcher || (!hasPro && !dispatcherOn)}
                   onChange={(e) => handleToggleDispatcher(e.target.checked)}
                 />
                 Turnover dispatcher
@@ -504,6 +539,11 @@ export default function ProfileForm({
                 board instead of left for someone to notice. Off by default, and your own manual
                 assignments and the open job board work exactly the same either way.
               </p>
+              {!hasPro && !dispatcherOn ? (
+                <p className="access-note" style={{ fontSize: 12.5 }}>
+                  Part of the Pro add-on ($19/month) -- an Owner can add it from Billing above.
+                </p>
+              ) : null}
               {dispatcherError ? <div className="error-banner" style={{ marginTop: 10 }}>{dispatcherError}</div> : null}
             </div>
           </div>

@@ -8,6 +8,14 @@ expenses. Built in phases; this file tracks what exists.
 landlords are **property owners** in the database and **Clients** in the
 UI.
 
+Now sold as (one slice of) the $19/month Pro add-on -- see
+`src/lib/billing.ts` and `0057_pro_addon.sql`. `organizations.statements_enabled`
+below stays the hand-toggled grant for a negotiated beta/deal; buying Pro
+through real billing sets the separate `pro_addon_active` instead.
+`getStatementsAccess()` (`src/lib/statements-access.ts`) grants access on
+either one being true, and that file's comment explains why they're kept
+as two columns rather than one.
+
 ## Phase 1 — foundation
 
 - **Migration `0044_owner_statements_foundation.sql`**

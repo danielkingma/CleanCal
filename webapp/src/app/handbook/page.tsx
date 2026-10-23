@@ -1497,22 +1497,24 @@ export default function HandbookPage() {
 
             <section className="hb-section" id="pricing">
               <h2>Pricing &amp; your free trial</h2>
-              <p>CleanCal&apos;s planned pricing scales with the number of properties on your account:</p>
+              <p>CleanCal&apos;s pricing scales with the number of properties on your account, plus an optional add-on for larger operations:</p>
               <div className="hb-table-wrap">
                 <table>
                   <tbody>
-                    <tr><th>Properties</th><th>Price</th></tr>
-                    <tr><td>Any number</td><td>Free for 3 months, then $2/property/month</td></tr>
+                    <tr><th>Plan</th><th>Price</th><th>Includes</th></tr>
+                    <tr><td>Any number of properties</td><td>Free for 3 months, then $2/property/month</td><td>Everything else in this Handbook</td></tr>
+                    <tr><td>Pro add-on (optional)</td><td>+$19/month flat</td><td>Owner statements, the turnover dispatcher, and reports benchmarking (cross-property/cleaner cost &amp; speed, trend over time)</td></tr>
                   </tbody>
                 </table>
               </div>
               <p>
                 In the last 30 days of your free trial, Owners and Managers see a banner across
                 the top of the calendar counting down the days left (and saying so once it has
-                ended). It makes clear
-                that nothing is charged automatically — no surprise charges. Press the ✕ to
-                dismiss it; it&apos;s hidden for the rest of that day and comes back the next, so
-                a real deadline never gets silenced for good.
+                ended), until billing has actually been set up from My Profile &rarr; Billing —
+                once it has, that page is where everything about your subscription (including
+                whether or when you&apos;ll be charged) is explained instead. Press the ✕ to
+                dismiss the banner; it&apos;s hidden for the rest of that day and comes back the
+                next, so a real deadline never gets silenced for good.
               </p>
               <p>
                 If you&apos;ve agreed a special price with us, that banner is replaced by a plain

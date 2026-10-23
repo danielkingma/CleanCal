@@ -13,6 +13,11 @@ interface ReportsViewProps {
   properties: Property[];
   profiles: Profile[];
   isSuperadmin?: boolean;
+  // Pro add-on (src/lib/pro-access.ts) -- gates cross-property/cleaner
+  // benchmarking and the trend-over-time chart below. The cleans/nights/
+  // rating breakdowns above them are the original, ungated "basic
+  // reporting" and stay visible either way.
+  hasPro: boolean;
 }
 
 function csvEscape(value: string | number): string {
@@ -50,7 +55,7 @@ function estimatedCostCents(b: Booking, property: Property | undefined): number 
   return property.payout_rate_cents + linenCents;
 }
 
-export default function ReportsView({ completed, properties, profiles, isSuperadmin = false }: ReportsViewProps) {
+export default function ReportsView({ completed, properties, profiles, isSuperadmin = false, hasPro }: ReportsViewProps) {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [propertyId, setPropertyId] = useState("");
@@ -322,51 +327,63 @@ export default function ReportsView({ completed, properties, profiles, isSuperad
           </div>
         </div>
 
-        <div className="stat-grid">
-          <div className="stat-tile accent-coral">
-            <div className="stat-number" style={{ fontSize: 20 }}>
-              {priciestProperty ? formatCents(priciestProperty.avgCostCents as number) : "—"}
-            </div>
-            <div className="stat-label">
-              Priciest to turn over{priciestProperty ? ` · ${priciestProperty.name}` : ""}
-            </div>
-          </div>
-          <div className="stat-tile accent-teal">
-            <div className="stat-number" style={{ fontSize: 20 }}>
-              {fastestCleaner ? formatMinutes(fastestCleaner.avgDurationMinutes as number) : "—"}
-            </div>
-            <div className="stat-label">Fastest cleaner{fastestCleaner ? ` · ${fastestCleaner.name}` : ""}</div>
-          </div>
-        </div>
-        {!fastestCleaner ? (
-          <p className="photo-note" style={{ marginTop: -8, marginBottom: 20 }}>
-            No duration data yet — cleaning time is only tracked from jobs a cleaner starts and
-            finishes from their own phone going forward, not past jobs.
-          </p>
-        ) : null}
-
-        {byMonth.length > 1 ? (
-          <div style={{ marginBottom: 20 }}>
-            <h2 style={{ fontSize: 16, marginBottom: 12 }}>Trend over time</h2>
-            <div className="property-card">
-              {byMonth.map((m) => (
-                <div key={m.month} className="report-trend-row">
-                  <span className="report-trend-label">{m.label}</span>
-                  <div className="report-trend-bar-track">
-                    <div
-                      className="report-trend-bar-fill"
-                      style={{ width: `${(m.count / maxMonthCount) * 100}%` }}
-                    />
-                  </div>
-                  <span className="report-trend-value">
-                    {m.count} clean{m.count === 1 ? "" : "s"}
-                    {m.avgRating != null ? ` · ★ ${m.avgRating.toFixed(1)}` : ""}
-                  </span>
+        {hasPro ? (
+          <>
+            <div className="stat-grid">
+              <div className="stat-tile accent-coral">
+                <div className="stat-number" style={{ fontSize: 20 }}>
+                  {priciestProperty ? formatCents(priciestProperty.avgCostCents as number) : "—"}
                 </div>
-              ))}
+                <div className="stat-label">
+                  Priciest to turn over{priciestProperty ? ` · ${priciestProperty.name}` : ""}
+                </div>
+              </div>
+              <div className="stat-tile accent-teal">
+                <div className="stat-number" style={{ fontSize: 20 }}>
+                  {fastestCleaner ? formatMinutes(fastestCleaner.avgDurationMinutes as number) : "—"}
+                </div>
+                <div className="stat-label">Fastest cleaner{fastestCleaner ? ` · ${fastestCleaner.name}` : ""}</div>
+              </div>
             </div>
+            {!fastestCleaner ? (
+              <p className="photo-note" style={{ marginTop: -8, marginBottom: 20 }}>
+                No duration data yet — cleaning time is only tracked from jobs a cleaner starts and
+                finishes from their own phone going forward, not past jobs.
+              </p>
+            ) : null}
+
+            {byMonth.length > 1 ? (
+              <div style={{ marginBottom: 20 }}>
+                <h2 style={{ fontSize: 16, marginBottom: 12 }}>Trend over time</h2>
+                <div className="property-card">
+                  {byMonth.map((m) => (
+                    <div key={m.month} className="report-trend-row">
+                      <span className="report-trend-label">{m.label}</span>
+                      <div className="report-trend-bar-track">
+                        <div
+                          className="report-trend-bar-fill"
+                          style={{ width: `${(m.count / maxMonthCount) * 100}%` }}
+                        />
+                      </div>
+                      <span className="report-trend-value">
+                        {m.count} clean{m.count === 1 ? "" : "s"}
+                        {m.avgRating != null ? ` · ★ ${m.avgRating.toFixed(1)}` : ""}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </>
+        ) : (
+          <div className="property-card" style={{ marginBottom: 20 }}>
+            <p className="access-note" style={{ margin: 0 }}>
+              Cross-property/cleaner benchmarking (priciest property, fastest cleaner) and the
+              trend-over-time chart are part of the Pro add-on ($19/month) --{" "}
+              <Link href="/profile">add it from My Profile</Link>.
+            </p>
           </div>
-        ) : null}
+        )}
 
         <div className="two-col">
           <div>

@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { notifyUsers } from "@/lib/notify";
 import { getStripe } from "@/lib/stripe";
 import { reviewCleaningPhotos } from "@/lib/photo-review";
+import { orgHasPro } from "@/lib/pro-access";
 import type { BookingStatus, Checklist } from "@/lib/types";
 
 export interface BookingInput {
@@ -500,6 +501,12 @@ export async function updateBookingCleaner(
 // catch() at the call site above is a second line of defence on top of
 // photo-review.ts's own fail-open behaviour.
 async function reviewCompletedBookingPhotos(supabase: SupabaseServer, bookingId: string) {
+  // Pro-gated (src/lib/pro-access.ts) -- this is the one feature in
+  // CleanCal that costs real money per use (an Anthropic API call), so
+  // unlike the other automated bits here, it needs to actually check
+  // before doing any work, not just fail open if something's missing.
+  if (!(await orgHasPro(supabase))) return;
+
   const { data: booking } = await supabase
     .from("bookings")
     .select("checklist, assigned_cleaner_id, property_id")

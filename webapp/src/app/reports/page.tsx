@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import ReportsView from "@/components/ReportsView";
 import { isStaff, type Booking, type Profile, type Property } from "@/lib/types";
 import { isSuperadmin } from "@/lib/superadmin";
+import { orgHasPro } from "@/lib/pro-access";
 
 export default async function ReportsPage() {
   const supabase = await createClient();
@@ -42,6 +43,7 @@ export default async function ReportsPage() {
       properties={(propertiesData ?? []) as Property[]}
       profiles={(profilesData ?? []) as Profile[]}
       isSuperadmin={isSuperadmin(user.email)}
+      hasPro={await orgHasPro(supabase)}
     />
   );
 }

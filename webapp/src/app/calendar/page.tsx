@@ -85,12 +85,17 @@ export default async function CalendarPage() {
     // there's no in-app way for an owner to grant this to themselves.
     const { data: org } = await supabase
       .from("organizations")
-      .select("trial_ends_at, custom_monthly_price_cents, pricing_agreement_notes, statements_enabled, subscription_status")
+      .select(
+        "trial_ends_at, custom_monthly_price_cents, pricing_agreement_notes, statements_enabled, pro_addon_active, subscription_status",
+      )
       .maybeSingle();
     trialEndsAt = org?.trial_ends_at ?? null;
     customMonthlyPriceCents = org?.custom_monthly_price_cents ?? null;
     pricingAgreementNotes = org?.pricing_agreement_notes ?? null;
-    statementsEnabled = Boolean(org?.statements_enabled);
+    // Either a hand-granted negotiated deal or having actually bought the
+    // Pro add-on unlocks this -- see getStatementsAccess()'s comment in
+    // statements-access.ts for why these stay two separate columns.
+    statementsEnabled = Boolean(org?.statements_enabled) || Boolean(org?.pro_addon_active);
     // Once there's any real subscription (even just "trialing" -- a
     // payment method on file via Checkout, see startBillingCheckout),
     // the Profile page's own Billing section becomes the one place that

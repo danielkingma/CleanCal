@@ -163,7 +163,10 @@ const STEPS = [
   },
 ];
 
-const PRICING = [{ tier: "Any number of properties", price: "Free for 3 months, then $2/property/mo" }];
+const PRICING = [
+  { tier: "Any number of properties", price: "Free for 3 months, then $2/property/mo" },
+  { tier: "Pro add-on (optional)", price: "+$19/mo — owner statements, turnover dispatcher, reports benchmarking" },
+];
 
 export default function LandingPage() {
   return (
@@ -325,8 +328,9 @@ export default function LandingPage() {
           <h2 className="landing-section-title">Free for 3 months, then $2 per property per month</h2>
           <p className="landing-pricing-sub">
             No credit card required to start. Beyond that, pricing scales with
-            how many properties you run -- never per booking, never per cleaner. Billing is
-            coming soon, so enjoy full access for free while it lasts.
+            how many properties you run -- never per booking, never per cleaner. An optional Pro
+            add-on unlocks owner statements, the turnover dispatcher, and cross-property/cleaner
+            reporting for larger operations.
           </p>
           <div className="landing-pricing-table">
             {PRICING.map((row) => (

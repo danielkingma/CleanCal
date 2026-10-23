@@ -21,13 +21,19 @@ import type Stripe from "stripe";
 // The Price id lives in an env var (set from the Stripe Dashboard) rather
 // than hardcoded here, same reasoning as STRIPE_SECRET_KEY in
 // lib/stripe.ts -- it differs between Stripe's test and live modes.
+//
+// On top of that base plan, an organization can optionally add the Pro
+// add-on -- a second, flat $19/month Stripe Price (not per-property),
+// added as a second Checkout line item rather than replacing the base
+// one. It currently unlocks owner statements; see pro_addon_active in
+// 0057_pro_addon.sql and getStatementsAccess() in statements-access.ts.
 
 export interface PropertyPricingTier {
   priceId: string;
   quantity: number;
 }
 
-function requirePriceEnv(name: "STRIPE_PRICE_PER_PROPERTY"): string {
+function requirePriceEnv(name: "STRIPE_PRICE_PER_PROPERTY" | "STRIPE_PRICE_PRO_ADDON"): string {
   const value = process.env[name];
   if (!value) {
     throw new Error(`${name} is not set -- create the Price in Stripe and add its id to the environment.`);
@@ -40,6 +46,22 @@ function requirePriceEnv(name: "STRIPE_PRICE_PER_PROPERTY"): string {
 // client, since it determines what gets billed.
 export function pricingTierForPropertyCount(propertyCount: number): PropertyPricingTier {
   return { priceId: requirePriceEnv("STRIPE_PRICE_PER_PROPERTY"), quantity: propertyCount };
+}
+
+// The optional Pro add-on: a second, flat ($19/month, not per-property)
+// subscription item that unlocks premium features -- owner statements
+// today, possibly more later. Added as a second Checkout line item
+// alongside the per-property one, never a replacement for it.
+export function proAddonPriceId(): string {
+  return requirePriceEnv("STRIPE_PRICE_PRO_ADDON");
+}
+
+// Used by the webhook handler to recognize the Pro add-on among a
+// subscription's line items without throwing if the env var happens to be
+// unset -- a webhook should never crash over a price nobody's configured
+// yet, it should just correctly conclude nothing matches.
+export function isProAddonPrice(priceId: string): boolean {
+  return !!process.env.STRIPE_PRICE_PRO_ADDON && priceId === process.env.STRIPE_PRICE_PRO_ADDON;
 }
 
 // organizations.subscription_status only allows ('trialing', 'active',

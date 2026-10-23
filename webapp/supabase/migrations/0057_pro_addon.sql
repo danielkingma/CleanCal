@@ -1,0 +1,27 @@
+-- Pro add-on: a second, optional Stripe subscription item ($19/month
+-- flat, not per-property -- see STRIPE_PRICE_PRO_ADDON in src/lib/billing.ts)
+-- that unlocks premium features on top of the base per-property plan.
+-- Owner statements is the first feature gated by it.
+--
+-- This column is exclusively webhook-driven (src/app/api/webhooks/stripe/
+-- route.ts), recomputed from the subscription's actual line items on every
+-- checkout.session.completed / customer.subscription.updated /
+-- customer.subscription.deleted event -- same reasoning as
+-- subscription_status itself (0016_organizations.sql): organizations has
+-- no generic write policy, so only the service-role webhook client ever
+-- writes it, never a plain user session.
+--
+-- Deliberately a *separate* column from the existing statements_enabled,
+-- rather than repurposing it -- statements_enabled is also used as a
+-- hand-toggled flag for negotiated beta access (see docs/OWNER_STATEMENTS.md),
+-- and this webhook unconditionally overwrites pro_addon_active (true when
+-- the Pro price is present on the subscription, false when it's not) on
+-- every event. If it shared a column with the manual flag, any unrelated
+-- subscription update (a card refresh, a renewal) on an org that was
+-- hand-granted access but never actually bought Pro would silently wipe
+-- that grant out. Keeping them separate means the *effective* "does this
+-- org get statements" check (statements-access.ts) is simply
+-- statements_enabled OR pro_addon_active -- either path grants it, neither
+-- can accidentally clobber the other.
+alter table public.organizations
+  add column if not exists pro_addon_active boolean not null default false;

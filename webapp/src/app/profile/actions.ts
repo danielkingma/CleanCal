@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe";
-import { pricingTierForPropertyCount } from "@/lib/billing";
+import { pricingTierForPropertyCount, proAddonPriceId } from "@/lib/billing";
 
 // Deliberately takes no `role` param -- the update_own_profile RPC only
 // ever touches given_name/middle_name/surname/bio/phone/service_area/
@@ -153,7 +153,15 @@ export async function startConnectOnboarding(returnUrl: string): Promise<string>
 // to. The subscription doesn't actually take effect in our own data until
 // the checkout.session.completed webhook fires -- this only ever creates
 // a Stripe Customer (reused on every later call) and a Checkout Session.
-export async function startBillingCheckout(returnUrl: string): Promise<string> {
+//
+// includePro adds the optional Pro add-on (a second, flat line item) to
+// this same Checkout Session -- whether it actually sticks, same as the
+// base subscription, is only ever confirmed by the webhook afterward
+// (which sets organizations.pro_addon_active from the subscription's real
+// line items, not from this flag). An owner who's already subscribed and
+// wants to add or drop Pro later does that from the Billing Portal
+// (openBillingPortal below), not by calling this again.
+export async function startBillingCheckout(returnUrl: string, includePro: boolean): Promise<string> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -208,10 +216,13 @@ export async function startBillingCheckout(returnUrl: string): Promise<string> {
   const trialEndsAt = org.trial_ends_at ? new Date(org.trial_ends_at as string) : null;
   const trialEnd = trialEndsAt && trialEndsAt.getTime() > Date.now() ? Math.floor(trialEndsAt.getTime() / 1000) : undefined;
 
+  const lineItems = [{ price: tier.priceId, quantity: tier.quantity }];
+  if (includePro) lineItems.push({ price: proAddonPriceId(), quantity: 1 });
+
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     customer: customerId,
-    line_items: [{ price: tier.priceId, quantity: tier.quantity }],
+    line_items: lineItems,
     success_url: returnUrl,
     cancel_url: returnUrl,
     subscription_data: {

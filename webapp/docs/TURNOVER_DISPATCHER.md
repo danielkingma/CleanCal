@@ -5,13 +5,20 @@ reshuffling when an existing one's dates shift and its current cleaner can
 no longer do it — instead of a human noticing too late, or a job sitting
 unassigned until someone checks the calendar.
 
-**Off by default, per organization.** An Owner or Manager turns it on from
-My Profile (`organizations.dispatcher_enabled`, migration
-`0054_turnover_dispatcher.sql`). Turning it on never touches
-already-assigned bookings retroactively — it only acts on what changes
-from that point on. Turning it off at any time leaves every existing
-assignment exactly as it is; manual assignment and the open job board work
-identically either way, on or off.
+**Off by default, per organization, and part of the Pro add-on**
+($19/month -- see `src/lib/billing.ts`, `0057_pro_addon.sql`). An Owner or
+Manager turns it on from My Profile (`organizations.dispatcher_enabled`,
+migration `0054_turnover_dispatcher.sql`); `update_dispatcher_enabled()`
+itself blocks turning it on without Pro
+(`0058_pro_gated_features.sql`'s `org_has_pro()`), same OR of
+`pro_addon_active`/`statements_enabled` as owner statements. Only turning
+it *on* is gated -- an org that already has it enabled keeps it running
+even if Pro later lapses, same reasoning as `pro_addon_active` never being
+force-cleared elsewhere (see that migration's comment). Turning it on
+never touches already-assigned bookings retroactively — it only acts on
+what changes from that point on. Turning it off at any time leaves every
+existing assignment exactly as it is; manual assignment and the open job
+board work identically either way, on or off.
 
 ## How it picks a cleaner
 
