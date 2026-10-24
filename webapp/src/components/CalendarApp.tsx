@@ -13,6 +13,7 @@ import DayPickerSheet from "./DayPickerSheet";
 import PropertyYearView from "./PropertyYearView";
 import BookingModal from "./BookingModal";
 import TrialNotice from "./TrialNotice";
+import CanceledOrgNotice from "./CanceledOrgNotice";
 import SignOutButton from "./SignOutButton";
 import {
   DAY_W_MONTH,
@@ -27,7 +28,7 @@ import {
 } from "@/lib/calendar-utils";
 import { useMediaQuery } from "@/lib/useMediaQuery";
 import { ALL_PLATFORM_BADGES, getPlatformBadge } from "@/lib/platform-badge";
-import { isStaff, type Booking, type CleanerRating, type Profile, type Property } from "@/lib/types";
+import { isOwner, isStaff, type Booking, type CleanerRating, type Profile, type Property } from "@/lib/types";
 
 // Well-known platforms worth calling out by name directly in the legend;
 // anything else still gets its own badge on the calendar (see
@@ -523,7 +524,9 @@ export default function CalendarApp({
         </div>
       </div>
 
-      {isStaffUser ? (
+      {subscriptionStatus === "canceled" ? (
+        <CanceledOrgNotice isOwner={isOwner(currentProfile.role)} />
+      ) : isStaffUser ? (
         <TrialNotice
           trialEndsAt={trialEndsAt}
           customMonthlyPriceCents={customMonthlyPriceCents}
