@@ -122,6 +122,12 @@ export default async function CalendarPage() {
       ]),
     );
 
+    // Highest-rated first (ties and the unrated keep the alphabetical order
+    // the query above already gave them -- Array#sort is stable) so the
+    // assigned-cleaner dropdown (BookingModal) actually suggests better-rated
+    // cleaners instead of just labelling them with a rating buried mid-list.
+    cleaners = [...cleaners].sort((a, b) => (cleanerRatings[b.id]?.average ?? -1) - (cleanerRatings[a.id]?.average ?? -1));
+
     const { data: unavailableRows } = await supabase
       .from("cleaner_unavailable_dates")
       .select("cleaner_id, date");

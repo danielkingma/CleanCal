@@ -999,12 +999,15 @@ export default function HandbookPage() {
                   out.
                 </li>
                 <li>
-                  <strong>One card per cleaner</strong> — each is a collapsed row (name and rating); tap it to open. Inside: name (with their favourite-colour dot),
+                  <strong>One card per cleaner</strong>, highest-rated first — each is a collapsed row
+                  (name and rating); tap it to open. Inside: name (with their favourite-colour dot),
                   the email address (Owner only), an <strong>ID verified / ID pending / ID not
                   verified</strong> badge, their average rating and how many ratings that&apos;s
                   from, their phone and service area, their bio, and the next few days
                   they&apos;ve marked themselves unavailable (see{" "}
-                  <a href="#availability">Availability</a>).
+                  <a href="#availability">Availability</a>). The <strong>Assigned cleaner</strong>{" "}
+                  dropdown on a booking (see <a href="#booking">Bookings</a>) lists cleaners the
+                  same way, so your best-rated people are the first options you see.
                 </li>
               </ul>
               <h3>Removing a cleaner</h3>

@@ -81,6 +81,21 @@ export default async function CleanersPage() {
     ratingByCleanerId.set(b.assigned_cleaner_id, entry);
   }
 
+  // Highest-rated first; ties and the unrated keep the alphabetical order
+  // the query above already gave them (Array#sort is stable) -- a rating
+  // that only ever showed as a number next to each name didn't actually
+  // make the list easier to scan for who's doing the best work.
+  const sortedCleaners = [...(cleaners ?? [])].sort((a, b) => {
+    const ra = ratingByCleanerId.get(a.id);
+    const rb = ratingByCleanerId.get(b.id);
+    const avgA = ra ? ra.total / ra.count : null;
+    const avgB = rb ? rb.total / rb.count : null;
+    if (avgA == null && avgB == null) return 0;
+    if (avgA == null) return 1;
+    if (avgB == null) return -1;
+    return avgB - avgA;
+  });
+
   const todayIso = new Date().toISOString().slice(0, 10);
   const { data: unavailableRows } = await supabase
     .from("cleaner_unavailable_dates")
@@ -125,7 +140,7 @@ export default async function CleanersPage() {
           </p>
         ) : null}
 
-        {(cleaners as Profile[] | null)?.map((cleaner) => {
+        {sortedCleaners.map((cleaner) => {
           const rating = ratingByCleanerId.get(cleaner.id);
           const average = rating ? rating.total / rating.count : null;
           const upcomingOff = unavailableByCleanerId.get(cleaner.id) ?? [];

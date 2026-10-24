@@ -11,7 +11,7 @@ Things worth doing, logged for later rather than acted on now. Not in any partic
 ## Real but limited -- not broken, just worth knowing
 
 4. **Background checks aren't built.** Only ID verification (Stripe Identity -- selfie + ID match) is live; a real background-check provider (e.g. Checkr) would need its own integration and agreement. The Handbook is already honest about this gap.
-5. **Ratings are decorative.** Owners rate cleaners after a job and it shows as an average on the Cleaners page, but nothing else uses it -- it doesn't sort the cleaner list or factor into who's suggested when assigning a job. Would be a cheap win to make it actually matter.
+5. ~~**Ratings are decorative.**~~ Resolved 2026-10-24: the Cleaners page and the booking modal's Assigned cleaner dropdown both now sort highest-rated first (ties and the unrated keep the existing alphabetical order), so a top performer is the first thing you see in either place instead of a number you had to go looking for.
 
 ## Explicitly paused (do not resume without Daniel raising it again)
 
