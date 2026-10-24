@@ -379,7 +379,7 @@ export default function ReportsView({ completed, properties, profiles, isSuperad
           <div className="property-card" style={{ marginBottom: 20 }}>
             <p className="access-note" style={{ margin: 0 }}>
               Cross-property/cleaner benchmarking (priciest property, fastest cleaner) and the
-              trend-over-time chart are part of the Pro add-on ($19/month) --{" "}
+              trend-over-time chart are part of the Pro add-on ($10/month) --{" "}
               <Link href="/profile#billing">add it from Billing</Link>.
             </p>
           </div>

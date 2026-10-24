@@ -165,7 +165,7 @@ const STEPS = [
 
 const PRICING = [
   { tier: "Any number of properties", price: "Free for 3 months, then $2/property/mo" },
-  { tier: "Pro add-on (optional)", price: "+$19/mo — owner statements, turnover dispatcher, reports benchmarking" },
+  { tier: "Pro add-on (optional)", price: "+$10/mo — owner statements, turnover dispatcher, reports benchmarking" },
 ];
 
 export default function LandingPage() {

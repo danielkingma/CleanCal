@@ -3,7 +3,7 @@ import { isSuperadmin } from "./superadmin";
 
 // Whether the CALLER's own organization has Pro -- either a hand-granted
 // negotiated deal (organizations.statements_enabled) or having actually
-// bought the $19/month Pro add-on (organizations.pro_addon_active, set
+// bought the $10/month Pro add-on (organizations.pro_addon_active, set
 // only by the Stripe webhook from the subscription's real line items --
 // see src/lib/billing.ts, 0057_pro_addon.sql). Either is enough, same OR
 // as getStatementsAccess() in statements-access.ts, which predates this

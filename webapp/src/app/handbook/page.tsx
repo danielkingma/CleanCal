@@ -1496,7 +1496,7 @@ export default function HandbookPage() {
                   <tbody>
                     <tr><th>Plan</th><th>Price</th><th>Includes</th></tr>
                     <tr><td>Any number of properties</td><td>Free for 3 months, then $2/property/month</td><td>Everything else in this Handbook</td></tr>
-                    <tr><td>Pro add-on (optional)</td><td>+$19/month flat</td><td>Owner statements, the turnover dispatcher, and reports benchmarking (cross-property/cleaner cost &amp; speed, trend over time)</td></tr>
+                    <tr><td>Pro add-on (optional)</td><td>+$10/month flat</td><td>Owner statements, the turnover dispatcher, and reports benchmarking (cross-property/cleaner cost &amp; speed, trend over time)</td></tr>
                   </tbody>
                 </table>
               </div>

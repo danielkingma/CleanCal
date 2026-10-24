@@ -6,7 +6,7 @@ no longer do it — instead of a human noticing too late, or a job sitting
 unassigned until someone checks the calendar.
 
 **Off by default, per organization, and part of the Pro add-on**
-($19/month -- see `src/lib/billing.ts`, `0057_pro_addon.sql`). An Owner or
+($10/month -- see `src/lib/billing.ts`, `0057_pro_addon.sql`). An Owner or
 Manager turns it on from My Profile (`organizations.dispatcher_enabled`,
 migration `0054_turnover_dispatcher.sql`); `update_dispatcher_enabled()`
 itself blocks turning it on without Pro

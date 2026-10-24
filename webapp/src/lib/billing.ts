@@ -23,7 +23,7 @@ import type Stripe from "stripe";
 // lib/stripe.ts -- it differs between Stripe's test and live modes.
 //
 // On top of that base plan, an organization can optionally add the Pro
-// add-on -- a second, flat $19/month Stripe Price (not per-property),
+// add-on -- a second, flat $10/month Stripe Price (not per-property),
 // added as a second Checkout line item rather than replacing the base
 // one. It currently unlocks owner statements; see pro_addon_active in
 // 0057_pro_addon.sql and getStatementsAccess() in statements-access.ts.
@@ -48,7 +48,7 @@ export function pricingTierForPropertyCount(propertyCount: number): PropertyPric
   return { priceId: requirePriceEnv("STRIPE_PRICE_PER_PROPERTY"), quantity: propertyCount };
 }
 
-// The optional Pro add-on: a second, flat ($19/month, not per-property)
+// The optional Pro add-on: a second, flat ($10/month, not per-property)
 // subscription item that unlocks premium features -- owner statements
 // today, possibly more later. Added as a second Checkout line item
 // alongside the per-property one, never a replacement for it.

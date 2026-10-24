@@ -459,7 +459,7 @@ export default function ProfileForm({
               ) : subscriptionStatus === "trialing" || subscriptionStatus === "active" || subscriptionStatus === "past_due" ? (
                 <p className="access-note" style={{ fontSize: 12.5 }}>
                   Want owner statements, the turnover dispatcher, or reports benchmarking? Add the
-                  Pro add-on ($19/month) from Manage billing below.
+                  Pro add-on ($10/month) from Manage billing below.
                 </p>
               ) : null}
               {!proAddonActive &&
@@ -470,7 +470,7 @@ export default function ProfileForm({
                   style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, marginBottom: 4, fontWeight: 400 }}
                 >
                   <input type="checkbox" checked={wantsPro} onChange={(e) => setWantsPro(e.target.checked)} />
-                  Also add the Pro add-on ($19/month) — owner statements, the turnover dispatcher,
+                  Also add the Pro add-on ($10/month) — owner statements, the turnover dispatcher,
                   and reports benchmarking
                 </label>
               ) : null}
@@ -526,7 +526,7 @@ export default function ProfileForm({
               </p>
               {!hasPro && !dispatcherOn ? (
                 <p className="access-note" style={{ fontSize: 12.5 }}>
-                  Part of the Pro add-on ($19/month) -- an Owner can add it from Billing above.
+                  Part of the Pro add-on ($10/month) -- an Owner can add it from Billing above.
                 </p>
               ) : null}
               {dispatcherError ? <div className="error-banner" style={{ marginTop: 10 }}>{dispatcherError}</div> : null}
